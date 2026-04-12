@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>San Antonio Trailer Rental Market Analysis — Alamo City Hitch & Go Co</title>
+<meta name="description" content="Comprehensive competitive analysis of the San Antonio trailer rental market. Prepared for Alamo City Hitch & Go Co, April 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   CSS CUSTOM PROPERTIES — FROM BUILD BRIEF
+   Every color decision is defensible and documented.
+   ============================================ */
+:root {
+  /* Brand Palette — Revised from business card + Build Brief §1 */
+  --primary: #111827;         /* Deep Charcoal — carbon-fiber texture from card bg */
+  --brand-red: #8B1A1A;       /* Deep Crimson — the leather red from the business card */
+  --brand-red-bright: #C1341A;/* Alamo Brick — brighter accent for CTAs and hover */
+  --navy: #1B2A4A;            /* Badge Navy — from the logo shield/badge */
+  --gold: #C0A060;            /* Muted Gold — chrome/metallic feel from logo type */
+  --gold-bright: #E8A020;     /* Texas Amber — for highlights on dark backgrounds */
+  --bg-warm: #F5F3F0;         /* Cool Off-White — pairs with chrome/metallic tones */
+  --text-secondary: #7A8190;  /* Cool Slate — shifted cooler to match silver type */
+  --surface-dark: #1C2533;    /* Dark Section BG — between charcoal and navy */
+
+  /* Functional Colors */
+  --white: #FFFFFF;
+  --text-on-dark: #F6F2EC;
+  --text-on-light: #111827;
+  --border-subtle: rgba(17, 24, 39, 0.08);
+  --border-dark: rgba(246, 242, 236, 0.1);
+
+  /* Score Colors */
+  --score-excellent: #22C55E;
+  --score-good: #E8A020;
+  --score-average: #F59E0B;
+  --score-poor: #EF4444;
+
+  /* Typography — Build Brief §1 */
+  --font-heading: 'Barlow Condensed', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Spacing */
+  --section-pad: clamp(3rem, 8vw, 6rem);
+  --content-max: 1100px;
+}
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-on-light);
+  background: var(--bg-warm);
+  line-height: 1.6;
+}
+
+img { max-width: 100%; display: block; }
+a { color: var(--brand-red); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; }
+h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; }
+h3 { font-size: clamp(1.2rem, 2.5vw, 1.6rem); font-weight: 700; }
+h4 { font-size: 1.1rem; font-weight: 700; }
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+.container {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 clamp(1.5rem, 4vw, 3rem);
+}
+
+section {
+  padding: var(--section-pad) 0;
+}
+
+.section-dark {
+  background: var(--primary);
+  color: var(--text-on-dark);
+}
+
+.section-darker {
+  background: var(--surface-dark);
+  color: var(--text-on-dark);
+}
+
+.section-light {
+  background: var(--bg-warm);
+  color: var(--text-on-light);
+}
+
+.section-white {
+  background: var(--white);
+  color: var(--text-on-light);
+}
+
+/* ============================================
+   HERO / COVER
+   ============================================ */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--primary);
+  color: var(--text-on-dark);
+  position: relative;
+  overflow: hidden;
+  padding: var(--section-pad) 0;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(135deg, transparent 0%, rgba(139, 26, 26, 0.15) 100%);
+  clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);
+  pointer-events: none;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(27, 42, 74, 0.2) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero .container { position: relative; z-index: 1; }
+
+.hero .eyebrow {
+  color: var(--gold);
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.2s forwards;
+}
+
+.hero h1 {
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.4s forwards;
+}
+
+.hero h1 span { color: var(--brand-red); }
+
+.hero-subtitle {
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  color: var(--text-secondary);
+  max-width: 600px;
+  line-height: 1.7;
+  margin-bottom: 3rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.6s forwards;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.8s forwards;
+}
+
+.hero-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.hero-meta-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.hero-meta-value {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-on-dark);
+}
+
+/* ============================================
+   KEY METRICS STRIP
+   ============================================ */
+.metrics-strip {
+  background: var(--surface-dark);
+  border-top: 1px solid var(--border-dark);
+  border-bottom: 1px solid var(--border-dark);
+  padding: 2.5rem 0;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2rem;
+  text-align: center;
+}
+
+.metric-item { opacity: 0; }
+
+.metric-number {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  color: var(--gold-bright);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+}
+
+/* ============================================
+   EXECUTIVE SUMMARY
+   ============================================ */
+.exec-summary p {
+  font-size: clamp(1.05rem, 1.8vw, 1.2rem);
+  line-height: 1.8;
+  color: var(--text-secondary);
+  max-width: 800px;
+}
+
+.exec-summary p + p { margin-top: 1.25rem; }
+
+.exec-summary strong { color: var(--text-on-light); }
+
+.highlight-box {
+  background: var(--primary);
+  color: var(--text-on-dark);
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  margin-top: 2.5rem;
+  border-left: 4px solid var(--navy);
+}
+
+.highlight-box p {
+  color: var(--text-on-dark);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.highlight-box strong { color: var(--gold); }
+
+/* ============================================
+   COMPETITOR SCORECARD
+   ============================================ */
+.scorecard-grid {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+
+.scorecard-row {
+  display: grid;
+  grid-template-columns: 200px 60px 1fr 60px;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--white);
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.scorecard-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+}
+
+.scorecard-row.is-target {
+  background: var(--primary);
+  color: var(--text-on-dark);
+  border-color: var(--brand-red);
+  border-width: 2px;
+}
+
+.scorecard-name {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.scorecard-row.is-target .scorecard-name { color: var(--gold); }
+
+.scorecard-type {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.scorecard-row.is-target .scorecard-type { color: rgba(246, 242, 236, 0.5); }
+
+.scorecard-grade {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.scorecard-bar-track {
+  height: 10px;
+  background: var(--border-subtle);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.scorecard-row.is-target .scorecard-bar-track {
+  background: rgba(246, 242, 236, 0.1);
+}
+
+.scorecard-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  width: 0;
+  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.scorecard-score {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.2rem;
+  text-align: right;
+}
+
+/* ============================================
+   DETAILED SCORING TABLE
+   ============================================ */
+.score-table-wrapper {
+  overflow-x: auto;
+  margin-top: 2.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-dark);
+}
+
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.score-table thead {
+  background: var(--primary);
+}
+
+.score-table th {
+  padding: 1rem 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-align: center;
+  color: var(--text-on-dark);
+  white-space: nowrap;
+}
+
+.score-table th:first-child { text-align: left; padding-left: 1.25rem; }
+
+.score-table td {
+  padding: 0.85rem 0.75rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.score-table td:first-child {
+  text-align: left;
+  padding-left: 1.25rem;
+  font-weight: 600;
+  color: var(--text-on-dark);
+}
+
+.score-table tbody tr { background: var(--surface-dark); }
+
+.score-table tbody tr:last-child td { border-bottom: none; }
+
+.score-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.score-cell.s-high { background: rgba(34, 197, 94, 0.15); color: var(--score-excellent); }
+.score-cell.s-mid  { background: rgba(245, 158, 11, 0.15); color: var(--score-average); }
+.score-cell.s-low  { background: rgba(239, 68, 68, 0.15); color: var(--score-poor); }
+
+.score-table tfoot td {
+  padding: 1rem 0.75rem;
+  font-weight: 700;
+  background: rgba(232, 160, 32, 0.08);
+  border-top: 2px solid var(--gold);
+  color: var(--gold);
+}
+
+/* ============================================
+   PRICING BENCHMARK
+   ============================================ */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+
+.pricing-card {
+  background: var(--white);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.75rem;
+  transition: transform 0.2s;
+}
+
+.pricing-card:hover { transform: translateY(-2px); }
+
+.pricing-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.pricing-card-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+}
+
+.pricing-range {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.pricing-range-bar {
+  flex: 1;
+  height: 6px;
+  background: #E5E7EB;
+  border-radius: 3px;
+  position: relative;
+}
+
+.pricing-range-fill {
+  position: absolute;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--navy), var(--brand-red));
+}
+
+.pricing-value {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--primary);
+}
+
+.pricing-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.pricing-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding: 0.4rem 0;
+}
+
+.pricing-row + .pricing-row { border-top: 1px solid var(--border-subtle); }
+
+.pricing-row-label { color: var(--text-secondary); }
+.pricing-row-value { font-weight: 600; }
+
+/* ============================================
+   PATTERNS / INSIGHTS CARDS
+   ============================================ */
+.pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.pattern-card {
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-dark);
+  background: rgba(246, 242, 236, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.pattern-card::before {
+  content: attr(data-number);
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  font-family: var(--font-heading);
+  font-size: 5rem;
+  font-weight: 900;
+  color: rgba(246, 242, 236, 0.04);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.pattern-card h4 {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: var(--gold-bright);
+  margin-bottom: 0.75rem;
+}
+
+.pattern-card p {
+  font-size: 0.92rem;
+  color: rgba(246, 242, 236, 0.7);
+  line-height: 1.65;
+}
+
+/* ============================================
+   GAP / OPPORTUNITY CARDS
+   ============================================ */
+.gap-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.gap-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: var(--white);
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.gap-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.06);
+}
+
+.gap-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.gap-icon.red   { background: rgba(193, 52, 26, 0.1); color: var(--brand-red); }
+.gap-icon.gold  { background: rgba(232, 160, 32, 0.1); color: var(--gold); }
+.gap-icon.green { background: rgba(34, 197, 94, 0.1); color: #16A34A; }
+
+.gap-card h4 { margin-bottom: 0.5rem; }
+.gap-card p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.65; }
+
+.gap-impact {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ============================================
+   BENCHMARK COMPARISON
+   ============================================ */
+.benchmark-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.benchmark-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.benchmark-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.benchmark-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.benchmark-bar-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 40px;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.benchmark-bar-label {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.benchmark-bar-track {
+  height: 8px;
+  background: rgba(246, 242, 236, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.benchmark-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 0;
+}
+
+.benchmark-bar-fill.current { background: var(--text-secondary); }
+.benchmark-bar-fill.target  { background: var(--gold); }
+
+.benchmark-bar-value {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* ============================================
+   STRATEGY / RECOMMENDATIONS
+   ============================================ */
+.strategy-list {
+  margin-top: 2.5rem;
+  display: grid;
+  gap: 1rem;
+  counter-reset: strategy;
+}
+
+.strategy-item {
+  counter-increment: strategy;
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: var(--white);
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  align-items: start;
+}
+
+.strategy-number {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--gold);
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.strategy-item h4 { margin-bottom: 0.35rem; }
+.strategy-item p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
+
+.strategy-tag {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  background: rgba(27, 42, 74, 0.08);
+  color: var(--navy);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.report-footer {
+  background: var(--primary);
+  color: var(--text-secondary);
+  padding: 3rem 0;
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+.report-footer strong { color: var(--text-on-dark); }
+
+.footer-divider {
+  width: 60px;
+  height: 3px;
+  background: var(--navy);
+  margin: 0 auto 1.5rem;
+  border-radius: 2px;
+}
+
+/* ============================================
+   SECTION HEADERS
+   ============================================ */
+.section-header {
+  margin-bottom: 2.5rem;
+}
+
+.section-header .eyebrow {
+  color: var(--navy);
+  margin-bottom: 0.75rem;
+}
+
+.section-dark .section-header .eyebrow,
+.section-darker .section-header .eyebrow {
+  color: var(--gold-bright);
+}
+
+.section-header p {
+  margin-top: 0.75rem;
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  max-width: 650px;
+}
+
+/* ============================================
+   DIVIDER
+   ============================================ */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 0 auto;
+  max-width: var(--content-max);
+  padding: 0 clamp(1.5rem, 4vw, 3rem);
+}
+
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.section-divider-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-warm);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children */
+.stagger-children .reveal:nth-child(1) { transition-delay: 0s; }
+.stagger-children .reveal:nth-child(2) { transition-delay: 0.08s; }
+.stagger-children .reveal:nth-child(3) { transition-delay: 0.16s; }
+.stagger-children .reveal:nth-child(4) { transition-delay: 0.24s; }
+.stagger-children .reveal:nth-child(5) { transition-delay: 0.32s; }
+.stagger-children .reveal:nth-child(6) { transition-delay: 0.4s; }
+.stagger-children .reveal:nth-child(7) { transition-delay: 0.48s; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .scorecard-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .scorecard-bar-track { grid-column: 1 / -1; }
+
+  .benchmark-row {
+    grid-template-columns: 1fr;
+  }
+
+  .gap-card {
+    grid-template-columns: 1fr;
+  }
+
+  .gap-icon { width: 44px; height: 44px; font-size: 1.2rem; }
+
+  .hero-meta { gap: 1.25rem; }
+
+  .score-table { font-size: 0.8rem; }
+  .score-table th, .score-table td { padding: 0.6rem 0.5rem; }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+  body { background: white; }
+  .hero { min-height: auto; padding: 3rem 0; break-after: page; }
+  section { break-inside: avoid; padding: 2rem 0; }
+  .scorecard-row:hover,
+  .pricing-card:hover,
+  .gap-card:hover { transform: none; box-shadow: none; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+  .scorecard-bar-fill, .benchmark-bar-fill { transition: none; }
+  .metrics-strip { break-after: page; }
+}
+
+/* ============================================
+   PREFERS REDUCED MOTION
+   ============================================ */
+/* ============================================
+   WINNING BLUEPRINT
+   ============================================ */
+.blueprint-card {
+  margin-top: 2.5rem;
+  background: linear-gradient(135deg, rgba(193, 52, 26, 0.03) 0%, rgba(232, 160, 32, 0.05) 50%, rgba(17, 24, 39, 0.03) 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: clamp(2rem, 5vw, 3.5rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.blueprint-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--navy), var(--brand-red), var(--navy));
+}
+
+.blueprint-card-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 800;
+  font-style: italic;
+  color: var(--primary);
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.blueprint-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2.5rem 3rem;
+}
+
+.blueprint-quadrant h4 {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--navy);
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--navy);
+  display: inline-block;
+}
+
+.blueprint-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.blueprint-list li {
+  font-size: 0.9rem;
+  color: var(--text-on-light);
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.blueprint-list li::before {
+  content: '';
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7.5' stroke='%231B2A4A' stroke-opacity='0.3'/%3E%3Cpath d='M5 8l2 2 4-4' stroke='%231B2A4A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+@media (max-width: 640px) {
+  .blueprint-grid { grid-template-columns: 1fr; gap: 2rem; }
+}
+
+@media print {
+  .blueprint-card { break-inside: avoid; }
+  .blueprint-card::before { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+  .scorecard-bar-fill, .benchmark-bar-fill { transition: none; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==========================================
+     HERO / COVER
+     ========================================== -->
+<section class="hero">
+  <div class="container">
+    <p class="eyebrow">Market Intelligence Report — April 2026</p>
+    <h1>San Antonio<br>Trailer Rental<br><span>Market Analysis</span></h1>
+    <p class="hero-subtitle">
+      Comprehensive competitive analysis of 6 active market players.
+      Live scraping, pricing audits, and UX evaluation reveal a market
+      with a wide-open gap at the top.
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Prepared For</span>
+        <span class="hero-meta-value">Alamo City Hitch &amp; Go Co</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Market</span>
+        <span class="hero-meta-value">San Antonio, TX / Bexar County</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Competitors Analyzed</span>
+        <span class="hero-meta-value">6 Active Operators</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Research Method</span>
+        <span class="hero-meta-value">Live Scraping &amp; Audit</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     KEY METRICS STRIP
+     ========================================== -->
+<div class="metrics-strip">
+  <div class="container">
+    <div class="metrics-grid">
+      <div class="metric-item reveal">
+        <div class="metric-number" data-count="51">0</div>
+        <div class="metric-label">Avg Competitor Score (of 80)</div>
+      </div>
+      <div class="metric-item reveal">
+        <div class="metric-number" data-count="64">0</div>
+        <div class="metric-label">Market Average Grade (%)</div>
+      </div>
+      <div class="metric-item reveal">
+        <div class="metric-number">$128</div>
+        <div class="metric-label">Avg Car Hauler Daily Rate</div>
+      </div>
+      <div class="metric-item reveal">
+        <div class="metric-number">5</div>
+        <div class="metric-label">Open Market Gaps Identified</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     EXECUTIVE SUMMARY
+     ========================================== -->
+<section class="section-light exec-summary">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="eyebrow">Executive Summary</p>
+      <h2>The gap is wide open.</h2>
+    </div>
+    <div class="reveal">
+      <p>
+        The San Antonio trailer rental market is an active, underserved local services
+        category. Demand is driven by residential moves, construction projects,
+        landscaping hauling, vehicle transport, and recreational use. Despite consistent
+        demand, the local competitive landscape is dominated by one national brand (U-Haul)
+        and several small operators with <strong>minimal digital presence</strong>.
+      </p>
+      <p>
+        No local competitor has built a genuinely premium, trust-optimized digital experience.
+        The first operator to do so will <strong>capture significant share</strong> of the local
+        search market and convert at a higher rate than any current player.
+      </p>
+    </div>
+    <div class="highlight-box reveal">
+      <p>
+        <strong>Average competitor score: 51.3 / 80 (64%).</strong>
+        Most local operators function at a C-grade level. A well-executed digital
+        presence scores 75+ — representing a <strong>23+ point advantage</strong> over the
+        average local competitor. That's not incremental improvement. That's a different category.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     COMPETITOR SCORECARD
+     ========================================== -->
+<section class="section-dark">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="eyebrow">Competitive Landscape</p>
+      <h2>Competitor Scorecard</h2>
+      <p>Scored 1–10 across 8 criteria: Search, Reviews, Design, Mobile, Content, Social Proof, CTA, Speed.</p>
+    </div>
+
+    <div class="scorecard-grid stagger-children">
+      <div class="scorecard-row reveal">
+        <div>
+          <div class="scorecard-name">U-Haul</div>
+          <div class="scorecard-type" style="color:var(--text-secondary)">National Chain</div>
+        </div>
+        <div class="scorecard-grade" style="color:var(--score-excellent)">B+</div>
+        <div class="scorecard-bar-track">
+          <div class="scorecard-bar-fill" data-width="81.25" style="background: var(--score-excellent);"></div>
+        </div>
+        <div class="scorecard-score" style="color:var(--text-on-dark)">65</div>
+      </div>
+
+      <div class="scorecard-row reveal">
+        <div>
+          <div class="scorecard-name">Big Boy Trailer Rentals</div>
+          <div class="scorecard-type" style="color:var(--text-secondary)">Local Operator</div>
+        </div>
+        <div class="scorecard-grade" style="color:var(--score-good)">B−</div>
+        <div class="scorecard-bar-track">
+          <div class="scorecard-bar-fill" data-width="70" style="background: var(--score-good);"></div>
+        </div>
+        <div class="scorecard-score" style="color:var(--text-on-dark)">56</div>
+      </div>
+
+      <div class="scorecard-row reveal">
+        <div>
+          <div class="scorecard-name">Neighbors Trailer</div>
+          <div class="scorecard-type" style="color:var(--text-secondary)">P2P Marketplace</div>
+        </div>
+        <div class="scorecard-grade" style="color:var(--score-average)">C+</div>
+        <div class="scorecard-bar-track">
+          <div class="scorecard-bar-fill" data-width="65" style="background: var(--score-average);"></div>
+        </div>
+        <div class="scorecard-score" style="color:var(--text-on-dark)">52</div>
+      </div>
+
+      <div class="scorecard-row reveal">
+        <div>
+          <div class="scorecard-name">Alamo City Trailer Rentals</div>
+          <div class="scorecard-type" style="color:var(--text-secondary)">Local Operator</div>
+        </div>
+        <div class="scorecard-grade" style="color:var(--score-average)">C+</div>
+        <div class="scorecard-bar-track">
+          <div class="scorecard-bar-fill" data-width="63.75" style="background: var(--score-average);"></div>
+        </div>
+        <div class="scorecard-score" style="color:var(--text-on-dark)">51</div>
+      </div>
+
+      <div class="scorecard-row reveal">
+        <div>
+          <div class="scorecard-name">Hookup Trailer Rentals</div>
+          <div class="scorecard-type" style="color:var(--text-secondary)">Local Operator</div>
+        </div>
+        <div class="scorecard-grade" style="color:var(--score-average)">C</div>
+        <div class="scorecard-bar-track">
+          <div class="scorecard-bar-fill" data-width="62.5" style="background: var(--score-average);"></div>
+        </div>
+        <div class="scorecard-score" style="color:var(--text-on-dark)">50</div>
+      </div>
+
+      <div class="scorecard-row reveal">
+        <div>
+          <div class="scorecard-name">SA Beast Trailers</div>
+          <div class="scorecard-type" style="color:var(--text-secondary)">Local Operator</div>
+        </div>
+        <div class="scorecard-grade" style="color:var(--score-poor)">D+</div>
+        <div class="scorecard-bar-track">
+          <div class="scorecard-bar-fill" data-width="42.5" style="background: var(--score-poor);"></div>
+        </div>
+        <div class="scorecard-score" style="color:var(--text-on-dark)">34</div>
+      </div>
+
+      <!-- TARGET -->
+      <div class="scorecard-row is-target reveal">
+        <div>
+          <div class="scorecard-name">Hitch &amp; Go (Target)</div>
+          <div class="scorecard-type">Your Premium Target</div>
+        </div>
+        <div class="scorecard-grade" style="color:var(--gold-bright)">A</div>
+        <div class="scorecard-bar-track">
+          <div class="scorecard-bar-fill" data-width="93.75" style="background: var(--gold);"></div>
+        </div>
+        <div class="scorecard-score" style="color:var(--gold-bright)">75+</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     DETAILED SCORING TABLE
+     ========================================== -->
+<section class="section-darker">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="eyebrow">Detailed Breakdown</p>
+      <h2>Criteria Scores</h2>
+      <p>Each competitor evaluated across 8 key criteria, scored 1–10.</p>
+    </div>
+    <div class="score-table-wrapper reveal">
+      <table class="score-table">
+        <thead>
+          <tr>
+            <th>Criterion</th>
+            <th>U-Haul</th>
+            <th>Big Boy</th>
+            <th>ACTR</th>
+            <th>Neighbors</th>
+            <th>Hookup</th>
+            <th>SA Beast</th>
+            <th>Avg</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Search Visibility</td>
+            <td><span class="score-cell s-high">10</span></td>
+            <td><span class="score-cell s-mid">6</span></td>
+            <td><span class="score-cell s-mid">6</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">5</span></td>
+            <td><span class="score-cell s-low">3</span></td>
+            <td><span class="score-cell s-mid">6.2</span></td>
+          </tr>
+          <tr>
+            <td>Review Quality</td>
+            <td><span class="score-cell s-high">8</span></td>
+            <td><span class="score-cell s-high">8</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-high">8</span></td>
+            <td><span class="score-cell s-mid">6</span></td>
+            <td><span class="score-cell s-mid">7.3</span></td>
+          </tr>
+          <tr>
+            <td>Visual Design</td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">6</span></td>
+            <td><span class="score-cell s-mid">6</span></td>
+            <td><span class="score-cell s-mid">5</span></td>
+            <td><span class="score-cell s-mid">5</span></td>
+            <td><span class="score-cell s-low">3</span></td>
+            <td><span class="score-cell s-mid">5.3</span></td>
+          </tr>
+          <tr>
+            <td>Mobile Responsive</td>
+            <td><span class="score-cell s-high">8</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">6</span></td>
+            <td><span class="score-cell s-low">4</span></td>
+            <td><span class="score-cell s-mid">6.5</span></td>
+          </tr>
+          <tr>
+            <td>Content Depth</td>
+            <td><span class="score-cell s-high">8</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">6</span></td>
+            <td><span class="score-cell s-mid">6</span></td>
+            <td><span class="score-cell s-high">8</span></td>
+            <td><span class="score-cell s-low">4</span></td>
+            <td><span class="score-cell s-mid">6.5</span></td>
+          </tr>
+          <tr>
+            <td>Social Proof</td>
+            <td><span class="score-cell s-high">8</span></td>
+            <td><span class="score-cell s-high">8</span></td>
+            <td><span class="score-cell s-mid">5</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-low">4</span></td>
+            <td><span class="score-cell s-mid">6.5</span></td>
+          </tr>
+          <tr>
+            <td>CTA Strategy</td>
+            <td><span class="score-cell s-high">9</span></td>
+            <td><span class="score-cell s-high">8</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">6</span></td>
+            <td><span class="score-cell s-mid">5</span></td>
+            <td><span class="score-cell s-mid">7.0</span></td>
+          </tr>
+          <tr>
+            <td>Page Speed</td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">6</span></td>
+            <td><span class="score-cell s-mid">7</span></td>
+            <td><span class="score-cell s-mid">6</span></td>
+            <td><span class="score-cell s-mid">5</span></td>
+            <td><span class="score-cell s-mid">5</span></td>
+            <td><span class="score-cell s-mid">6.0</span></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>TOTAL</td>
+            <td>65</td>
+            <td>56</td>
+            <td>51</td>
+            <td>52</td>
+            <td>50</td>
+            <td>34</td>
+            <td>51.3</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     PRICING BENCHMARKS
+     ========================================== -->
+<section class="section-light">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="eyebrow">Pricing Intelligence</p>
+      <h2>Market Pricing Benchmarks</h2>
+      <p>Current daily rates across all active San Antonio trailer rental operators.</p>
+    </div>
+    <div class="pricing-grid stagger-children">
+      <div class="pricing-card reveal">
+        <div class="pricing-card-title">Utility Trailer</div>
+        <div class="pricing-card-subtitle">Small, 12–16ft</div>
+        <div class="pricing-value">~$70<span style="font-size:0.8rem;font-weight:400;color:var(--text-secondary)">/day avg</span></div>
+        <div style="margin:1rem 0">
+          <div class="pricing-range-bar"><div class="pricing-range-fill" style="left:0;width:100%;border-radius:3px"></div></div>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Lowest (ACTR)</span>
+          <span class="pricing-row-value">$50/day</span>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Highest (Hookup)</span>
+          <span class="pricing-row-value">$100/day</span>
+        </div>
+      </div>
+
+      <div class="pricing-card reveal">
+        <div class="pricing-card-title">Car Hauler</div>
+        <div class="pricing-card-subtitle">20–24ft</div>
+        <div class="pricing-value">~$128<span style="font-size:0.8rem;font-weight:400;color:var(--text-secondary)">/day avg</span></div>
+        <div style="margin:1rem 0">
+          <div class="pricing-range-bar"><div class="pricing-range-fill" style="left:0;width:100%;border-radius:3px"></div></div>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Lowest (SA Beast)</span>
+          <span class="pricing-row-value">$115/day</span>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Highest (Neighbors)</span>
+          <span class="pricing-row-value">$150/day</span>
+        </div>
+      </div>
+
+      <div class="pricing-card reveal">
+        <div class="pricing-card-title">Dump Trailer</div>
+        <div class="pricing-card-subtitle">14ft</div>
+        <div class="pricing-value">~$135<span style="font-size:0.8rem;font-weight:400;color:var(--text-secondary)">/day avg</span></div>
+        <div style="margin:1rem 0">
+          <div class="pricing-range-bar"><div class="pricing-range-fill" style="left:0;width:100%;border-radius:3px"></div></div>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Lowest</span>
+          <span class="pricing-row-value">$130/day</span>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Highest</span>
+          <span class="pricing-row-value">$150/day</span>
+        </div>
+      </div>
+
+      <div class="pricing-card reveal">
+        <div class="pricing-card-title">Enclosed Trailer</div>
+        <div class="pricing-card-subtitle">18–20ft</div>
+        <div class="pricing-value">~$135<span style="font-size:0.8rem;font-weight:400;color:var(--text-secondary)">/day avg</span></div>
+        <div style="margin:1rem 0">
+          <div class="pricing-range-bar"><div class="pricing-range-fill" style="left:0;width:100%;border-radius:3px"></div></div>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Lowest (Hookup)</span>
+          <span class="pricing-row-value">$125/day</span>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Highest (Hookup w/AC)</span>
+          <span class="pricing-row-value">$155/day</span>
+        </div>
+      </div>
+
+      <div class="pricing-card reveal">
+        <div class="pricing-card-title">Deckover / Flatbed</div>
+        <div class="pricing-card-subtitle">22–24ft</div>
+        <div class="pricing-value">~$143<span style="font-size:0.8rem;font-weight:400;color:var(--text-secondary)">/day avg</span></div>
+        <div style="margin:1rem 0">
+          <div class="pricing-range-bar"><div class="pricing-range-fill" style="left:0;width:100%;border-radius:3px"></div></div>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Lowest</span>
+          <span class="pricing-row-value">$140/day</span>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Highest</span>
+          <span class="pricing-row-value">$145/day</span>
+        </div>
+      </div>
+
+      <div class="pricing-card reveal">
+        <div class="pricing-card-title">Gooseneck</div>
+        <div class="pricing-card-subtitle">Heavy duty</div>
+        <div class="pricing-value">~$165<span style="font-size:0.8rem;font-weight:400;color:var(--text-secondary)">/day avg</span></div>
+        <div style="margin:1rem 0">
+          <div class="pricing-range-bar"><div class="pricing-range-fill" style="left:0;width:100%;border-radius:3px"></div></div>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Lowest</span>
+          <span class="pricing-row-value">$140/day</span>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-row-label">Highest (Big Boy)</span>
+          <span class="pricing-row-value">$190/day</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box reveal" style="margin-top:2.5rem;background:var(--surface-dark)">
+      <p>
+        <strong>Key observation:</strong> Price ranges are well-established. Customers in this market
+        are price-aware but not purely price-driven. Big Boy (2nd highest prices) has the
+        strongest local reputation — a direct correlation between <strong>premium positioning
+        and perceived quality</strong>. Reviews and trust signals convert more reliably than being the cheapest option.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     PATTERNS OF THE TOP 10%
+     ========================================== -->
+<section class="section-darker">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="eyebrow">Competitive Intelligence</p>
+      <h2>Patterns of the Top 10%</h2>
+      <p>Five patterns consistently separate top-scoring sites from the bottom.</p>
+    </div>
+    <div class="pattern-grid stagger-children">
+      <div class="pattern-card reveal" data-number="01">
+        <h4>Price Transparency</h4>
+        <p>Every top competitor shows prices on the page. No "call for pricing." Customers comparison-shop online before contacting anyone — hiding prices earns a back-button, not a call. U-Haul loses business daily because of this.</p>
+      </div>
+      <div class="pattern-card reveal" data-number="02">
+        <h4>Low-Friction CTA</h4>
+        <p>The highest-converting sites have a clear, specific next step — a booking form, reservation flow, or "Request This Trailer" button. Not just a phone number. Digital-first customers abandon sites without a digital-first option.</p>
+      </div>
+      <div class="pattern-card reveal" data-number="03">
+        <h4>Dual Contact Path</h4>
+        <p>Every top-5 operator shows BOTH a phone number AND a digital option. Local customers want the phone; mobile users want the tap-form. Serving both doubles conversion opportunities.</p>
+      </div>
+      <div class="pattern-card reveal" data-number="04">
+        <h4>Homepage Social Proof</h4>
+        <p>The two strongest local operators (Big Boy, Hookup) both show named reviews and star ratings on the homepage — not buried in a reviews tab. The weakest sites have zero social proof. Reviews convert fence-sitters.</p>
+      </div>
+      <div class="pattern-card reveal" data-number="05">
+        <h4>Real Photos + Full Specs</h4>
+        <p>Customers need to know if their tow vehicle can handle the trailer. Top sites show: dimensions, GVWR, payload capacity, hitch ball size, and real photos from multiple angles. This answers the #1 pre-rental question.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     THE WINNING BLUEPRINT
+     ========================================== -->
+<section class="section-light">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="eyebrow">The Playbook</p>
+      <h2>The Winning Blueprint</h2>
+      <p>Distilled from the top performers — every element a premium trailer rental site needs.</p>
+    </div>
+    <div class="blueprint-card reveal">
+      <div class="blueprint-card-title">The Winning Blueprint</div>
+      <div class="blueprint-grid">
+        <div class="blueprint-quadrant">
+          <h4>Page Structure</h4>
+          <ul class="blueprint-list">
+            <li>Hero with strong headline + phone number</li>
+            <li>Fleet page with per-trailer pricing &amp; specs</li>
+            <li>Photo gallery of real trailers (not stock)</li>
+            <li>"How It Works" — step-by-step process</li>
+            <li>Testimonials / Google reviews section</li>
+            <li>Service area with map or city list</li>
+            <li>Contact form + phone + address</li>
+            <li>"Why Us" with specific differentiators</li>
+          </ul>
+        </div>
+        <div class="blueprint-quadrant">
+          <h4>Trust Signals (Universal)</h4>
+          <ul class="blueprint-list">
+            <li>Years of experience prominently stated</li>
+            <li>Google review ratings displayed (4.5+)</li>
+            <li>Customer testimonials with real names</li>
+            <li>Professional photography of real fleet</li>
+            <li>"Locally owned &amp; operated" stated explicitly</li>
+            <li>Physical address + Google Maps embed</li>
+            <li>Business hours shown and consistent</li>
+            <li>"No surprise fees" pricing commitment</li>
+          </ul>
+        </div>
+        <div class="blueprint-quadrant">
+          <h4>Content Patterns</h4>
+          <ul class="blueprint-list">
+            <li>Trailer descriptions with use cases, not just specs</li>
+            <li>Local keywords: "San Antonio," "Bexar County"</li>
+            <li>FAQ sections answering towing &amp; hitch questions</li>
+            <li>"What to bring" checklist (license, insurance, vehicle)</li>
+            <li>Se Habla Espa&ntilde;ol — genuine bilingual content</li>
+            <li>Hitch requirements guide (ball sizes by trailer)</li>
+            <li>Emotional messaging: "Hitch up. Head out. Done."</li>
+          </ul>
+        </div>
+        <div class="blueprint-quadrant">
+          <h4>Design Patterns</h4>
+          <ul class="blueprint-list">
+            <li>Dark/industrial premium palette (not template blue)</li>
+            <li>Full-width hero with real trailer photography</li>
+            <li>Multi-page architecture for SEO depth</li>
+            <li>Mobile-first with tap-to-call on every page</li>
+            <li>Clear visual hierarchy with strong CTAs</li>
+            <li>Alternating dark/light sections for rhythm</li>
+            <li>Scroll-triggered animations (subtle, not flashy)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     MARKET GAPS / OPPORTUNITIES
+     ========================================== -->
+<section class="section-light">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="eyebrow">Opportunity Map</p>
+      <h2>5 Gaps No One Is Filling</h2>
+      <p>Open territory that represents first-mover advantage for Hitch &amp; Go.</p>
+    </div>
+    <div class="gap-grid stagger-children">
+      <div class="gap-card reveal">
+        <div class="gap-icon red">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <h4>Premium Visual Brand</h4>
+          <p>Every local competitor looks like a DIY template site. The first operator with a genuinely professional, modern website will be perceived as the premium choice by default — regardless of price.</p>
+          <div class="gap-impact">↑ Higher perceived value → resistance to price shopping</div>
+        </div>
+      </div>
+
+      <div class="gap-card reveal">
+        <div class="gap-icon gold">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div>
+          <h4>Speed / Ease Positioning</h4>
+          <p>Big Boy mentions "15 minutes in/out" as a feature. No local operator has built an entire brand around speed and simplicity. This is open positioning — "Hitch & Go" owns this naturally.</p>
+          <div class="gap-impact">↑ Differentiation that can't be copied without operational investment</div>
+        </div>
+      </div>
+
+      <div class="gap-card reveal">
+        <div class="gap-icon green">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </div>
+        <div>
+          <h4>SEO Content</h4>
+          <p>No local operator has meaningful content targeting "trailer rental san antonio", "utility trailer rental san antonio tx", or trailer type + city combinations. These are low-competition, high-intent keywords with no real incumbent.</p>
+          <div class="gap-impact">↑ Sustainable organic traffic within 3–6 months</div>
+        </div>
+      </div>
+
+      <div class="gap-card reveal">
+        <div class="gap-icon red">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <h4>Spanish-Language UX</h4>
+          <p>San Antonio is ~65% Hispanic. SA Beast lists "Se Habla Español" but has no Spanish content. A site with genuine bilingual UX would be the only one in the market — accessing an underserved majority demographic.</p>
+          <div class="gap-impact">↑ Access to 65% of the market no competitor truly serves</div>
+        </div>
+      </div>
+
+      <div class="gap-card reveal">
+        <div class="gap-icon gold">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div>
+          <h4>Transparent Rental Process</h4>
+          <p>No local competitor explains what to expect on pickup day. A clear "Here's exactly what happens" section would reduce friction and cancellations significantly — answering the question before they ask.</p>
+          <div class="gap-impact">↑ Lower abandonment, higher booking completion rate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     INDUSTRY BENCHMARK
+     ========================================== -->
+<section class="section-dark">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="eyebrow">Benchmark Targets</p>
+      <h2>Market Average vs. Premium Target</h2>
+      <p>Where the market sits today versus where Hitch &amp; Go should launch.</p>
+    </div>
+    <div class="benchmark-grid">
+      <div class="benchmark-row reveal">
+        <div class="benchmark-label" style="color:var(--text-on-dark)">Overall Score</div>
+        <div class="benchmark-bars">
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label">Market</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill current" data-width="64"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--text-secondary)">51/80</span>
+          </div>
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label" style="color:var(--gold-bright)">Target</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill target" data-width="94"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--gold-bright)">75+</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="benchmark-row reveal">
+        <div class="benchmark-label" style="color:var(--text-on-dark)">Visual Design</div>
+        <div class="benchmark-bars">
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label">Market</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill current" data-width="53"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--text-secondary)">5.3</span>
+          </div>
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label" style="color:var(--gold-bright)">Target</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill target" data-width="90"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--gold-bright)">9.0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="benchmark-row reveal">
+        <div class="benchmark-label" style="color:var(--text-on-dark)">Mobile</div>
+        <div class="benchmark-bars">
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label">Market</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill current" data-width="65"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--text-secondary)">6.5</span>
+          </div>
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label" style="color:var(--gold-bright)">Target</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill target" data-width="90"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--gold-bright)">9.0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="benchmark-row reveal">
+        <div class="benchmark-label" style="color:var(--text-on-dark)">CTA Clarity</div>
+        <div class="benchmark-bars">
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label">Market</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill current" data-width="70"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--text-secondary)">7.0</span>
+          </div>
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label" style="color:var(--gold-bright)">Target</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill target" data-width="90"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--gold-bright)">9.0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="benchmark-row reveal">
+        <div class="benchmark-label" style="color:var(--text-on-dark)">Social Proof</div>
+        <div class="benchmark-bars">
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label">Market</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill current" data-width="65"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--text-secondary)">6.5</span>
+          </div>
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label" style="color:var(--gold-bright)">Target</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill target" data-width="90"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--gold-bright)">9.0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="benchmark-row reveal">
+        <div class="benchmark-label" style="color:var(--text-on-dark)">Content Depth</div>
+        <div class="benchmark-bars">
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label">Market</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill current" data-width="65"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--text-secondary)">6.5</span>
+          </div>
+          <div class="benchmark-bar-row">
+            <span class="benchmark-bar-label" style="color:var(--gold-bright)">Target</span>
+            <div class="benchmark-bar-track"><div class="benchmark-bar-fill target" data-width="90"></div></div>
+            <span class="benchmark-bar-value" style="color:var(--gold-bright)">9.0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     RECOMMENDED STRATEGY
+     ========================================== -->
+<section class="section-light">
+  <div class="container">
+    <div class="section-header reveal">
+      <p class="eyebrow">Recommended Approach</p>
+      <h2>7 Priority Actions</h2>
+      <p>Implementing all 7 puts Alamo City Hitch &amp; Go in a category of one among local operators.</p>
+    </div>
+
+    <div class="highlight-box reveal" style="background:var(--primary);margin-bottom:2.5rem">
+      <p style="font-family:var(--font-heading);font-size:1.3rem;font-weight:700;color:var(--gold-bright);margin-bottom:0.5rem">
+        Position as: "San Antonio's fastest, most transparent local trailer rental."
+      </p>
+      <p>This directly attacks U-Haul's weaknesses (impersonal, hidden pricing) and
+      differentiates from local competitors (who compete on price, not experience).</p>
+    </div>
+
+    <div class="strategy-list stagger-children">
+      <div class="strategy-item reveal">
+        <div class="strategy-number">1</div>
+        <div>
+          <h4>Build a Premium Digital Presence</h4>
+          <p>Visually outclass every local competitor from first impression. Apple/Stripe-level design in a market of WordPress templates.</p>
+          <span class="strategy-tag">Highest Impact</span>
+        </div>
+      </div>
+
+      <div class="strategy-item reveal">
+        <div class="strategy-number">2</div>
+        <div>
+          <h4>Show All Prices Upfront</h4>
+          <p>Eliminate the biggest friction point vs. U-Haul. No "call for pricing" — see exactly what you'll pay before you call.</p>
+          <span class="strategy-tag">Conversion Critical</span>
+        </div>
+      </div>
+
+      <div class="strategy-item reveal">
+        <div class="strategy-number">3</div>
+        <div>
+          <h4>Dual-Path Contact: Form + Phone</h4>
+          <p>Booking request form alongside tap-to-call. Captures after-hours leads and serves digital-first mobile customers.</p>
+          <span class="strategy-tag">Doubles Conversion</span>
+        </div>
+      </div>
+
+      <div class="strategy-item reveal">
+        <div class="strategy-number">4</div>
+        <div>
+          <h4>Google Reviews on Homepage</h4>
+          <p>Named reviews with star ratings, visible above the fold. "Marcus from Helotes" outperforms "John D." dramatically.</p>
+          <span class="strategy-tag">Social Proof</span>
+        </div>
+      </div>
+
+      <div class="strategy-item reveal">
+        <div class="strategy-number">5</div>
+        <div>
+          <h4>SEO Content by Trailer Type + City</h4>
+          <p>Target "utility trailer rental san antonio", "car hauler rental san antonio tx" — low-competition, high-intent keywords with no real incumbent.</p>
+          <span class="strategy-tag">Organic Growth</span>
+        </div>
+      </div>
+
+      <div class="strategy-item reveal">
+        <div class="strategy-number">6</div>
+        <div>
+          <h4>Se Habla Español — Mean It</h4>
+          <p>Spanish-language CTAs and key content for the 65% Hispanic market no competitor truly serves.</p>
+          <span class="strategy-tag">Underserved Market</span>
+        </div>
+      </div>
+
+      <div class="strategy-item reveal">
+        <div class="strategy-number">7</div>
+        <div>
+          <h4>"How It Works" — Answer Before They Ask</h4>
+          <p>Be the only operator who explains what happens when you show up. Hitch requirements, what to bring, exact pickup process.</p>
+          <span class="strategy-tag">Friction Reduction</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     FOOTER
+     ========================================== -->
+<footer class="report-footer">
+  <div class="container">
+    <div class="footer-divider"></div>
+    <p>
+      <strong>San Antonio Trailer Rental Market Analysis</strong><br>
+      Prepared for Alamo City Hitch &amp; Go Co — April 2026<br><br>
+      Based on live market research: competitor scraping, pricing audits, and UX evaluation.<br>
+      Competitor information is current as of research date and subject to change.<br><br>
+      <span style="color:var(--gold-bright)">Ready to build the site that owns this market?</span>
+    </p>
+  </div>
+</footer>
+
+<!-- ==========================================
+     JAVASCRIPT — Scroll Animations & Counters
+     All inline, zero dependencies.
+     ========================================== -->
+<script>
+(function() {
+  'use strict';
+
+  // Respect reduced motion
+  var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- Intersection Observer for .reveal elements ----
+  var reveals = document.querySelectorAll('.reveal');
+
+  if (prefersReducedMotion) {
+    // Show everything immediately
+    reveals.forEach(function(el) {
+      el.classList.add('visible');
+    });
+  } else {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    reveals.forEach(function(el) { observer.observe(el); });
+  }
+
+  // ---- Animate score bars on scroll ----
+  var bars = document.querySelectorAll('[data-width]');
+
+  var barObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        var width = entry.target.getAttribute('data-width');
+        if (prefersReducedMotion) {
+          entry.target.style.width = width + '%';
+        } else {
+          requestAnimationFrame(function() {
+            entry.target.style.width = width + '%';
+          });
+        }
+        barObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  bars.forEach(function(bar) { barObserver.observe(bar); });
+
+  // ---- Counter animation for metric numbers ----
+  var counters = document.querySelectorAll('[data-count]');
+
+  var counterObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        var el = entry.target;
+        var target = parseInt(el.getAttribute('data-count'), 10);
+
+        if (prefersReducedMotion) {
+          el.textContent = target;
+        } else {
+          var start = 0;
+          var duration = 1200;
+          var startTime = null;
+
+          function animate(timestamp) {
+            if (!startTime) startTime = timestamp;
+            var progress = Math.min((timestamp - startTime) / duration, 1);
+            // Ease out cubic
+            var eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(start + (target - start) * eased);
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            }
+          }
+
+          requestAnimationFrame(animate);
+        }
+
+        counterObserver.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  counters.forEach(function(counter) { counterObserver.observe(counter); });
+})();
+</script>
+
+</body>
+</html>

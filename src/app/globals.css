@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+/*
+ * Industrial Editorial Design System
+ * Source: Google Stitch mockups (Landing Page, Customer Dashboard, Trailer Selection)
+ * North Star: "The Industrial Architect" — rugged yet precision-engineered
+ */
+
+@theme {
+  /* ─── Surface Hierarchy (Dark Chrome Foundation) ─── */
+  --color-background: #101418;
+  --color-surface: #101418;
+  --color-surface-dim: #0a0c0e;
+  --color-surface-bright: #363a3e;
+  --color-surface-container-lowest: #0b0f12;
+  --color-surface-container-low: #181c20;
+  --color-surface-container: #1c2024;
+  --color-surface-container-high: #262a2e;
+  --color-surface-container-highest: #313539;
+  --color-surface-variant: #2a2d30;
+
+  /* ─── Primary (Rich Red — conversion paths only) ─── */
+  --color-primary: #ffb4ac;
+  --color-primary-action: #b91c1c;
+  --color-primary-container: #520004;
+  --color-on-primary: #690007;
+  --color-on-primary-container: #f5534b;
+  --color-inverse-primary: #b52424;
+
+  /* ─── Secondary (Trust Navy) ─── */
+  --color-secondary: #bfc2ff;
+  --color-secondary-container: #3239a3;
+  --color-on-secondary: #181d8c;
+  --color-on-secondary-container: #a9afff;
+
+  /* ─── Tertiary (Neutral Chrome) ─── */
+  --color-tertiary: #c6c6c7;
+  --color-tertiary-container: #232525;
+  --color-on-tertiary: #2f3131;
+  --color-on-tertiary-container: #8b8c8c;
+
+  /* ─── Text / On-Surface ─── */
+  --color-on-background: #e0e3e8;
+  --color-on-surface: #e0e3e8;
+  --color-on-surface-variant: #c5c6ca;
+
+  /* ─── Borders & Outlines ─── */
+  --color-outline: #8f9194;
+  --color-outline-variant: #44474a;
+
+  /* ─── Error ─── */
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error: #690005;
+  --color-on-error-container: #ffdad6;
+
+  /* ─── Inverse ─── */
+  --color-inverse-surface: #e0e3e8;
+  --color-inverse-on-surface: #2d3135;
+
+  /* ─── Surface Tint ─── */
+  --color-surface-tint: #ffb4ac;
+
+  /* ─── Border Radius (Machined Metal — NO soft roundedness) ─── */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+
+  /* ─── Fonts ─── */
+  --font-headline: "Space Grotesk", sans-serif;
+  --font-body: "Manrope", sans-serif;
+  --font-label: "Manrope", sans-serif;
+
+  /* ─── Ambient Shadows (felt, not seen) ─── */
+  --shadow-ambient: 0px 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+/* ─── Base Styles ─── */
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-background);
+  color: var(--color-on-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .headline {
+  font-family: var(--font-headline);
+}
+
+/* ─── Selection ─── */
+::selection {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* ─── Glass Panel (nav, floating action panels) ─── */
+.glass-panel {
+  backdrop-filter: blur(20px);
+  background: rgba(28, 32, 36, 0.7);
+}
+
+/* ─── Editorial Grid ─── */
+.editorial-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+/* ─── Ghost Border (input fields — 15% opacity outline-variant) ─── */
+.ghost-border {
+  border: 1px solid color-mix(in srgb, var(--color-outline-variant) 15%, transparent);
+}
+
+/* ─── Branding Split Background (Trailer Selection page) ─── */
+.branding-split {
+  background: linear-gradient(135deg, #1a1c1e 0%, #1a1c1e 65%, #4a0404 100%);
+  position: relative;
+}
+
+/* ─── Material Symbols ─── */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
