@@ -17,14 +17,19 @@ export default function FleetPage() {
     <>
       <Navbar />
 
+      <div id="main-content" />
       {/* Hero */}
-      <section className="relative min-h-[70vh] flex items-center pt-20 overflow-hidden branding-split">
+      <section
+        className="relative min-h-[70vh] flex items-center pt-20 overflow-hidden branding-split"
+        aria-labelledby="fleet-hero-heading"
+      >
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent z-10" />
           <Image
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDASxFGFJ2br1S88eOFnq2Er0FNnukarTF11nSa18Wvbm94srS-Or5mE9HmsSkqGnbUrjWFv35Cei78Rs--PfYrvRawKm8mGb1c0UxYivyhaVGPFzr5uh9u8pjRCd8BpDNOu1px6JILHEUNP2t07vmc_U9o_2VufiGQXKMiNntgc9OO2_-l4XoWtf1vxkCpuo4aqt7RoEa7pprI7gtgJZOtp74yqRqdLrQ9lY7soBkBuHSXnoTTxXvKHc4kLetkjoYgKuFfZnHEAc"
-            alt="Industrial heavy duty trailer on dark asphalt with dramatic sunset lighting"
+            alt="Industrial heavy-duty trailer on dark asphalt with dramatic sunset lighting"
             fill
+            sizes="100vw"
             className="object-cover grayscale opacity-30"
             priority
           />
@@ -34,7 +39,7 @@ export default function FleetPage() {
             <span className="inline-block px-3 py-1 bg-primary-action/10 border border-primary-action/20 text-primary text-[10px] font-bold tracking-[0.3em] uppercase mb-6">
               Industrial Precision Hauling
             </span>
-            <h1 className="text-7xl md:text-9xl font-headline font-bold leading-[0.85] tracking-tighter uppercase mb-8 text-white">
+            <h1 id="fleet-hero-heading" className="text-6xl sm:text-7xl md:text-9xl font-headline font-bold leading-[0.85] tracking-tighter uppercase mb-8 text-white">
               HEAVY DUTY.
               <br />
               <span
@@ -52,14 +57,14 @@ export default function FleetPage() {
             <div className="flex flex-wrap gap-6">
               <a
                 href="#fleet"
-                className="bg-primary-action hover:bg-red-800 text-white px-10 py-5 font-headline font-bold uppercase tracking-widest transition-all flex items-center gap-3 active:scale-95"
+                className="bg-primary-action hover:bg-red-800 text-white px-10 py-5 min-h-[44px] font-headline font-bold uppercase tracking-widest transition-all flex items-center gap-3 active:scale-95"
               >
                 VIEW THE FLEET
                 <Icon name="arrow_forward" className="text-sm" />
               </a>
               <a
                 href="/locations"
-                className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-10 py-5 font-headline font-bold uppercase tracking-widest transition-all"
+                className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-10 py-5 min-h-[44px] font-headline font-bold uppercase tracking-widest transition-all flex items-center"
               >
                 OUR LOCATIONS
               </a>

@@ -49,11 +49,17 @@ export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
         {/* Name */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
-              First Name
+            <label
+              htmlFor="booking-first-name"
+              className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2"
+            >
+              First Name <span className="text-error" aria-hidden="true">*</span>
             </label>
             <input
+              id="booking-first-name"
               type="text"
+              required
+              autoComplete="given-name"
               value={formData.firstName}
               onChange={(e) => updateForm({ firstName: e.target.value })}
               placeholder="John"
@@ -61,11 +67,17 @@ export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
-              Last Name
+            <label
+              htmlFor="booking-last-name"
+              className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2"
+            >
+              Last Name <span className="text-error" aria-hidden="true">*</span>
             </label>
             <input
+              id="booking-last-name"
               type="text"
+              required
+              autoComplete="family-name"
               value={formData.lastName}
               onChange={(e) => updateForm({ lastName: e.target.value })}
               placeholder="Doe"
@@ -77,11 +89,17 @@ export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
         {/* Contact */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
-              Email
+            <label
+              htmlFor="booking-email"
+              className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2"
+            >
+              Email <span className="text-error" aria-hidden="true">*</span>
             </label>
             <input
+              id="booking-email"
               type="email"
+              required
+              autoComplete="email"
               value={formData.email}
               onChange={(e) => updateForm({ email: e.target.value })}
               placeholder="john@example.com"
@@ -89,11 +107,17 @@ export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
-              Phone
+            <label
+              htmlFor="booking-phone"
+              className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2"
+            >
+              Phone <span className="text-error" aria-hidden="true">*</span>
             </label>
             <input
+              id="booking-phone"
               type="tel"
+              required
+              autoComplete="tel"
               value={formData.phone}
               onChange={(e) => updateForm({ phone: e.target.value })}
               placeholder="(210) 555-0123"
@@ -104,11 +128,17 @@ export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
 
         {/* Address */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
-            Street Address
+          <label
+            htmlFor="booking-street"
+            className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2"
+          >
+            Street Address <span className="text-error" aria-hidden="true">*</span>
           </label>
           <input
+            id="booking-street"
             type="text"
+            required
+            autoComplete="street-address"
             value={formData.address.street}
             onChange={(e) =>
               updateForm({
@@ -121,11 +151,17 @@ export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
-              City
+            <label
+              htmlFor="booking-city"
+              className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2"
+            >
+              City <span className="text-error" aria-hidden="true">*</span>
             </label>
             <input
+              id="booking-city"
               type="text"
+              required
+              autoComplete="address-level2"
               value={formData.address.city}
               onChange={(e) =>
                 updateForm({
@@ -137,11 +173,16 @@ export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+            <label
+              htmlFor="booking-state"
+              className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2"
+            >
               State
             </label>
             <input
+              id="booking-state"
               type="text"
+              autoComplete="address-level1"
               value={formData.address.state}
               onChange={(e) =>
                 updateForm({
@@ -153,11 +194,19 @@ export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
-              ZIP
+            <label
+              htmlFor="booking-zip"
+              className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2"
+            >
+              ZIP <span className="text-error" aria-hidden="true">*</span>
             </label>
             <input
+              id="booking-zip"
               type="text"
+              required
+              autoComplete="postal-code"
+              inputMode="numeric"
+              pattern="[0-9]{5}"
               value={formData.address.zip}
               onChange={(e) =>
                 updateForm({
@@ -172,10 +221,14 @@ export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
 
         {/* Referral Source */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+          <label
+            htmlFor="booking-referral"
+            className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2"
+          >
             How did you hear about us?
           </label>
           <select
+            id="booking-referral"
             value={formData.referralSource}
             onChange={(e) =>
               updateForm({
@@ -196,12 +249,16 @@ export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
         {/* Dynamic detail input for Referral / Other */}
         {showDetailInput && (
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+            <label
+              htmlFor="booking-referral-detail"
+              className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2"
+            >
               {formData.referralSource === "referral"
                 ? "Who referred you?"
                 : "Please specify"}
             </label>
             <input
+              id="booking-referral-detail"
               type="text"
               value={formData.referralDetail}
               onChange={(e) => updateForm({ referralDetail: e.target.value })}
@@ -220,14 +277,14 @@ export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
       <div className="flex gap-4 mt-12">
         <button
           onClick={onBack}
-          className="flex-1 bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest hover:bg-surface-bright transition-all"
+          className="flex-1 min-h-[44px] bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest hover:bg-surface-bright transition-all"
         >
           Back
         </button>
         <button
           onClick={onNext}
           disabled={!isValid}
-          className="flex-1 bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-800 transition-all active:scale-[0.98]"
+          className="flex-1 min-h-[44px] bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-800 transition-all active:scale-[0.98]"
         >
           Review Booking
         </button>

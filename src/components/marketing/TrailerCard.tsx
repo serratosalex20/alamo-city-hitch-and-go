@@ -38,6 +38,7 @@ export function TrailerCard({ trailer }: TrailerCardProps) {
           src={trailer.imageUrl}
           alt={`${trailer.name} — heavy-duty trailer available for rental in San Antonio`}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px"
           className="object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
         />
       </div>
@@ -78,7 +79,8 @@ export function TrailerCard({ trailer }: TrailerCardProps) {
         {/* CTA */}
         <Link
           href={`/book?trailer=${trailer.slug}`}
-          className="w-full bg-white/5 group-hover:bg-primary-action group-hover:text-white text-white py-4 font-headline font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/5"
+          aria-label={`Rent the ${trailer.name} — $${trailer.pricing.rate24h} per day`}
+          className="w-full min-h-[44px] bg-white/5 group-hover:bg-primary-action group-hover:text-white text-white py-4 font-headline font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/5"
         >
           RENT THIS TRAILER
           <Icon name="add_shopping_cart" className="text-sm" />

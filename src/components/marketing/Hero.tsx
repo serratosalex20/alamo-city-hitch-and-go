@@ -1,21 +1,27 @@
 import Image from "next/image";
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { Icon } from "@/components/ui/Icon";
 
 export function Hero() {
   return (
-    <section className="relative z-10 px-8 md:px-16 pt-12 pb-24 max-w-7xl mx-auto">
+    <section
+      className="relative z-10 px-8 md:px-16 pt-12 pb-24 max-w-7xl mx-auto"
+      aria-labelledby="hero-heading"
+    >
       <div className="editorial-grid gap-y-12">
         {/* Main Headline */}
         <div className="col-span-12 lg:col-span-8">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-6" aria-hidden="true">
             <div className="h-[2px] w-12 bg-primary" />
             <span className="font-headline text-primary tracking-[0.3em] uppercase text-xs font-bold">
               Industrial Grade Reliability
             </span>
           </div>
-          <h1 className="font-headline text-5xl md:text-8xl font-bold tracking-tighter text-on-surface leading-[0.9] mb-8">
+          <h1
+            id="hero-heading"
+            className="font-headline text-5xl md:text-8xl font-bold tracking-tighter text-on-surface leading-[0.9] mb-8"
+          >
             SAN ANTONIO&apos;S <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
               TOP-RATED
@@ -28,7 +34,7 @@ export function Hero() {
         {/* Trust Badge */}
         <div className="col-span-12 lg:col-span-4 flex lg:justify-end items-start pt-4">
           <GlassPanel className="p-6 flex flex-col items-center gap-2">
-            <div className="flex gap-1 text-primary">
+            <div className="flex gap-1 text-primary" aria-label="5 out of 5 stars" role="img">
               {[...Array(5)].map((_, i) => (
                 <Icon key={i} name="star" filled className="text-xl" />
               ))}
@@ -50,13 +56,19 @@ export function Hero() {
             <span className="text-on-surface font-bold">Pull &amp; Go.</span>
           </p>
           <div className="flex flex-col sm:flex-row gap-6">
-            <Button
-              variant="primary"
-              icon={<Icon name="arrow_forward" />}
+            <Link
+              href="/book"
+              className="bg-primary-action text-white hover:bg-red-800 transition-all duration-300 font-headline font-black tracking-widest uppercase px-10 py-5 text-lg flex items-center justify-center gap-3 active:scale-95 min-h-[44px]"
             >
               Book Your Trailer
-            </Button>
-            <Button variant="secondary">View Fleet</Button>
+              <Icon name="arrow_forward" />
+            </Link>
+            <Link
+              href="/fleet"
+              className="bg-surface-container-highest text-on-surface hover:bg-surface-bright transition-colors font-headline font-bold tracking-widest uppercase border-b-2 border-outline-variant px-10 py-5 text-lg flex items-center justify-center gap-3 min-h-[44px]"
+            >
+              View Fleet
+            </Link>
           </div>
         </div>
 
@@ -65,8 +77,9 @@ export function Hero() {
           <div className="relative aspect-[21/9] w-full overflow-hidden rounded-sm bg-surface-container">
             <Image
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9F4jtDJSPvB_viF6QVpEt1l9eCCFxSWf49RL3C9aD_SbOLgXimAwCR9I4tQGc80fENxPUXygJwz1Qu5Ssijps0Ii4rMwtXB8VWLKP1bPLhRSTLYqsHmDDj3tIDBv8iKHunWTsAxdiCObm1II7npg7y_HNJ2vu--OuvuhNfu3cDNtaKYejqYyjVN7mzIDCIkNJcWZVCtAUHG97Fl_lk_ez-LOqWZVADNB9t5i1vFF-R96C0MtWn1VtgrMh4ME9KVGlO1wqA2furYs"
-              alt="Professional Trailer Fleet — Modern heavy-duty utility trailer parked on dark asphalt with San Antonio industrial skyline during dramatic dusk lighting"
+              alt="Professional trailer fleet — modern heavy-duty utility trailer parked on dark asphalt with San Antonio industrial skyline during dramatic dusk lighting"
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1100px"
               className="object-cover grayscale brightness-75 hover:grayscale-0 transition-all duration-700"
               priority
             />

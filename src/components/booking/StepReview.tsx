@@ -143,13 +143,14 @@ export function StepReview({ formData, onBack }: Props) {
       <div className="flex gap-4 mt-12">
         <button
           onClick={onBack}
-          className="flex-1 bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest hover:bg-surface-bright transition-all"
+          className="flex-1 min-h-[44px] bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest hover:bg-surface-bright transition-all"
         >
           Back
         </button>
         <button
           onClick={handleSubmit}
-          className="flex-1 bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest hover:bg-red-800 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+          aria-label="Secure booking — process payment and confirm reservation"
+          className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest hover:bg-red-800 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
         >
           <Icon name="lock" className="text-sm" />
           Secure Booking

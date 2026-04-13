@@ -17,7 +17,10 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Alamo City Hitch & Go Co. | San Antonio's Top-Rated Trailer Rentals",
+  title: {
+    default: "Alamo City Hitch & Go Co. | San Antonio's Top-Rated Trailer Rentals",
+    template: "%s | Alamo City Hitch & Go Co.",
+  },
   description:
     "Hassle-Free Trailer Rentals in San Antonio, TX. Heavy-duty hauling, zero paperwork headaches. Pull & Go.",
   keywords: [
@@ -26,13 +29,40 @@ export const metadata: Metadata = {
     "utility trailer rental san antonio",
     "car hauler rental san antonio",
     "enclosed trailer rental san antonio",
+    "heavy duty trailer rental texas",
+    "san antonio trailer rentals near me",
   ],
+  metadataBase: new URL("https://alamocityhitch.com"),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Alamo City Hitch & Go Co.",
     description:
       "San Antonio's top-rated trailer rentals. Industrial-grade equipment, hassle-free process.",
     locale: "en_US",
     type: "website",
+    siteName: "Alamo City Hitch & Go Co.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Alamo City Hitch & Go Co.",
+    description:
+      "San Antonio's top-rated trailer rentals. Industrial-grade equipment, hassle-free process.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  other: {
+    "theme-color": "#101418",
   },
 };
 
@@ -52,6 +82,9 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${manrope.variable} min-h-screen`}
       >
+        <a href="#main-content" className="skip-to-content">
+          Skip to main content
+        </a>
         {children}
       </body>
     </html>

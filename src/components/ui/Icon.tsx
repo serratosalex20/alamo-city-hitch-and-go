@@ -3,6 +3,8 @@ interface IconProps {
   filled?: boolean;
   className?: string;
   size?: string;
+  /** Set to a string to make icon meaningful for screen readers; otherwise hidden */
+  ariaLabel?: string;
 }
 
 export function Icon({
@@ -10,6 +12,7 @@ export function Icon({
   filled = false,
   className = "",
   size = "text-2xl",
+  ariaLabel,
 }: IconProps) {
   return (
     <span
@@ -19,6 +22,9 @@ export function Icon({
           ? { fontVariationSettings: "'FILL' 1" }
           : undefined
       }
+      aria-hidden={ariaLabel ? undefined : true}
+      aria-label={ariaLabel}
+      role={ariaLabel ? "img" : undefined}
     >
       {name}
     </span>

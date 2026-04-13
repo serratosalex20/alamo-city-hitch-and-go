@@ -9,7 +9,10 @@ const footerLinks = [
 
 export function Footer() {
   return (
-    <footer className="w-full py-12 bg-surface-container-high border-t border-white/10">
+    <footer
+      className="w-full py-12 bg-surface-container-high border-t border-white/10"
+      role="contentinfo"
+    >
       <div className="flex flex-col md:flex-row justify-between items-center px-12 gap-6">
         <div className="flex flex-col items-center md:items-start gap-2">
           <span className="text-lg font-black text-white font-headline tracking-widest uppercase">
@@ -20,17 +23,17 @@ export function Footer() {
             PRECISION HAULING.
           </span>
         </div>
-        <div className="flex gap-8">
+        <nav aria-label="Footer navigation" className="flex gap-8">
           {footerLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="font-body text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+              className="font-body text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors min-h-[44px] flex items-center"
             >
               {link.label}
             </Link>
           ))}
-        </div>
+        </nav>
       </div>
     </footer>
   );

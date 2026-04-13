@@ -66,51 +66,58 @@ export default function BookPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen pt-28 pb-24 px-4 md:px-8 max-w-4xl mx-auto">
+      <main id="main-content" className="min-h-screen pt-28 pb-24 px-4 md:px-8 max-w-4xl mx-auto">
         {/* Step Indicator */}
-        <div className="flex items-center justify-center gap-2 mb-16">
-          {steps.map((step, i) => (
-            <div key={step.label} className="flex items-center">
-              <button
-                onClick={() => i < currentStep && setCurrentStep(i)}
-                disabled={i > currentStep}
-                className={`flex items-center gap-2 px-4 py-2 transition-all ${
-                  i === currentStep
-                    ? "bg-primary-action text-white"
-                    : i < currentStep
-                      ? "bg-surface-container-high text-primary cursor-pointer"
-                      : "bg-surface-container text-on-surface-variant opacity-50 cursor-not-allowed"
-                }`}
-              >
-                <Icon name={step.icon} className="text-sm" />
-                <span className="hidden sm:inline font-headline text-xs font-bold uppercase tracking-wider">
-                  {step.label}
-                </span>
-              </button>
-              {i < steps.length - 1 && (
-                <div
-                  className={`w-8 h-[2px] mx-1 ${
-                    i < currentStep ? "bg-primary" : "bg-surface-container-highest"
+        <nav aria-label="Booking progress" className="flex items-center justify-center gap-2 mb-16">
+          <ol className="flex items-center gap-2 list-none p-0 m-0">
+            {steps.map((step, i) => (
+              <li key={step.label} className="flex items-center">
+                <button
+                  onClick={() => i < currentStep && setCurrentStep(i)}
+                  disabled={i > currentStep}
+                  aria-current={i === currentStep ? "step" : undefined}
+                  aria-label={`Step ${i + 1}: ${step.label}${i === currentStep ? " (current)" : i < currentStep ? " (completed)" : ""}`}
+                  className={`flex items-center gap-2 px-4 py-3 min-h-[44px] min-w-[44px] transition-all ${
+                    i === currentStep
+                      ? "bg-primary-action text-white"
+                      : i < currentStep
+                        ? "bg-surface-container-high text-primary cursor-pointer"
+                        : "bg-surface-container text-on-surface-variant opacity-50 cursor-not-allowed"
                   }`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
+                >
+                  <Icon name={step.icon} className="text-sm" />
+                  <span className="hidden sm:inline font-headline text-xs font-bold uppercase tracking-wider">
+                    {step.label}
+                  </span>
+                </button>
+                {i < steps.length - 1 && (
+                  <div
+                    aria-hidden="true"
+                    className={`w-8 h-[2px] mx-1 ${
+                      i < currentStep ? "bg-primary" : "bg-surface-container-highest"
+                    }`}
+                  />
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
 
-        {/* Step Content */}
-        {currentStep === 0 && (
-          <StepTrailer formData={formData} updateForm={updateForm} onNext={next} />
-        )}
-        {currentStep === 1 && (
-          <StepDateTime formData={formData} updateForm={updateForm} onNext={next} onBack={back} />
-        )}
-        {currentStep === 2 && (
-          <StepCustomer formData={formData} updateForm={updateForm} onNext={next} onBack={back} />
-        )}
-        {currentStep === 3 && (
-          <StepReview formData={formData} onBack={back} />
-        )}
+        {/* Step Content — aria-live announces step changes to screen readers */}
+        <div aria-live="polite" aria-atomic="true">
+          {currentStep === 0 && (
+            <StepTrailer formData={formData} updateForm={updateForm} onNext={next} />
+          )}
+          {currentStep === 1 && (
+            <StepDateTime formData={formData} updateForm={updateForm} onNext={next} onBack={back} />
+          )}
+          {currentStep === 2 && (
+            <StepCustomer formData={formData} updateForm={updateForm} onNext={next} onBack={back} />
+          )}
+          {currentStep === 3 && (
+            <StepReview formData={formData} onBack={back} />
+          )}
+        </div>
       </main>
       <Footer />
     </>

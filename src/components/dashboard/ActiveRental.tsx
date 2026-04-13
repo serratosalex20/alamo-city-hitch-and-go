@@ -18,9 +18,12 @@ export function ActiveRental({
   const progress = ((totalHours - hoursRemaining) / totalHours) * 100;
 
   return (
-    <div className="bg-surface-container-high rounded-lg p-6 shadow-2xl relative overflow-hidden">
+    <section
+      className="bg-surface-container-high rounded-lg p-6 shadow-2xl relative overflow-hidden"
+      aria-label="Active rental status"
+    >
       {/* Decorative truck icon */}
-      <div className="absolute top-0 right-0 p-4 opacity-10">
+      <div className="absolute top-0 right-0 p-4 opacity-10" aria-hidden="true">
         <Icon name="local_shipping" filled className="text-8xl" />
       </div>
 
@@ -40,7 +43,7 @@ export function ActiveRental({
         {/* Time remaining */}
         <div className="space-y-3">
           <div className="flex justify-between items-end">
-            <span className="text-xs font-bold tracking-wider text-white uppercase">
+            <span id="rental-progress-label" className="text-xs font-bold tracking-wider text-white uppercase">
               Time Remaining
             </span>
             <span className="text-xl font-headline font-bold text-red-500">
@@ -50,6 +53,12 @@ export function ActiveRental({
           </div>
           <div className="h-3 w-full bg-surface-container-lowest rounded-full overflow-hidden p-[2px]">
             <div
+              role="progressbar"
+              aria-valuenow={Math.round(progress)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-labelledby="rental-progress-label"
+              aria-valuetext={`${hoursRemaining} hours remaining out of ${totalHours} hours`}
               className="h-full bg-gradient-to-r from-red-800 to-red-500 rounded-full transition-all duration-1000"
               style={{ width: `${progress}%` }}
             />
@@ -57,11 +66,14 @@ export function ActiveRental({
         </div>
 
         {/* Extend button */}
-        <button className="w-full bg-gradient-to-r from-[#B22222] to-[#f5534b] text-white py-4 rounded-md font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all duration-150">
+        <button
+          aria-label="Extend rental time by 4 hours"
+          className="w-full min-h-[44px] bg-gradient-to-r from-[#B22222] to-[#f5534b] text-white py-4 rounded-md font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all duration-150"
+        >
           <Icon name="timer_10_alt_1" className="text-sm" />
           Extend Rental Time (+4 Hours)
         </button>
       </div>
-    </div>
+    </section>
   );
 }

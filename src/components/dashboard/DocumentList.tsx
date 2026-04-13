@@ -27,16 +27,16 @@ const documents: Document[] = [
 
 export function DocumentList() {
   return (
-    <section className="space-y-4">
+    <section aria-labelledby="documents-heading" className="space-y-4">
       <div className="flex items-center gap-2">
         <Icon name="folder_open" filled className="text-red-500" />
-        <h3 className="text-sm font-bold tracking-widest text-white uppercase">
+        <h2 id="documents-heading" className="text-sm font-bold tracking-widest text-white uppercase">
           My Documents
-        </h3>
+        </h2>
       </div>
-      <div className="space-y-3">
+      <ul className="space-y-3 list-none p-0 m-0">
         {documents.map((doc) => (
-          <div
+          <li
             key={doc.name}
             className={`bg-surface-container rounded-lg p-4 flex items-center justify-between border-l-4 ${doc.accent}`}
           >
@@ -51,12 +51,15 @@ export function DocumentList() {
                 </p>
               </div>
             </div>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+            <button
+              aria-label={`Download ${doc.name}`}
+              className="w-11 h-11 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            >
               <Icon name="download" className="text-xl" />
             </button>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </section>
   );
 }

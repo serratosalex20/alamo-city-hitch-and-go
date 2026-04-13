@@ -3,11 +3,51 @@ import { Hero } from "@/components/marketing/Hero";
 import { FeatureGrid } from "@/components/marketing/FeatureGrid";
 import { Footer } from "@/components/marketing/Footer";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: "Alamo City Hitch & Go Co.",
+  description:
+    "San Antonio's top-rated trailer rentals. Industrial-grade utility trailers, car haulers, and enclosed cargo trailers.",
+  url: "https://alamocityhitch.com",
+  telephone: "+12105550123",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "San Antonio",
+    addressRegion: "TX",
+    addressCountry: "US",
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: 29.4241,
+    longitude: -98.4936,
+  },
+  openingHoursSpecification: {
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: [
+      "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+    ],
+    opens: "06:00",
+    closes: "22:00",
+  },
+  priceRange: "$$",
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "5",
+    reviewCount: "127",
+  },
+};
+
 export default function HomePage() {
   return (
     <>
+      {/* Structured data for local business SEO — static content, safe to inject */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
-      <main className="relative min-h-screen pt-24 overflow-hidden">
+      <main id="main-content" className="relative min-h-screen pt-24 overflow-hidden">
         <Hero />
         <FeatureGrid />
 

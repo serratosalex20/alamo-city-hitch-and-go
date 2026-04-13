@@ -32,11 +32,16 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
       <div className="space-y-8">
         {/* Date */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3">
-            Pickup Date
+          <label
+            htmlFor="booking-date"
+            className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3"
+          >
+            Pickup Date <span className="text-error" aria-hidden="true">*</span>
           </label>
           <input
+            id="booking-date"
             type="date"
+            required
             min={today}
             value={formData.date}
             onChange={(e) => updateForm({ date: e.target.value })}
@@ -46,11 +51,16 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
 
         {/* Time */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3">
-            Pickup Time
+          <label
+            htmlFor="booking-time"
+            className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3"
+          >
+            Pickup Time <span className="text-error" aria-hidden="true">*</span>
           </label>
           <input
+            id="booking-time"
             type="time"
+            required
             value={formData.time}
             onChange={(e) => updateForm({ time: e.target.value })}
             className="w-full bg-surface-container-low text-on-surface font-body py-4 px-5 ghost-border focus:border-b-2 focus:border-primary-action outline-none transition-all"
@@ -58,16 +68,19 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
         </div>
 
         {/* Duration */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3">
+        <fieldset>
+          <legend className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3">
             Rental Duration
-          </label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          </legend>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3" role="radiogroup" aria-label="Select rental duration">
             {durations.map((d) => (
               <button
                 key={d.value}
                 onClick={() => updateForm({ duration: d.value })}
-                className={`p-4 text-center transition-all ${
+                role="radio"
+                aria-checked={formData.duration === d.value}
+                aria-label={`${d.label} — ${d.description}`}
+                className={`p-4 min-h-[44px] text-center transition-all ${
                   formData.duration === d.value
                     ? "bg-primary-action text-white"
                     : "bg-surface-container hover:bg-surface-container-high text-on-surface"
@@ -82,21 +95,21 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
               </button>
             ))}
           </div>
-        </div>
+        </fieldset>
       </div>
 
       {/* Nav */}
       <div className="flex gap-4 mt-12">
         <button
           onClick={onBack}
-          className="flex-1 bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest hover:bg-surface-bright transition-all"
+          className="flex-1 min-h-[44px] bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest hover:bg-surface-bright transition-all"
         >
           Back
         </button>
         <button
           onClick={onNext}
           disabled={!formData.date || !formData.time}
-          className="flex-1 bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-800 transition-all active:scale-[0.98]"
+          className="flex-1 min-h-[44px] bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-800 transition-all active:scale-[0.98]"
         >
           Continue
         </button>

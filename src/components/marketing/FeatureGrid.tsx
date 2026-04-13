@@ -29,7 +29,13 @@ const features = [
 
 export function FeatureGrid() {
   return (
-    <section className="px-8 md:px-16 py-24 max-w-7xl mx-auto">
+    <section
+      className="px-8 md:px-16 py-24 max-w-7xl mx-auto"
+      aria-labelledby="features-heading"
+    >
+      <h2 id="features-heading" className="sr-only">
+        Why Choose Alamo City Hitch &amp; Go
+      </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {features.map((feature) => (
           <div

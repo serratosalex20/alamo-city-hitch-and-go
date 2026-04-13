@@ -25,12 +25,19 @@ export function StepTrailer({ formData, updateForm, onNext }: Props) {
         Choose the rig that fits your cargo requirements.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div
+        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"
+        role="radiogroup"
+        aria-label="Select a trailer"
+      >
         {trailers.map((trailer) => (
           <button
             key={trailer.id}
             onClick={() => selectTrailer(trailer.id, trailer.slug)}
-            className={`text-left flex flex-col bg-surface-container-low border transition-all duration-300 ${
+            role="radio"
+            aria-checked={formData.trailerId === trailer.id}
+            aria-label={`${trailer.name} — $${trailer.pricing.rate24h} per day, ${trailer.specs.gvwr.toLocaleString()} LBS GVWR`}
+            className={`text-left flex flex-col bg-surface-container-low border transition-all duration-300 min-h-[44px] ${
               formData.trailerId === trailer.id
                 ? "border-primary ring-2 ring-primary/20"
                 : "border-white/5 hover:border-white/20"
@@ -39,8 +46,9 @@ export function StepTrailer({ formData, updateForm, onNext }: Props) {
             <div className="aspect-[4/3] overflow-hidden bg-surface-container relative">
               <Image
                 src={trailer.imageUrl}
-                alt={trailer.name}
+                alt={`${trailer.name} — available for rental`}
                 fill
+                sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover"
               />
             </div>
@@ -58,7 +66,7 @@ export function StepTrailer({ formData, updateForm, onNext }: Props) {
                 {trailer.specs.hitchSize}
               </p>
               {formData.trailerId === trailer.id && (
-                <div className="mt-3 flex items-center gap-2 text-primary text-xs font-bold">
+                <div className="mt-3 flex items-center gap-2 text-primary text-xs font-bold" aria-hidden="true">
                   <Icon name="check_circle" filled className="text-sm" />
                   SELECTED
                 </div>
@@ -71,7 +79,7 @@ export function StepTrailer({ formData, updateForm, onNext }: Props) {
       <button
         onClick={onNext}
         disabled={!formData.trailerId}
-        className="w-full bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-800 transition-all active:scale-[0.98]"
+        className="w-full min-h-[44px] bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-800 transition-all active:scale-[0.98]"
       >
         Continue to Schedule
       </button>
