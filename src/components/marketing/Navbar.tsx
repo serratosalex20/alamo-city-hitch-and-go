@@ -35,9 +35,10 @@ export function Navbar() {
           <Image
             src="/logo.png"
             alt=""
-            width={40}
-            height={40}
-            className="rounded-sm"
+            width={80}
+            height={80}
+            className="rounded-sm w-14 md:w-16 h-auto"
+            priority
           />
           <span className="text-3xl font-bold tracking-widest text-white font-teko uppercase">
             ALAMO CITY HITCH &amp; GO CO.
