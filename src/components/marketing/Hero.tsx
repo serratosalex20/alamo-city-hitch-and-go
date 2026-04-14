@@ -23,7 +23,7 @@ export function Hero() {
             className="font-teko text-6xl md:text-9xl font-bold tracking-tighter text-on-surface leading-[0.8] mb-8"
           >
             SAN ANTONIO&apos;S <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4444] via-[#DC2626] to-[#7F1D1D]">
               TOP-RATED
             </span>{" "}
             <br />
@@ -34,7 +34,7 @@ export function Hero() {
         {/* Trust Badge */}
         <div className="col-span-12 lg:col-span-4 flex lg:justify-end items-start pt-4">
           <GlassPanel className="p-6 flex flex-col items-center gap-2">
-            <div className="flex gap-1 text-primary" aria-label="5 out of 5 stars" role="img">
+            <div className="flex gap-1 text-[#F59E0B]" aria-label="5 out of 5 stars" role="img">
               {[...Array(5)].map((_, i) => (
                 <Icon key={i} name="star" filled className="text-xl" />
               ))}
@@ -43,7 +43,7 @@ export function Hero() {
               Local &amp; Reliable
             </span>
             <span className="text-on-surface-variant text-xs font-medium uppercase tracking-widest">
-              Heavy-Duty Reliability Since 2018
+              Heavy-Duty Reliability &amp; Convenience
             </span>
           </GlassPanel>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
@@ -31,7 +32,13 @@ export function Navbar() {
           className="flex items-center gap-3 min-h-[44px]"
           aria-label="Alamo City Hitch & Go Co. — Home"
         >
-          <Icon name="construction" className="text-primary text-3xl" />
+          <Image
+            src="/logo.png"
+            alt=""
+            width={40}
+            height={40}
+            className="rounded-sm"
+          />
           <span className="text-3xl font-bold tracking-widest text-white font-teko uppercase">
             ALAMO CITY HITCH &amp; GO CO.
           </span>

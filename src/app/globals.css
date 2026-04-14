@@ -27,11 +27,11 @@
   --color-surface-variant: #31353d;
 
   /* ─── Primary (Alamo Crimson — conversion paths only) ─── */
-  --color-primary: #ffb4ac;
+  --color-primary: #EF4444;
   --color-primary-action: #9B1C1C;
   --color-primary-container: #9b1c1c;
   --color-on-primary: #690007;
-  --color-on-primary-container: #ffada4;
+  --color-on-primary-container: #FF6B6B;
   --color-inverse-primary: #b02c29;
 
   /* ─── Secondary (Midnight Navy — depth & containers) ─── */
@@ -66,7 +66,7 @@
   --color-inverse-on-surface: #2c3039;
 
   /* ─── Surface Tint ─── */
-  --color-surface-tint: #ffb4ac;
+  --color-surface-tint: #EF4444;
 
   /* ─── Border Radius (Machined Metal — NO soft roundedness) ─── */
   --radius-sm: 0.125rem;
