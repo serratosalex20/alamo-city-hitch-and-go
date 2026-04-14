@@ -20,7 +20,7 @@ export function Hero() {
           </div>
           <h1
             id="hero-heading"
-            className="font-headline text-5xl md:text-8xl font-bold tracking-tighter text-on-surface leading-[0.9] mb-8"
+            className="font-teko text-6xl md:text-9xl font-bold tracking-tighter text-on-surface leading-[0.8] mb-8"
           >
             SAN ANTONIO&apos;S <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
@@ -43,7 +43,7 @@ export function Hero() {
               Local &amp; Reliable
             </span>
             <span className="text-on-surface-variant text-xs font-medium uppercase tracking-widest">
-              Precision Hauling Since 2018
+              Heavy-Duty Reliability Since 2018
             </span>
           </GlassPanel>
         </div>
@@ -58,7 +58,7 @@ export function Hero() {
           <div className="flex flex-col sm:flex-row gap-6">
             <Link
               href="/book"
-              className="bg-primary-action text-white hover:bg-red-800 transition-all duration-300 font-headline font-black tracking-widest uppercase px-10 py-5 text-lg flex items-center justify-center gap-3 active:scale-95 min-h-[44px]"
+              className="bg-primary-action text-white hover:brightness-110 transition-all duration-300 font-headline font-black tracking-widest uppercase px-10 py-5 text-lg flex items-center justify-center gap-3 active:scale-95 min-h-[44px]"
             >
               Book Your Trailer
               <Icon name="arrow_forward" />

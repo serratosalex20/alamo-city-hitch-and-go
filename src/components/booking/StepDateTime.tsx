@@ -109,7 +109,7 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
         <button
           onClick={onNext}
           disabled={!formData.date || !formData.time}
-          className="flex-1 min-h-[44px] bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-800 transition-all active:scale-[0.98]"
+          className="flex-1 min-h-[44px] bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 transition-all active:scale-[0.98]"
         >
           Continue
         </button>

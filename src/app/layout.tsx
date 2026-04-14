@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Manrope } from "next/font/google";
+import { Space_Grotesk, Inter, Teko, Oswald } from "next/font/google";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -9,10 +9,24 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-const manrope = Manrope({
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-body",
-  weight: ["200", "300", "400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const teko = Teko({
+  subsets: ["latin"],
+  variable: "--font-teko",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const oswald = Oswald({
+  subsets: ["latin"],
+  variable: "--font-oswald",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -22,7 +36,7 @@ export const metadata: Metadata = {
     template: "%s | Alamo City Hitch & Go Co.",
   },
   description:
-    "Hassle-Free Trailer Rentals in San Antonio, TX. Heavy-duty hauling, zero paperwork headaches. Pull & Go.",
+    "Heavy-duty trailer rentals in San Antonio, TX. Industrial-grade utility trailers, car haulers, and enclosed cargo trailers. Same-day pickup. Pull & Go.",
   keywords: [
     "trailer rental san antonio",
     "trailer rental san antonio tx",
@@ -31,15 +45,16 @@ export const metadata: Metadata = {
     "enclosed trailer rental san antonio",
     "heavy duty trailer rental texas",
     "san antonio trailer rentals near me",
+    "trailer rental near me same day",
   ],
   metadataBase: new URL("https://alamocityhitch.com"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Alamo City Hitch & Go Co.",
+    title: "Alamo City Hitch & Go Co. | Heavy-Duty Trailer Rentals",
     description:
-      "San Antonio's top-rated trailer rentals. Industrial-grade equipment, hassle-free process.",
+      "San Antonio's top-rated trailer rentals. Industrial-grade equipment, same-day pickup, transparent pricing.",
     locale: "en_US",
     type: "website",
     siteName: "Alamo City Hitch & Go Co.",
@@ -48,7 +63,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Alamo City Hitch & Go Co.",
     description:
-      "San Antonio's top-rated trailer rentals. Industrial-grade equipment, hassle-free process.",
+      "Heavy-duty trailer rentals in San Antonio. Same-day pickup. Pull & Go.",
   },
   robots: {
     index: true,
@@ -62,7 +77,7 @@ export const metadata: Metadata = {
     },
   },
   other: {
-    "theme-color": "#101418",
+    "theme-color": "#0f131b",
   },
 };
 
@@ -80,7 +95,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${spaceGrotesk.variable} ${manrope.variable} min-h-screen`}
+        className={`${spaceGrotesk.variable} ${inter.variable} ${teko.variable} ${oswald.variable} min-h-screen`}
       >
         <a href="#main-content" className="skip-to-content">
           Skip to main content

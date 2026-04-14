@@ -29,7 +29,7 @@ export function ActiveRental({
 
       <div className="relative z-10 space-y-6">
         <div className="space-y-1">
-          <span className="text-[10px] font-bold tracking-widest text-red-500 uppercase">
+          <span className="text-[10px] font-bold tracking-widest text-primary-container uppercase">
             ACTIVE RENTAL
           </span>
           <h2 className="text-xl font-bold tracking-tight text-white leading-tight">
@@ -46,7 +46,7 @@ export function ActiveRental({
             <span id="rental-progress-label" className="text-xs font-bold tracking-wider text-white uppercase">
               Time Remaining
             </span>
-            <span className="text-xl font-headline font-bold text-red-500">
+            <span className="text-xl font-headline font-bold text-primary-container">
               {hoursRemaining}H{" "}
               <span className="text-xs opacity-60">/ {totalHours}H</span>
             </span>
@@ -59,7 +59,7 @@ export function ActiveRental({
               aria-valuemax={100}
               aria-labelledby="rental-progress-label"
               aria-valuetext={`${hoursRemaining} hours remaining out of ${totalHours} hours`}
-              className="h-full bg-gradient-to-r from-red-800 to-red-500 rounded-full transition-all duration-1000"
+              className="h-full bg-gradient-to-r from-primary-container to-on-primary-container rounded-full transition-all duration-1000"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -68,7 +68,7 @@ export function ActiveRental({
         {/* Extend button */}
         <button
           aria-label="Extend rental time by 4 hours"
-          className="w-full min-h-[44px] bg-gradient-to-r from-[#B22222] to-[#f5534b] text-white py-4 rounded-md font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all duration-150"
+          className="w-full min-h-[44px] bg-primary-container hover:brightness-110 text-white py-4 font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all duration-150"
         >
           <Icon name="timer_10_alt_1" className="text-sm" />
           Extend Rental Time (+4 Hours)

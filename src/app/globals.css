@@ -2,51 +2,58 @@
 
 /*
  * Industrial Editorial Design System
- * Source: Google Stitch mockups (Landing Page, Customer Dashboard, Trailer Selection)
+ * Source of Truth: Brand Identity System (Page Design/Branding)
  * North Star: "The Industrial Architect" — rugged yet precision-engineered
+ *
+ * Core Palette:
+ *   Gunmetal Charcoal  #23272F  — Foundation / Surface
+ *   Alamo Crimson       #9B1C1C  — Primary Action / Wayfinding
+ *   Midnight Navy       #1C2A43  — Secondary Depth / Containers
+ *   Polished Chrome     #C0C5CE  — Accent / Highlights / Icons
+ *   Technical White     #DFE2ED  — Primary Typography / Readability
  */
 
 @theme {
   /* ─── Surface Hierarchy (Dark Chrome Foundation) ─── */
-  --color-background: #101418;
-  --color-surface: #101418;
-  --color-surface-dim: #0a0c0e;
-  --color-surface-bright: #363a3e;
-  --color-surface-container-lowest: #0b0f12;
-  --color-surface-container-low: #181c20;
-  --color-surface-container: #1c2024;
-  --color-surface-container-high: #262a2e;
-  --color-surface-container-highest: #313539;
-  --color-surface-variant: #2a2d30;
+  --color-background: #0f131b;
+  --color-surface: #0f131b;
+  --color-surface-dim: #0f131b;
+  --color-surface-bright: #353942;
+  --color-surface-container-lowest: #0a0e16;
+  --color-surface-container-low: #181c23;
+  --color-surface-container: #1c2027;
+  --color-surface-container-high: #262a32;
+  --color-surface-container-highest: #31353d;
+  --color-surface-variant: #31353d;
 
-  /* ─── Primary (Rich Red — conversion paths only) ─── */
+  /* ─── Primary (Alamo Crimson — conversion paths only) ─── */
   --color-primary: #ffb4ac;
-  --color-primary-action: #b91c1c;
-  --color-primary-container: #520004;
+  --color-primary-action: #9B1C1C;
+  --color-primary-container: #9b1c1c;
   --color-on-primary: #690007;
-  --color-on-primary-container: #f5534b;
-  --color-inverse-primary: #b52424;
+  --color-on-primary-container: #ffada4;
+  --color-inverse-primary: #b02c29;
 
-  /* ─── Secondary (Trust Navy) ─── */
-  --color-secondary: #bfc2ff;
-  --color-secondary-container: #3239a3;
-  --color-on-secondary: #181d8c;
-  --color-on-secondary-container: #a9afff;
+  /* ─── Secondary (Midnight Navy — depth & containers) ─── */
+  --color-secondary: #b9c7e7;
+  --color-secondary-container: #3c4964;
+  --color-on-secondary: #23304a;
+  --color-on-secondary-container: #abb9d8;
 
-  /* ─── Tertiary (Neutral Chrome) ─── */
-  --color-tertiary: #c6c6c7;
-  --color-tertiary-container: #232525;
-  --color-on-tertiary: #2f3131;
-  --color-on-tertiary-container: #8b8c8c;
+  /* ─── Tertiary (Polished Chrome — highlights) ─── */
+  --color-tertiary: #c2c7d0;
+  --color-tertiary-container: #4a5057;
+  --color-on-tertiary: #2b3138;
+  --color-on-tertiary-container: #bdc2cb;
 
   /* ─── Text / On-Surface ─── */
-  --color-on-background: #e0e3e8;
-  --color-on-surface: #e0e3e8;
-  --color-on-surface-variant: #c5c6ca;
+  --color-on-background: #dfe2ed;
+  --color-on-surface: #dfe2ed;
+  --color-on-surface-variant: #e1bfbb;
 
   /* ─── Borders & Outlines ─── */
-  --color-outline: #8f9194;
-  --color-outline-variant: #44474a;
+  --color-outline: #a88a86;
+  --color-outline-variant: #59413e;
 
   /* ─── Error ─── */
   --color-error: #ffb4ab;
@@ -55,25 +62,27 @@
   --color-on-error-container: #ffdad6;
 
   /* ─── Inverse ─── */
-  --color-inverse-surface: #e0e3e8;
-  --color-inverse-on-surface: #2d3135;
+  --color-inverse-surface: #dfe2ed;
+  --color-inverse-on-surface: #2c3039;
 
   /* ─── Surface Tint ─── */
   --color-surface-tint: #ffb4ac;
 
   /* ─── Border Radius (Machined Metal — NO soft roundedness) ─── */
   --radius-sm: 0.125rem;
-  --radius-md: 0.375rem;
+  --radius-md: 0.25rem;
   --radius-lg: 0.25rem;
   --radius-xl: 0.5rem;
 
   /* ─── Fonts ─── */
   --font-headline: "Space Grotesk", sans-serif;
-  --font-body: "Manrope", sans-serif;
-  --font-label: "Manrope", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+  --font-teko: "Teko", sans-serif;
+  --font-oswald: "Oswald", sans-serif;
 
   /* ─── Ambient Shadows (felt, not seen) ─── */
-  --shadow-ambient: 0px 20px 40px rgba(0, 0, 0, 0.25);
+  --shadow-ambient: 0px 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 /* ─── Base Styles ─── */
@@ -89,16 +98,16 @@ h1, h2, h3, h4, h5, h6, .headline {
   font-family: var(--font-headline);
 }
 
-/* ─── Selection ─── */
+/* ─── Selection (Alamo Crimson) ─── */
 ::selection {
-  background-color: var(--color-primary);
-  color: var(--color-on-primary);
+  background-color: var(--color-primary-container);
+  color: white;
 }
 
 /* ─── Glass Panel (nav, floating action panels) ─── */
 .glass-panel {
-  backdrop-filter: blur(20px);
-  background: rgba(28, 32, 36, 0.7);
+  backdrop-filter: blur(24px);
+  background: rgba(28, 32, 39, 0.7);
 }
 
 /* ─── Editorial Grid ─── */
@@ -114,7 +123,7 @@ h1, h2, h3, h4, h5, h6, .headline {
 
 /* ─── Branding Split Background (Trailer Selection page) ─── */
 .branding-split {
-  background: linear-gradient(135deg, #1a1c1e 0%, #1a1c1e 65%, #4a0404 100%);
+  background: linear-gradient(135deg, #0f131b 0%, #0f131b 60%, #3d0a0a 100%);
   position: relative;
 }
 

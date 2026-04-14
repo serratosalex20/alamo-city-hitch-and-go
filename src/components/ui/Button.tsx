@@ -9,7 +9,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-primary-action text-white hover:bg-red-800 transition-all duration-300 font-headline font-black tracking-widest uppercase",
+    "bg-primary-action text-white hover:brightness-110 transition-all duration-300 font-headline font-black tracking-widest uppercase",
   secondary:
     "bg-surface-container-highest text-on-surface hover:bg-surface-bright transition-colors font-headline font-bold tracking-widest uppercase border-b-2 border-outline-variant",
   tertiary:

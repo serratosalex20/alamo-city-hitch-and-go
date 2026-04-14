@@ -29,7 +29,7 @@ export function DocumentList() {
   return (
     <section aria-labelledby="documents-heading" className="space-y-4">
       <div className="flex items-center gap-2">
-        <Icon name="folder_open" filled className="text-red-500" />
+        <Icon name="folder_open" filled className="text-primary-container" />
         <h2 id="documents-heading" className="text-sm font-bold tracking-widest text-white uppercase">
           My Documents
         </h2>
@@ -41,7 +41,7 @@ export function DocumentList() {
             className={`bg-surface-container rounded-lg p-4 flex items-center justify-between border-l-4 ${doc.accent}`}
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 flex items-center justify-center bg-surface-container-highest rounded text-red-500">
+              <div className="w-10 h-10 flex items-center justify-center bg-surface-container-highest rounded text-primary-container">
                 <Icon name={doc.icon} />
               </div>
               <div>

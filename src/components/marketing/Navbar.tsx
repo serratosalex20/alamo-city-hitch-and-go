@@ -18,7 +18,7 @@ export function Navbar() {
 
   return (
     <header
-      className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl bg-gradient-to-b from-surface-container-high to-transparent"
+      className="fixed top-0 w-full z-50 bg-secondary-container/90 backdrop-blur-xl shadow-ambient"
       role="banner"
     >
       <nav
@@ -32,8 +32,8 @@ export function Navbar() {
           aria-label="Alamo City Hitch & Go Co. — Home"
         >
           <Icon name="construction" className="text-primary text-3xl" />
-          <span className="text-2xl font-bold tracking-widest text-primary font-headline uppercase">
-            ALAMO CITY
+          <span className="text-3xl font-bold tracking-widest text-white font-teko uppercase">
+            ALAMO CITY HITCH &amp; GO CO.
           </span>
         </Link>
 
@@ -49,7 +49,7 @@ export function Navbar() {
                 className={`min-h-[44px] min-w-[44px] flex items-center justify-center px-4 transition-colors ${
                   isActive
                     ? "text-primary border-b-2 border-primary"
-                    : "text-gray-400 hover:text-white"
+                    : "text-tertiary hover:text-white"
                 }`}
               >
                 {link.label}
@@ -62,7 +62,7 @@ export function Navbar() {
           {/* CTA */}
           <Link
             href="/book"
-            className="bg-primary text-on-primary px-6 py-3 min-h-[44px] font-bold tracking-widest hover:bg-primary-action hover:text-white transition-all duration-300 active:scale-90 font-headline text-sm flex items-center"
+            className="bg-primary-container text-white px-6 py-3 min-h-[44px] font-bold tracking-widest hover:brightness-110 transition-all duration-300 active:scale-90 font-label text-sm flex items-center uppercase"
           >
             RENT NOW
           </Link>

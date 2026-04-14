@@ -23,9 +23,9 @@ export default function AccountPage() {
             aria-label="Open navigation menu"
             className="min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
-            <Icon name="menu" className="text-red-600" />
+            <Icon name="menu" className="text-primary-container" />
           </button>
-          <span className="text-2xl font-black tracking-tighter text-white uppercase italic font-headline">
+          <span className="text-3xl font-bold tracking-widest text-white uppercase font-teko">
             HAULER_COMMAND
           </span>
         </div>
@@ -97,7 +97,7 @@ export default function AccountPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
           <div className="absolute bottom-3 left-3 flex items-center gap-2">
-            <Icon name="location_on" className="text-xs text-red-500" />
+            <Icon name="location_on" className="text-xs text-primary-container" />
             <span className="text-[10px] font-bold text-white tracking-widest uppercase">
               Rental Location: San Antonio, TX
             </span>

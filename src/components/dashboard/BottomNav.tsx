@@ -24,8 +24,8 @@ export function BottomNav() {
           aria-label={item.label}
           className={`flex flex-col items-center justify-center min-h-[44px] min-w-[44px] py-2 transition-all ${
             item.active
-              ? "text-red-500 bg-red-500/10 rounded-md px-4"
-              : "text-slate-500 hover:text-white"
+              ? "text-primary-container bg-primary-container/10 rounded-md px-4"
+              : "text-tertiary/60 hover:text-white"
           }`}
         >
           <Icon

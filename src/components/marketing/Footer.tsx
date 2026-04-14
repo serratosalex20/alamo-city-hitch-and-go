@@ -18,9 +18,9 @@ export function Footer() {
           <span className="text-lg font-black text-white font-headline tracking-widest uppercase">
             ALAMO CITY HITCH &amp; GO CO.
           </span>
-          <span className="font-body text-xs uppercase tracking-widest text-gray-500">
+          <span className="font-body text-xs uppercase tracking-widest text-tertiary/60">
             &copy; {new Date().getFullYear()} ALAMO CITY HITCH &amp; GO CO.
-            PRECISION HAULING.
+            HEAVY-DUTY RELIABILITY.
           </span>
         </div>
         <nav aria-label="Footer navigation" className="flex gap-8">
@@ -28,7 +28,7 @@ export function Footer() {
             <Link
               key={link.href}
               href={link.href}
-              className="font-body text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors min-h-[44px] flex items-center"
+              className="font-body text-xs uppercase tracking-widest text-tertiary/60 hover:text-white transition-colors min-h-[44px] flex items-center"
             >
               {link.label}
             </Link>

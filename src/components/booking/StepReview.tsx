@@ -150,7 +150,7 @@ export function StepReview({ formData, onBack }: Props) {
         <button
           onClick={handleSubmit}
           aria-label="Secure booking — process payment and confirm reservation"
-          className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest hover:bg-red-800 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+          className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest hover:brightness-110 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
         >
           <Icon name="lock" className="text-sm" />
           Secure Booking

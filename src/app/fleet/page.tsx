@@ -39,7 +39,7 @@ export default function FleetPage() {
             <span className="inline-block px-3 py-1 bg-primary-action/10 border border-primary-action/20 text-primary text-[10px] font-bold tracking-[0.3em] uppercase mb-6">
               Industrial Precision Hauling
             </span>
-            <h1 id="fleet-hero-heading" className="text-6xl sm:text-7xl md:text-9xl font-headline font-bold leading-[0.85] tracking-tighter uppercase mb-8 text-white">
+            <h1 id="fleet-hero-heading" className="text-6xl sm:text-7xl md:text-9xl font-teko font-bold leading-[0.85] tracking-tighter uppercase mb-8 text-white">
               HEAVY DUTY.
               <br />
               <span
@@ -57,7 +57,7 @@ export default function FleetPage() {
             <div className="flex flex-wrap gap-6">
               <a
                 href="#fleet"
-                className="bg-primary-action hover:bg-red-800 text-white px-10 py-5 min-h-[44px] font-headline font-bold uppercase tracking-widest transition-all flex items-center gap-3 active:scale-95"
+                className="bg-primary-action hover:brightness-110 text-white px-10 py-5 min-h-[44px] font-headline font-bold uppercase tracking-widest transition-all flex items-center gap-3 active:scale-95"
               >
                 VIEW THE FLEET
                 <Icon name="arrow_forward" className="text-sm" />
@@ -89,7 +89,7 @@ export default function FleetPage() {
         <div className="container mx-auto px-8">
           <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div className="max-w-2xl">
-              <h2 className="text-5xl font-headline font-bold tracking-tighter uppercase mb-4 text-white">
+              <h2 className="text-5xl font-teko font-bold tracking-tighter uppercase mb-4 text-white">
                 SELECT YOUR TRAILER
               </h2>
               <p className="text-on-surface-variant font-body">
