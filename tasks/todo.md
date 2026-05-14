@@ -1,21 +1,66 @@
 # Alamo City Hitch & Go Co — Build Plan
 
 **Started:** 2026-04-08
-**Stack:** Next.js 15 (App Router) + TypeScript + Tailwind CSS + Firebase (Auth, Firestore, Storage) + Stripe (Auth/Capture) + DocuSign + Google Gemini Vision
-**Design system:** Industrial Editorial (from Google Stitch mockups at `C:\Users\serra\Documents\WEB DESIGN\ALAMO CITY HITCH & GO CO\Page Design\`)
+**Stack:** Next.js 16 (App Router) + TypeScript + Tailwind CSS 4 + Firebase (Auth, Firestore, Storage) + Stripe (Auth/Capture) + DocuSign + Google Gemini Vision
+**Design system:** Industrial Editorial — source of truth `src/app/globals.css`
 
-## Critical decisions (resolved in main thread)
+## Critical decisions (resolved)
 
-- **Design system winner:** Industrial Editorial (from HTML mockups) beats the research brief's "Alamo Premium" palette. User explicitly said "use this exact styling as the baseline."
-- **Scope:** Full SaaS-grade rental management app as specified in latest prompt — overrides the simpler "marketing site" recommendation in `research/03-build-brief.md`.
-- **MVP cutline:** External integrations (Stripe live keys, DocuSign envelopes, Gemini Vision API) will be stubbed with clean adapter interfaces and env-gated mocks. Real keys can be swapped in without rewriting callers.
+- **Design system winner:** Industrial Editorial (from HTML mockups).
+- **Scope:** Full SaaS-grade rental management app — not a marketing site.
+- **MVP cutline:** External integrations stub via env-gated adapter interfaces. Real keys swap in without rewriting callers.
+- **Stub-mode policy (Sprint 2):** Build Phase 5 + Phase 6 in **stub mode by default**. If `STRIPE_SECRET_KEY` is unset, `/api/checkout` returns a fake `PaymentIntent` so the booking flow works end-to-end. If Firebase Admin env vars are unset, magic-link "sending" logs to console and the email link is exposed in the dev-mode response for testing.
+- **Brand assets:** v1.0 brand guide + DRAFT rental agreement live in `deliverables/` (committed 2026-05-14).
 
-## Open decisions (need user input during build)
+## Open decisions (still owed by owner)
 
-1. **Rental pricing algebra** — how do 4h / 12h / 24h / 36h blocks relate? Flat per-block rates, or prorated from a day rate? (Contribution point 1)
-2. **Booking conflict window** — what's the buffer between returns and next pickup? 30 min? 2 hours? (Contribution point 2)
-3. **Security deposit** — fixed ($300?) or variable by trailer class?
-4. **ID verification tolerance** — how strict should the name-match between driver's license and Stripe card be? Exact match? Fuzzy (Levenshtein distance)?
+1. **Pricing algebra** — 4h / 12h / 24h / 36h block relationship. Placeholder values land in `src/lib/booking/pricing.ts` with `// TODO(owner)` markers; owner edits one file when prices set.
+2. **Security deposits per class** — owner confirmed *per-class*, awaiting dollar amounts.
+3. **Booking conflict buffer** — default 30 min, configurable in `src/lib/booking/availability.ts`.
+4. **ID verification tolerance** (Phase 8) — exact match vs. fuzzy.
+
+---
+
+## ACTIVE SPRINT — Sprint 2: Auth + Stripe (2026-05-14)
+
+> Goal: turn the visual booking wizard into a real transaction flow. Sprint 1 shipped a render-only site; Sprint 2 makes it accept money and create user accounts.
+
+### A0 — Dependencies
+- [ ] `npm install firebase firebase-admin stripe @stripe/stripe-js @stripe/react-stripe-js`
+
+### A1 — Adapter scaffolding (env-gated stub/real switch)
+- [ ] `src/lib/env.ts` — typed env reader, exports `hasFirebase`, `hasStripe`, `appUrl`
+- [ ] `src/lib/firebase/client.ts` — client-side Firebase app init (returns null in stub mode)
+- [ ] `src/lib/firebase/admin.ts` — server-side Firebase Admin init (singleton, stub-mode aware)
+- [ ] `src/lib/stripe/server.ts` — server-side Stripe client (stub-mode aware)
+
+### A2 — Phase 5: Magic-link auth
+- [ ] `src/lib/auth/session.ts` — server cookie helpers (set/clear/verify session cookie)
+- [ ] `src/app/api/auth/send-link/route.ts` — POST email → sends Firebase sign-in link (or logs in stub mode)
+- [ ] `src/app/api/auth/callback/route.ts` — GET handles magic-link return, mints session cookie
+- [ ] `src/app/api/auth/logout/route.ts` — POST clears session cookie
+- [ ] `src/app/sign-in/page.tsx` — email input form (Industrial Editorial styled)
+- [ ] `src/app/sign-in/sent/page.tsx` — "check your email" confirmation page
+- [ ] `middleware.ts` — protect `/account/*` and `/admin/*`; redirect unauth'd to `/sign-in`
+- [ ] Wire Navbar "Sign in" link in `src/components/marketing/Navbar.tsx`
+
+### A3 — Phase 6: Stripe auth/capture
+- [ ] `src/lib/booking/pricing.ts` — `calculatePrice(trailerId, block) → { rentalCents, depositCents, taxCents, totalCents }` with placeholder constants
+- [ ] `src/app/api/checkout/route.ts` — POST creates 2 PaymentIntents: rental (immediate capture) + deposit (`capture_method: 'manual'`)
+- [ ] `src/components/booking/StepPayment.tsx` — Stripe Elements card form, calls /api/checkout, confirms with stripe.js
+- [ ] Insert StepPayment into wizard flow in `src/app/book/page.tsx` (between Customer and Review)
+- [ ] `src/app/api/webhooks/stripe/route.ts` — verify signature, handle `payment_intent.succeeded`, `payment_intent.canceled`
+- [ ] `src/lib/booking/availability.ts` — 30-min default buffer, exported `MIN_BUFFER_MIN` constant
+
+### A4 — Verification
+- [ ] `npm run build` passes cleanly
+- [ ] Manually walk the booking flow end-to-end in stub mode (no real keys)
+- [ ] Magic-link in stub mode logs the link to console; clicking it lands on /account with a session
+- [ ] Stripe stub mode returns a fake PaymentIntent id; UI shows success
+- [ ] Commit-on-write: each lib/component/route gets its own commit
+
+### A5 — Deferred (Sprint 3+)
+- DocuSign (Phase 7), Gemini ID verification (Phase 8), Admin dashboard (Phase 10), Production polish (Phase 11)
 
 ---
 
