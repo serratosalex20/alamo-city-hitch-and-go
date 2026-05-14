@@ -7,21 +7,15 @@ import type { BookingFormData } from "@/app/book/page";
 interface Props {
   formData: BookingFormData;
   onBack: () => void;
+  onContinue: () => void;
 }
 
-export function StepReview({ formData, onBack }: Props) {
+export function StepReview({ formData, onBack, onContinue }: Props) {
   const trailer = trailers.find((t) => t.id === formData.trailerId);
   if (!trailer) return null;
 
   const priceKey = `rate${formData.duration}h` as keyof typeof trailer.pricing;
   const rentalPrice = trailer.pricing[priceKey];
-
-  const handleSubmit = () => {
-    // TODO: POST to /api/bookings — will wire up with Firestore + Stripe
-    alert(
-      `Booking submitted!\n\nTrailer: ${trailer.name}\nDate: ${formData.date}\nDuration: ${formData.duration}h\nTotal: $${rentalPrice}\nDeposit Hold: $${trailer.deposit}\n\nThis will connect to Stripe + Firestore once API keys are configured.`
-    );
-  };
 
   return (
     <div>
@@ -148,12 +142,12 @@ export function StepReview({ formData, onBack }: Props) {
           Back
         </button>
         <button
-          onClick={handleSubmit}
-          aria-label="Secure booking — process payment and confirm reservation"
+          onClick={onContinue}
+          aria-label="Continue to payment"
           className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest hover:brightness-110 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
         >
-          <Icon name="lock" className="text-sm" />
-          Secure Booking
+          Continue to Payment
+          <Icon name="arrow_forward" className="text-sm" />
         </button>
       </div>
 
