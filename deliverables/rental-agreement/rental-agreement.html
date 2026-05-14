@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Trailer Rental Agreement — DRAFT v0.1 — Alamo City Hitch &amp; Go Co LLC</title>
+<meta name="description" content="DRAFT trailer rental agreement for Alamo City Hitch & Go Co LLC. Pending Texas attorney review — not for execution." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+<style>
+  @page { size: Letter; margin: 0.6in 0.75in; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page.cover-page { break-after: page; }
+    .page.signatures-page { break-before: page; }
+    .fact-table, .deposit-table, ol.sub, .sig-block, .notice, .cover-warning { break-inside: avoid; }
+    h2.section-h { break-after: avoid; }
+    .print-watermark, .print-running-header, .print-running-footer { display: block !important; }
+    .doc-header, .doc-footer { display: none; }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #fff; color: #141413;
+    font-family: "Inter", Georgia, serif;
+    font-weight: 400; font-size: 10.5pt; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 8.5in;
+    padding: 0 0.25in;
+    margin: 0 auto;
+    background: #fff;
+    position: relative;
+  }
+  .page.cover-page {
+    min-height: 10in;
+    padding: 0.5in 0.75in;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ───── Fixed print chrome (appears on every printed page) ───── */
+  .print-watermark, .print-running-header, .print-running-footer { display: none; }
+  @media print {
+    .print-watermark {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-28deg);
+      font-family: "Oswald", sans-serif;
+      font-size: 140pt; font-weight: 700;
+      color: rgba(155, 28, 28, 0.08);
+      letter-spacing: 0.05em;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+    .print-running-header {
+      position: fixed;
+      top: 0.15in; left: 0.75in; right: 0.75in;
+      padding-bottom: 0.1in;
+      border-bottom: 2px solid #9B1C1C;
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-family: "Oswald", sans-serif;
+      font-size: 7.5pt; letter-spacing: 0.25em; text-transform: uppercase; color: #555;
+    }
+    .print-running-header__brand { color: #9B1C1C; font-weight: 700; }
+    .print-running-footer {
+      position: fixed;
+      bottom: 0.25in; left: 0.75in; right: 0.75in;
+      padding-top: 0.08in;
+      border-top: 1px solid #ddd;
+      display: flex; justify-content: space-between;
+      font-family: "Oswald", sans-serif;
+      font-size: 7pt; letter-spacing: 0.25em; text-transform: uppercase; color: #888;
+    }
+  }
+
+  /* ───── On-screen running header (hidden in print) ───── */
+  .doc-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-bottom: 0.12in;
+    border-bottom: 2px solid #9B1C1C;
+    margin: 0.3in 0 0.25in;
+    font-family: "Oswald", sans-serif;
+    font-size: 8pt; letter-spacing: 0.25em; text-transform: uppercase; color: #555;
+  }
+  .doc-header__brand { color: #9B1C1C; font-weight: 700; }
+
+  /* ───── Typography ───── */
+  h2.section-h {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700; font-size: 13pt;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: #9B1C1C;
+    margin-top: 0.3in; margin-bottom: 0.12in;
+    padding-bottom: 0.06in; border-bottom: 1px solid #9B1C1C;
+  }
+  h3.sub-h {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700; font-size: 10.5pt;
+    letter-spacing: 0.02em; text-transform: uppercase;
+    color: #141413; margin-top: 0.18in; margin-bottom: 0.08in;
+  }
+  p { margin-bottom: 0.1in; }
+  p + p { margin-top: 0.08in; }
+  strong { font-weight: 700; }
+
+  /* ───── Merge-field highlight ───── */
+  .mf {
+    background: #FEF3C7;
+    padding: 0 4px;
+    border-bottom: 1px solid #D97706;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 500;
+    font-size: 10pt;
+    color: #78350F;
+    white-space: nowrap;
+  }
+
+  /* ───── Numbered list ───── */
+  ol.legal { counter-reset: clause; list-style: none; padding-left: 0; }
+  ol.legal > li {
+    counter-increment: clause;
+    padding: 0.1in 0 0.1in 0.45in;
+    position: relative;
+    text-align: justify;
+  }
+  ol.legal > li::before {
+    content: counter(clause) ".";
+    position: absolute; left: 0; top: 0.1in;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700; color: #9B1C1C;
+    font-size: 10.5pt;
+  }
+  ol.sub { counter-reset: subclause; list-style: none; padding-left: 0; margin-top: 0.08in; }
+  ol.sub > li {
+    counter-increment: subclause;
+    padding: 0.05in 0 0.05in 0.4in;
+    position: relative;
+  }
+  ol.sub > li::before {
+    content: "(" counter(subclause, lower-alpha) ")";
+    position: absolute; left: 0.05in; top: 0.05in;
+    font-weight: 700;
+    color: #141413;
+  }
+
+  /* ───── Cover sheet ───── */
+  .cover-sheet {
+    display: flex; flex-direction: column; justify-content: space-between;
+    flex: 1;
+    padding-top: 0.5in;
+  }
+  .cover-badge {
+    display: inline-flex; align-items: center; gap: 0.15in;
+    padding: 0.15in 0.3in;
+    background: #9B1C1C; color: #fff;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700; font-size: 11pt;
+    letter-spacing: 0.35em; text-transform: uppercase;
+  }
+  .cover-title {
+    font-family: "Teko", sans-serif;
+    font-weight: 700; font-size: 108pt;
+    line-height: 0.88;
+    letter-spacing: -0.02em; text-transform: uppercase;
+    margin-top: 1.2in; color: #141413;
+  }
+  .cover-title .accent { color: #9B1C1C; }
+  .cover-sub {
+    font-family: "Oswald", sans-serif;
+    font-size: 14pt; letter-spacing: 0.4em; text-transform: uppercase;
+    color: #555; margin-top: 0.3in;
+  }
+  .cover-warning {
+    border: 3px solid #9B1C1C; padding: 0.3in;
+    background: #FEF2F2;
+    margin-top: 1in;
+    max-width: 5.5in;
+  }
+  .cover-warning h3 {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700; font-size: 12pt; letter-spacing: 0.35em; text-transform: uppercase;
+    color: #9B1C1C; margin-bottom: 0.15in;
+  }
+  .cover-warning p { font-size: 10.5pt; line-height: 1.6; color: #141413; }
+  .cover-meta {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.3in;
+    margin-top: 0.6in;
+    font-size: 10pt;
+  }
+  .cover-meta dt { font-family: "Oswald", sans-serif; font-weight: 700; font-size: 8.5pt; letter-spacing: 0.3em; text-transform: uppercase; color: #9B1C1C; margin-bottom: 0.05in; }
+  .cover-meta dd { font-family: "Space Grotesk", sans-serif; font-weight: 500; color: #141413; }
+
+  /* ───── Fact sheet / parties table ───── */
+  .fact-table { width: 100%; border-collapse: collapse; margin: 0.15in 0 0.2in; }
+  .fact-table th, .fact-table td {
+    text-align: left;
+    padding: 0.1in 0.12in;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+    font-size: 10pt;
+  }
+  .fact-table th {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700; font-size: 8.5pt;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: #9B1C1C;
+    width: 1.8in;
+  }
+
+  /* ───── Callouts ───── */
+  .notice {
+    border-left: 4px solid #9B1C1C;
+    padding: 0.15in 0.25in;
+    margin: 0.2in 0;
+    background: #FEF2F2;
+    font-size: 10pt;
+  }
+  .notice strong { color: #9B1C1C; font-family: "Oswald", sans-serif; font-size: 9.5pt; letter-spacing: 0.2em; text-transform: uppercase; display: block; margin-bottom: 0.08in; }
+
+  /* ───── Signature block ───── */
+  .sig-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.4in;
+    margin-top: 0.4in;
+  }
+  .sig-block { border-top: 2px solid #141413; padding-top: 0.1in; }
+  .sig-block__label { font-family: "Oswald", sans-serif; font-weight: 700; font-size: 8pt; letter-spacing: 0.3em; text-transform: uppercase; color: #555; margin-bottom: 0.05in; }
+  .sig-block__line { font-family: "Space Grotesk", sans-serif; font-weight: 500; padding: 0.05in 0; border-bottom: 1px solid #ccc; min-height: 0.3in; }
+
+  /* ───── Exhibit styling ───── */
+  .exhibit-label {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700; font-size: 10pt;
+    letter-spacing: 0.4em; text-transform: uppercase;
+    color: #9B1C1C;
+    margin-bottom: 0.1in;
+  }
+
+  /* ───── Deposit table ───── */
+  .deposit-table {
+    width: 100%; border-collapse: collapse; margin-top: 0.15in;
+    font-size: 10pt;
+  }
+  .deposit-table th, .deposit-table td {
+    padding: 0.1in 0.15in;
+    border: 1px solid #ccc;
+    text-align: left;
+  }
+  .deposit-table thead th {
+    background: #141413; color: #fff;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700; font-size: 9pt; letter-spacing: 0.25em; text-transform: uppercase;
+  }
+  .deposit-table tbody tr:nth-child(even) { background: #FAF9F5; }
+</style>
+</head>
+<body>
+
+<!-- ═══ Fixed print chrome — renders on every printed page ═══ -->
+<div class="print-watermark" aria-hidden="true">DRAFT</div>
+<div class="print-running-header">
+  <span class="print-running-header__brand">Alamo City Hitch &amp; Go Co LLC</span>
+  <span>Trailer Rental Agreement · v0.1 DRAFT · Not for Execution</span>
+</div>
+<div class="print-running-footer">
+  <span>Confidential — Pending Texas Attorney Review</span>
+  <span>2026-05-14</span>
+</div>
+
+<!-- =============================================== COVER SHEET -->
+<section class="page cover-page">
+  <div class="cover-sheet">
+    <div>
+      <div class="cover-badge">DRAFT · Not For Execution</div>
+      <h1 class="cover-title">Trailer <span class="accent">Rental</span><br>Agreement</h1>
+      <div class="cover-sub">Alamo City Hitch &amp; Go Co LLC · San Antonio, Texas</div>
+    </div>
+
+    <div class="cover-warning">
+      <h3>Attorney Review Required</h3>
+      <p>
+        This document is a <strong>working draft</strong> prepared for the owners of
+        Alamo City Hitch &amp; Go Co LLC. It has <strong>not</strong> been reviewed or
+        approved by a licensed Texas attorney. It must not be executed, presented to
+        customers, or relied upon for any transaction until a Texas business attorney
+        has reviewed and approved the final text.
+      </p>
+      <p style="margin-top: 0.1in;">
+        The yellow-highlighted fields (e.g., <span class="mf">{{business_legal_name}}</span>)
+        are merge fields that will be populated per-rental at signature time, either by
+        DocuSign integration or by the operator during intake.
+      </p>
+    </div>
+
+    <dl class="cover-meta">
+      <div>
+        <dt>Document Version</dt>
+        <dd>v0.1 — Draft</dd>
+      </div>
+      <div>
+        <dt>Prepared On</dt>
+        <dd>2026-05-14</dd>
+      </div>
+      <div>
+        <dt>Jurisdiction</dt>
+        <dd>Bexar County, State of Texas</dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>Pending legal review &amp; pricing</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<!-- =============================================== BODY -->
+<section class="page">
+  <div class="doc-header">
+    <span class="doc-header__brand">Alamo City Hitch &amp; Go Co LLC</span>
+    <span>Trailer Rental Agreement — v0.1 DRAFT</span>
+  </div>
+
+  <p style="font-size: 10pt; color: #555;">
+    This Trailer Rental Agreement (the &ldquo;<strong>Agreement</strong>&rdquo;) is
+    entered into on <span class="mf">{{agreement_date}}</span> by and between the
+    parties identified below.
+  </p>
+
+  <h2 class="section-h">1. Parties</h2>
+
+  <table class="fact-table">
+    <tr>
+      <th>Owner</th>
+      <td>
+        <strong><span class="mf">{{business_legal_name}}</span></strong>, a Texas
+        limited liability company with its principal place of business at
+        <span class="mf">{{business_address}}</span>
+        (&ldquo;<strong>Owner</strong>&rdquo; or &ldquo;<strong>Company</strong>&rdquo;).
+      </td>
+    </tr>
+    <tr>
+      <th>Renter</th>
+      <td>
+        <strong><span class="mf">{{customer_full_name}}</span></strong>, residing at
+        <span class="mf">{{customer_address}}</span>, phone
+        <span class="mf">{{customer_phone}}</span>, email
+        <span class="mf">{{customer_email}}</span>
+        (&ldquo;<strong>Renter</strong>&rdquo;).
+      </td>
+    </tr>
+    <tr>
+      <th>Driver&apos;s License</th>
+      <td><span class="mf">{{customer_dl_number}}</span>, issued by
+        <span class="mf">{{customer_dl_state}}</span>, expiring
+        <span class="mf">{{customer_dl_expiration}}</span>.</td>
+    </tr>
+  </table>
+
+  <h2 class="section-h">2. Equipment</h2>
+
+  <p>Owner agrees to rent, and Renter agrees to lease, the following trailer and any
+    attached accessories (together, the &ldquo;<strong>Equipment</strong>&rdquo;):</p>
+
+  <table class="fact-table">
+    <tr><th>Trailer Class</th><td><span class="mf">{{trailer_class}}</span></td></tr>
+    <tr><th>Trailer ID</th><td><span class="mf">{{trailer_id}}</span></td></tr>
+    <tr><th>VIN</th><td><span class="mf">{{trailer_vin}}</span></td></tr>
+    <tr><th>License Plate</th><td><span class="mf">{{trailer_plate}}</span> (Texas)</td></tr>
+    <tr><th>Odometer / Hours In</th><td><span class="mf">{{trailer_odometer_in}}</span></td></tr>
+    <tr><th>Included Accessories</th><td><span class="mf">{{trailer_accessories}}</span> (e.g., ramps, tie-downs, spare tire)</td></tr>
+  </table>
+
+  <h2 class="section-h">3. Rental Term</h2>
+
+  <ol class="legal">
+    <li>
+      <strong>Pickup.</strong> The rental term begins at the scheduled pickup time of
+      <span class="mf">{{pickup_datetime}}</span> at Owner&apos;s premises. Equipment
+      will not be released until Renter has (i) signed this Agreement, (ii) provided a
+      valid driver&apos;s license, (iii) provided current proof of insurance coverage
+      that extends to the towed Equipment, and (iv) authorized the required payment and
+      security deposit.
+    </li>
+    <li>
+      <strong>Return.</strong> Renter must return the Equipment to Owner&apos;s
+      premises no later than <span class="mf">{{return_datetime}}</span>, in the same
+      condition received, with the same fuel level (if applicable), and with all
+      accessories listed in Section 2.
+    </li>
+    <li>
+      <strong>Rental Block.</strong> The rental is billed in the block selected at
+      booking: <span class="mf">{{rental_block}}</span> (4, 12, 24, or 36 hours). Time
+      beyond the selected block is governed by Sections 7 (Extensions) and 8 (Late
+      Return).
+    </li>
+  </ol>
+
+  <h2 class="section-h">4. Rental Fees &amp; Payment</h2>
+
+  <ol class="legal">
+    <li>
+      <strong>Base Rental Fee.</strong> Renter shall pay the rental fee of
+      <span class="mf">{{rental_fee_amount}}</span> for the selected rental block, plus
+      applicable Texas sales tax (<span class="mf">{{tax_amount}}</span>), for a total
+      of <span class="mf">{{total_charge}}</span>. The rental fee is charged at the
+      time of booking via the payment method on file.
+    </li>
+    <li>
+      <strong>Payment Method.</strong> Renter authorizes Owner to charge the credit or
+      debit card provided at booking for all amounts due under this Agreement,
+      including overtime fees, damage, cleaning, fuel replacement, and any other
+      lawful charges arising from this rental.
+    </li>
+    <li>
+      <strong>Card Match Requirement.</strong> The payment card used must be issued in
+      the legal name of Renter as shown on the driver&apos;s license provided. Owner
+      reserves the right to refuse a rental for which the card name does not match the
+      driver&apos;s license.
+    </li>
+  </ol>
+
+  <h2 class="section-h">5. Security Deposit &amp; Authorization</h2>
+
+  <ol class="legal">
+    <li>
+      <strong>Amount.</strong> Owner will place a pre-authorization hold on
+      Renter&apos;s payment card in the following amount, varying by trailer class:
+    </li>
+  </ol>
+
+  <table class="deposit-table">
+    <thead>
+      <tr><th>Trailer Class</th><th>Refundable Deposit (Authorization)</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="mf">{{deposit_class_1_name}}</span></td><td><span class="mf">{{deposit_class_1_amount}}</span></td><td>Held at pickup. Released on inspection.</td></tr>
+      <tr><td><span class="mf">{{deposit_class_2_name}}</span></td><td><span class="mf">{{deposit_class_2_amount}}</span></td><td>Held at pickup. Released on inspection.</td></tr>
+      <tr><td><span class="mf">{{deposit_class_3_name}}</span></td><td><span class="mf">{{deposit_class_3_amount}}</span></td><td>Held at pickup. Released on inspection.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="notice" style="margin-top: 0.15in;">
+    <strong>Pricing Subject to Update</strong>
+    Deposit amounts by trailer class will be finalized prior to public launch. Final
+    amounts will be disclosed on the Company website and on the booking confirmation
+    email issued to Renter at the time of reservation.
+  </div>
+
+  <ol class="legal" start="2">
+    <li style="counter-reset: clause 1">
+      <strong>Nature of Deposit.</strong> The deposit is a pre-authorization hold, not
+      a charge. Owner will release the hold within three (3) business days after the
+      Equipment is returned and inspected in acceptable condition. If deductions are
+      required (damage, cleaning, fuel, overtime), Owner will capture only the amount
+      owed and release the remainder.
+    </li>
+  </ol>
+
+  <h2 class="section-h">6. Insurance Requirements</h2>
+
+  <ol class="legal">
+    <li>
+      <strong>Renter&apos;s Policy Required.</strong> Renter shall maintain, at
+      Renter&apos;s sole cost, automobile liability insurance covering the tow vehicle
+      with limits no less than the State of Texas minimum financial responsibility
+      limits, and the policy shall extend coverage to the Equipment being towed.
+    </li>
+    <li>
+      <strong>Proof of Insurance.</strong> Prior to release of the Equipment, Renter
+      shall provide legible photographic proof of a current, active insurance policy
+      meeting the requirements of Section 6.1. Proof shall show (i) named insured,
+      (ii) policy number, (iii) effective dates, and (iv) liability limits. Owner will
+      retain a copy of this proof with the rental file.
+    </li>
+    <li>
+      <strong>Renter Is Primarily Liable.</strong> Renter&apos;s insurance is primary
+      as to any loss, damage, or third-party claim arising out of the use of the
+      Equipment during the rental term. Owner&apos;s insurance (if any) is excess and
+      non-contributing.
+    </li>
+    <li>
+      <strong>No Waiver.</strong> Owner&apos;s acceptance of proof of insurance does
+      not constitute a waiver of any obligation of Renter under this Agreement, nor a
+      representation by Owner that the coverage is adequate.
+    </li>
+  </ol>
+
+  <h2 class="section-h">7. Use of Equipment &amp; Extensions</h2>
+
+  <ol class="legal">
+    <li>
+      <strong>Permitted Use.</strong> The Equipment may be used only for lawful,
+      personal, or commercial hauling consistent with the trailer class rented and its
+      stated load rating. Renter shall operate the Equipment in compliance with all
+      applicable federal, state, and local laws, including the Texas Transportation
+      Code.
+    </li>
+    <li>
+      <strong>Prohibited Uses.</strong> Renter shall not, and shall not permit any
+      other person to:
+      <ol class="sub">
+        <li>operate the Equipment while under the influence of alcohol or any controlled substance;</li>
+        <li>exceed the rated load capacity printed on the trailer or stated in Exhibit A;</li>
+        <li>use the Equipment to transport hazardous materials, illegal cargo, or live animals unless expressly authorized in writing;</li>
+        <li>take the Equipment outside the State of Texas without Owner&apos;s prior written consent;</li>
+        <li>sublease, assign, or permit use by any person not identified in this Agreement;</li>
+        <li>modify, repair, paint, or alter the Equipment in any manner; or</li>
+        <li>use the Equipment for any purpose that would invalidate any insurance coverage applicable to this rental.</li>
+      </ol>
+    </li>
+    <li>
+      <strong>Extensions.</strong> If Renter wishes to extend the rental term, Renter
+      must request an extension through the Company website, customer dashboard, or by
+      calling Owner <strong>before the scheduled return time</strong>. Extensions are
+      sold in <strong>four (4) hour blocks</strong> at
+      <span class="mf">{{extension_block_fee}}</span> per block, subject to
+      availability. An approved extension is confirmed by a new return time issued via
+      email or SMS and by a successful charge to the payment card on file.
+    </li>
+  </ol>
+
+  <h2 class="section-h">8. Late Return</h2>
+
+  <ol class="legal">
+    <li>
+      <strong>Late Fee.</strong> If the Equipment is not returned by the scheduled
+      return time, and Renter has not obtained an approved extension under Section
+      7.3, Renter shall pay a flat late fee of
+      <span class="mf">{{late_fee_amount}}</span> per rental, in addition to any
+      additional block charges for the continued use of the Equipment.
+    </li>
+    <li>
+      <strong>Cost of Extending vs. Late.</strong> The approved extension rate
+      (Section 7.3) is materially lower than the flat late fee (Section 8.1). Renter
+      is encouraged to request an extension <strong>in advance</strong> rather than
+      return late.
+    </li>
+    <li>
+      <strong>Abandonment.</strong> Equipment not returned within
+      <span class="mf">{{abandonment_threshold_hours}}</span> hours of the scheduled
+      return time, and for which Renter cannot be reached, may be deemed abandoned or
+      stolen, at Owner&apos;s discretion. Owner may notify law enforcement, file a
+      theft report, and charge Renter the full replacement cost of the Equipment and
+      any accessories.
+    </li>
+  </ol>
+
+  <h2 class="section-h">9. Damage, Loss, &amp; Inspection</h2>
+
+  <ol class="legal">
+    <li>
+      <strong>Pre-Rental Inspection.</strong> Owner and Renter shall jointly inspect
+      the Equipment at pickup and document its condition on Exhibit B (Condition
+      Report). Renter&apos;s signature on Exhibit B constitutes agreement that the
+      Equipment was received in the condition shown.
+    </li>
+    <li>
+      <strong>Return Inspection.</strong> Upon return, Owner shall inspect the
+      Equipment within two (2) business days. Any damage, loss, missing accessory,
+      excessive soiling, or mechanical issue not present at pickup and not reasonably
+      attributable to normal wear will be documented and charged to Renter at
+      commercially reasonable rates, with photographic evidence provided to Renter via
+      email.
+    </li>
+    <li>
+      <strong>Renter&apos;s Responsibility.</strong> Renter is responsible for the
+      Equipment from the moment it leaves Owner&apos;s premises until it is returned
+      and inspected under Section 9.2. This responsibility includes theft, vandalism,
+      collision, and weather-related damage.
+    </li>
+  </ol>
+
+  <h2 class="section-h">10. Renter&apos;s Representations &amp; Warranties</h2>
+
+  <p>Renter represents and warrants that:</p>
+
+  <ol class="sub">
+    <li>Renter is at least 21 years of age and holds a valid driver&apos;s license in good standing;</li>
+    <li>Renter&apos;s tow vehicle is rated, equipped, and maintained to safely tow the trailer class being rented;</li>
+    <li>The information provided to Owner (name, address, license, insurance) is current and accurate;</li>
+    <li>Renter is not renting on behalf of a third party not disclosed to Owner;</li>
+    <li>Renter has read, understood, and agrees to this Agreement in its entirety.</li>
+  </ol>
+
+  <h2 class="section-h">11. Disclaimer of Warranties</h2>
+
+  <p style="font-variant: small-caps; font-weight: 500;">
+    The Equipment is provided &ldquo;as is.&rdquo; Except as expressly set forth in
+    this Agreement, Owner makes no warranties of any kind, express or implied,
+    including but not limited to the implied warranties of merchantability, fitness
+    for a particular purpose, and non-infringement. Owner&apos;s obligation is limited
+    to providing Equipment that has passed its documented pre-rental inspection.
+  </p>
+
+  <h2 class="section-h">12. Limitation of Liability &amp; Indemnification</h2>
+
+  <ol class="legal">
+    <li>
+      <strong>Limitation.</strong> To the maximum extent permitted by Texas law,
+      Owner&apos;s total liability under this Agreement shall not exceed the total
+      amount paid by Renter under the applicable rental. In no event shall Owner be
+      liable for consequential, incidental, special, exemplary, or punitive damages,
+      including lost profits or lost business opportunities, even if Owner has been
+      advised of the possibility of such damages.
+    </li>
+    <li>
+      <strong>Indemnification.</strong> Renter shall indemnify, defend, and hold
+      harmless Owner, its members, officers, employees, and agents from and against
+      any and all claims, damages, losses, liabilities, costs, and expenses
+      (including reasonable attorneys&apos; fees) arising out of or relating to
+      (i) Renter&apos;s use of the Equipment, (ii) Renter&apos;s breach of this
+      Agreement, (iii) any act or omission of any person operating the tow vehicle or
+      the Equipment during the rental term, or (iv) any third-party claim arising
+      from the foregoing, except to the extent caused by Owner&apos;s gross negligence
+      or willful misconduct.
+    </li>
+  </ol>
+
+  <h2 class="section-h">13. Governing Law; Venue; DTPA Acknowledgment</h2>
+
+  <ol class="legal">
+    <li>
+      <strong>Governing Law.</strong> This Agreement is governed by the laws of the
+      State of Texas, without regard to its conflict-of-laws principles.
+    </li>
+    <li>
+      <strong>Venue.</strong> The exclusive venue for any dispute arising out of or
+      relating to this Agreement shall be the state or federal courts located in
+      <strong>Bexar County, Texas</strong>. The parties consent to personal
+      jurisdiction in such courts.
+    </li>
+    <li>
+      <strong>DTPA Notice.</strong> Renter acknowledges that Renter has had the
+      opportunity to consult with an attorney of Renter&apos;s own choosing concerning
+      this Agreement and the rights afforded under the Texas Deceptive Trade Practices
+      &ndash; Consumer Protection Act, Texas Business &amp; Commerce Code Chapter 17
+      (&ldquo;<strong>DTPA</strong>&rdquo;). [<em>Subject to final attorney review:
+      parties may include a DTPA waiver in compliance with Tex. Bus. &amp; Com. Code
+      §17.42 only to the extent permitted by law.</em>]
+    </li>
+  </ol>
+
+  <h2 class="section-h">14. Entire Agreement; Severability</h2>
+
+  <p>
+    This Agreement, together with Exhibits A (Trailer Specifications) and B (Condition
+    Report), constitutes the entire agreement between the parties and supersedes all
+    prior discussions and agreements relating to the subject matter. No modification
+    is effective unless in writing and signed by both parties. If any provision of
+    this Agreement is held unenforceable, the remaining provisions will continue in
+    full force and effect.
+  </p>
+</section>
+
+<!-- =============================================== SIGNATURES (forced new page in print) -->
+<section class="page signatures-page">
+  <div class="doc-header">
+    <span class="doc-header__brand">Alamo City Hitch &amp; Go Co LLC</span>
+    <span>Trailer Rental Agreement — v0.1 DRAFT</span>
+  </div>
+
+  <h2 class="section-h">15. Signatures</h2>
+
+  <p>
+    By signing below, the parties acknowledge that they have read, understood, and
+    agreed to be bound by this Agreement, including all exhibits and the terms
+    regarding deposit authorization, insurance, late fees, and limitation of
+    liability.
+  </p>
+
+  <div class="sig-grid">
+    <div class="sig-block">
+      <div class="sig-block__label">Renter Signature</div>
+      <div class="sig-block__line"><span class="mf">{{renter_signature}}</span></div>
+      <div class="sig-block__label" style="margin-top: 0.2in;">Printed Name</div>
+      <div class="sig-block__line"><span class="mf">{{customer_full_name}}</span></div>
+      <div class="sig-block__label" style="margin-top: 0.2in;">Date</div>
+      <div class="sig-block__line"><span class="mf">{{renter_sign_date}}</span></div>
+    </div>
+
+    <div class="sig-block">
+      <div class="sig-block__label">Owner Signature (Authorized Rep.)</div>
+      <div class="sig-block__line"><span class="mf">{{owner_signature}}</span></div>
+      <div class="sig-block__label" style="margin-top: 0.2in;">Printed Name &amp; Title</div>
+      <div class="sig-block__line"><span class="mf">{{owner_rep_name_title}}</span></div>
+      <div class="sig-block__label" style="margin-top: 0.2in;">Date</div>
+      <div class="sig-block__line"><span class="mf">{{owner_sign_date}}</span></div>
+    </div>
+  </div>
+
+  <div class="notice" style="margin-top: 0.4in;">
+    <strong>Electronic Signature</strong>
+    If executed via DocuSign (or equivalent platform), Renter consents that
+    Renter&apos;s electronic signature has the same legal force and effect as a
+    handwritten signature, pursuant to the Texas Uniform Electronic Transactions Act,
+    Texas Business &amp; Commerce Code Chapter 322.
+  </div>
+
+  <h2 class="section-h" style="margin-top: 0.4in;">Exhibits</h2>
+  <div class="exhibit-label">Exhibit A — Trailer Specifications</div>
+  <p>Specifications of the Equipment, including dimensions, load rating, VIN, and included accessories, attached at signing.</p>
+
+  <div class="exhibit-label" style="margin-top: 0.15in;">Exhibit B — Condition Report</div>
+  <p>Joint pre-rental inspection report with photographs, completed at pickup and attached at signing. Updated at return with post-rental inspection findings.</p>
+</section>
+
+</body>
+</html>
