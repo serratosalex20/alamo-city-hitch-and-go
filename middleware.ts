@@ -14,7 +14,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 
 function looksLikeOurToken(value: string | undefined): boolean {
   if (!value) return false;

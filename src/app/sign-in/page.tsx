@@ -8,9 +8,14 @@
  * (when present) so the confirmation page can display a clickable shortcut.
  *
  * Styling honors the Industrial Editorial system from src/app/globals.css.
+ *
+ * `useSearchParams()` requires a Suspense boundary in Next 15+ to avoid
+ * a static-prerender bailout. The page export wraps the inner form in
+ * <Suspense> so the build can prerender the shell and hydrate the form
+ * with the search params on the client.
  */
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -20,7 +25,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     "That sign-in link is no longer valid (links expire after 10 minutes). Request a fresh one.",
 };
 
-export default function SignInPage() {
+function SignInInner() {
   const router = useRouter();
   const search = useSearchParams();
   const initialError = search.get("error");
@@ -126,5 +131,13 @@ export default function SignInPage() {
         </p>
       </section>
     </main>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-background" />}>
+      <SignInInner />
+    </Suspense>
   );
 }

@@ -17,8 +17,9 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { authSecret } from "@/lib/env";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 
-export const SESSION_COOKIE_NAME = "acg_session";
+export { SESSION_COOKIE_NAME };
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 14; // 14 days
 const LINK_TTL_SECONDS = 60 * 10; // 10 minutes
 
