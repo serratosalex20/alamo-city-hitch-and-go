@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,7 +15,26 @@ const navLinks = [
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sessionEmail, setSessionEmail] = useState<string | null | undefined>(undefined);
   const pathname = usePathname();
+
+  // Fetch session once on mount. `undefined` = loading, `null` = signed out,
+  // `string` = signed-in email. Render neutral while loading so the nav
+  // doesn't flash "Sign In" → "Account" on every page load.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data: { email: string | null }) => {
+        if (!cancelled) setSessionEmail(data.email);
+      })
+      .catch(() => {
+        if (!cancelled) setSessionEmail(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <header
@@ -67,6 +86,28 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Session-aware Sign In / Account link.
+              Hidden while loading (sessionEmail === undefined) to avoid
+              a "Sign In" → "Account" flash on every page navigation. */}
+          {sessionEmail === null && (
+            <Link
+              href="/sign-in"
+              className="hidden md:flex min-h-[44px] items-center px-4 font-headline tracking-tighter uppercase text-sm text-tertiary hover:text-white transition-colors"
+            >
+              Sign In
+            </Link>
+          )}
+          {typeof sessionEmail === "string" && (
+            <Link
+              href="/account"
+              className="hidden md:flex min-h-[44px] items-center gap-2 px-4 font-headline tracking-tighter uppercase text-sm text-tertiary hover:text-white transition-colors"
+              aria-label={`Account — signed in as ${sessionEmail}`}
+            >
+              <Icon name="person" className="text-base" />
+              Account
+            </Link>
+          )}
+
           {/* CTA */}
           <Link
             href="/book"
@@ -114,6 +155,26 @@ export function Navbar() {
               </Link>
             );
           })}
+          {sessionEmail === null && (
+            <Link
+              href="/sign-in"
+              role="menuitem"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block min-h-[44px] py-3 px-4 font-headline uppercase tracking-wider text-sm text-on-surface-variant hover:text-white hover:bg-white/5 transition-colors border-t border-white/5 mt-2 pt-4"
+            >
+              Sign In
+            </Link>
+          )}
+          {typeof sessionEmail === "string" && (
+            <Link
+              href="/account"
+              role="menuitem"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block min-h-[44px] py-3 px-4 font-headline uppercase tracking-wider text-sm text-on-surface-variant hover:text-white hover:bg-white/5 transition-colors border-t border-white/5 mt-2 pt-4"
+            >
+              Account
+            </Link>
+          )}
         </div>
       )}
     </header>

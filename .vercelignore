@@ -1,0 +1,32 @@
+# .vercelignore — files NOT uploaded to Vercel during deployment.
+#
+# These are committed to git for the team's reference but they aren't
+# Next.js runtime assets. Excluding them keeps the deploy bundle small
+# and avoids leaking owner-facing artifacts in the build cache.
+
+# Owner-facing deliverables (brand guide, rental agreement, README).
+# These belong in the shared Drive folder, not the production server.
+deliverables/
+
+# Research, competitor analysis, build briefs.
+research/
+
+# Internal planning + lessons learned.
+tasks/
+
+# Documentation specs (kept in repo but not needed at runtime).
+docs/
+
+# Local dev environment + worktrees.
+.claude/
+.firecrawl/
+
+# Local secrets — Vercel uses its own env var system, not .env files.
+.env.local
+.env.development.local
+
+# Editor + OS noise.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

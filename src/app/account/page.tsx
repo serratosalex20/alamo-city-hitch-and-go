@@ -1,8 +1,10 @@
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { ActiveRental } from "@/components/dashboard/ActiveRental";
 import { DocumentList } from "@/components/dashboard/DocumentList";
 import { BottomNav } from "@/components/dashboard/BottomNav";
+import { getSession } from "@/lib/auth/session";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,7 +12,15 @@ export const metadata: Metadata = {
   description: "Manage your active trailer rental, extend time, and access your documents.",
 };
 
-export default function AccountPage() {
+export default async function AccountPage() {
+  // Middleware already enforces a cookie is present, but verify the
+  // signature here in the Node runtime where node:crypto is available.
+  // Belt-and-suspenders: defense in depth against a forged cookie shape
+  // that passes the Edge middleware check.
+  const session = await getSession();
+  if (!session) {
+    redirect("/sign-in?error=invalid-or-expired");
+  }
   return (
     <>
       {/* TopAppBar */}
@@ -65,24 +75,26 @@ export default function AccountPage() {
         {/* Security Status */}
         <section
           className="bg-surface-container-low rounded-lg border border-white/5 p-5"
-          aria-label="Security status"
+          aria-label="Account session"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" aria-hidden="true" />
-              <div>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" aria-hidden="true" />
+              <div className="min-w-0">
                 <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
-                  Security Status
+                  Signed In As
                 </p>
-                <p className="text-sm font-bold text-white">Verified Account</p>
+                <p className="text-sm font-bold text-white truncate">{session.email}</p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
-                Last Login
-              </p>
-              <p className="text-sm font-bold text-white">Today, 08:42 AM</p>
-            </div>
+            <form action="/api/auth/logout" method="POST">
+              <button
+                type="submit"
+                className="min-h-[44px] px-4 py-2 bg-surface-container-high text-on-surface-variant hover:text-white hover:bg-surface-bright transition-colors font-headline font-bold tracking-widest uppercase text-xs"
+              >
+                Sign Out
+              </button>
+            </form>
           </div>
         </section>
 
