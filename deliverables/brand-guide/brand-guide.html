@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Alamo City Hitch &amp; Go Co — Brand Guide v1.0</title>
+<meta name="description" content="Official brand system for Alamo City Hitch & Go Co. Industrial Editorial design language." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* ───── Tokens (mirrors src/app/globals.css) ───── */
+  :root {
+    --ink: #0f131b;
+    --surface: #181c23;
+    --surface-2: #1c2027;
+    --surface-3: #262a32;
+    --surface-4: #31353d;
+    --line: rgba(223, 226, 237, 0.12);
+    --text: #dfe2ed;
+    --text-dim: #b0aea5;
+    --crimson: #9B1C1C;
+    --crimson-hot: #EF4444;
+    --navy: #1C2A43;
+    --chrome: #C0C5CE;
+    --white: #DFE2ED;
+    --gold: #F59E0B;
+    --green: #6dd48a;
+  }
+
+  /* ───── Print sizing ───── */
+  @page { size: Letter; margin: 0; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { page-break-after: always; }
+    .page:last-of-type { page-break-after: auto; }
+  }
+
+  /* ───── Reset ───── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--ink); color: var(--text); font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; font-weight: 400; line-height: 1.5; }
+
+  /* ───── Page shell (8.5 × 11 inches) ───── */
+  .page {
+    width: 8.5in;
+    height: 11in;
+    padding: 0.75in;
+    margin: 0 auto 0.25in;
+    background: var(--ink);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ───── Page chrome ───── */
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: "Oswald", sans-serif;
+    font-size: 9pt;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding-bottom: 0.3in;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 0.5in;
+  }
+  .page-header .mark { color: var(--crimson-hot); font-weight: 700; }
+  .page-footer {
+    margin-top: auto;
+    padding-top: 0.3in;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between;
+    font-family: "Oswald", sans-serif;
+    font-size: 8pt;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* ───── Type scale ───── */
+  .eyebrow {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700;
+    font-size: 10pt;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--crimson-hot);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .eyebrow::before { content: ""; display: inline-block; width: 28px; height: 2px; background: var(--crimson-hot); }
+  h2.section {
+    font-family: "Teko", sans-serif;
+    font-weight: 700;
+    font-size: 48pt;
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    margin-bottom: 0.4in;
+  }
+  h3.sub {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 14pt;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-bottom: 0.15in;
+    color: var(--text);
+  }
+  p { font-size: 10.5pt; line-height: 1.65; max-width: 65ch; color: var(--text); font-weight: 300; }
+  p + p { margin-top: 0.15in; }
+  .lead { font-size: 13pt; line-height: 1.55; max-width: 55ch; color: var(--text); font-weight: 300; }
+
+  /* ───── Cover page ───── */
+  .cover {
+    background: radial-gradient(ellipse at 30% 40%, #3d0a0a 0%, var(--ink) 60%);
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 1in;
+  }
+  .cover__top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .cover__badge {
+    width: 1.6in; height: 1.6in;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    padding: 0.15in;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cover__badge img { width: 100%; height: 100%; object-fit: contain; }
+  .cover__meta {
+    text-align: right;
+    font-family: "Oswald", sans-serif;
+    font-size: 10pt; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-dim);
+    line-height: 1.8;
+  }
+  .cover__meta strong { color: var(--crimson-hot); }
+  .cover__title { margin-top: 0.8in; }
+  .cover__title h1 {
+    font-family: "Teko", sans-serif;
+    font-weight: 700;
+    font-size: 132pt;
+    line-height: 0.82;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .cover__title h1 .crimson {
+    background: linear-gradient(90deg, #FF4444 0%, #DC2626 50%, #7F1D1D 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .cover__tagline {
+    font-family: "Oswald", sans-serif;
+    font-size: 14pt; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--chrome); margin-top: 0.5in;
+  }
+  .cover__bottom {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font-family: "Oswald", sans-serif;
+    font-size: 9pt; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-dim);
+  }
+  .cover__bottom .rule { flex: 1; height: 1px; background: var(--crimson); margin: 0 1in 0.4em; }
+
+  /* ───── TOC ───── */
+  .toc { list-style: none; }
+  .toc li {
+    display: grid;
+    grid-template-columns: 48px 1fr 48px;
+    align-items: baseline;
+    padding: 0.18in 0;
+    border-bottom: 1px solid var(--line);
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 13pt;
+    letter-spacing: 0.02em;
+  }
+  .toc li .num { color: var(--crimson-hot); font-family: "Oswald", sans-serif; font-weight: 700; }
+  .toc li .page-no { color: var(--text-dim); text-align: right; font-family: "Oswald", sans-serif; }
+
+  /* ───── Color swatches ───── */
+  .swatch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25in; margin-top: 0.2in; }
+  .swatch-grid--5 { grid-template-columns: repeat(5, 1fr); gap: 0.15in; }
+  .swatch {
+    border: 1px solid var(--line);
+    padding: 0; display: flex; flex-direction: column;
+    break-inside: avoid;
+  }
+  .swatch__chip { height: 1.5in; }
+  .swatch__meta { padding: 0.15in 0.18in; background: var(--surface-2); }
+  .swatch__name { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 10pt; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text); margin-bottom: 0.05in; }
+  .swatch__hex { font-family: "Oswald", sans-serif; font-weight: 500; font-size: 9pt; letter-spacing: 0.15em; color: var(--text-dim); }
+  .swatch__role { font-family: "Inter", sans-serif; font-size: 8.5pt; color: var(--text-dim); margin-top: 0.08in; line-height: 1.4; font-weight: 300; }
+
+  /* ───── Type specimens ───── */
+  .type-row { padding: 0.18in 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1.3in 1fr; gap: 0.25in; align-items: baseline; break-inside: avoid; }
+  .type-row:last-child { border-bottom: none; }
+  .type-row__meta { font-family: "Oswald", sans-serif; font-size: 9pt; letter-spacing: 0.25em; text-transform: uppercase; color: var(--crimson-hot); line-height: 1.6; }
+  .type-row__meta .label { display: block; color: var(--text-dim); font-size: 8pt; margin-top: 0.05in; }
+  .type-row__sample { color: var(--text); }
+  .sample-teko-hero { font-family: "Teko", sans-serif; font-weight: 700; font-size: 72pt; line-height: 0.85; letter-spacing: -0.02em; text-transform: uppercase; }
+  .sample-teko-h1 { font-family: "Teko", sans-serif; font-weight: 700; font-size: 44pt; line-height: 0.9; text-transform: uppercase; }
+  .sample-sg-h2 { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 20pt; letter-spacing: 0.01em; }
+  .sample-sg-h3 { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 13pt; letter-spacing: 0.04em; text-transform: uppercase; }
+  .sample-inter-body { font-family: "Inter", sans-serif; font-weight: 300; font-size: 11pt; line-height: 1.65; }
+  .sample-oswald-eyebrow { font-family: "Oswald", sans-serif; font-weight: 700; font-size: 11pt; letter-spacing: 0.35em; text-transform: uppercase; color: var(--crimson-hot); }
+
+  /* ───── Voice & tone ───── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5in; margin-top: 0.2in; }
+  .do-dont { break-inside: avoid; }
+  .do-dont h4 { font-family: "Oswald", sans-serif; font-weight: 700; font-size: 11pt; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.18in; padding-bottom: 0.08in; border-bottom: 2px solid var(--crimson); }
+  .do-dont--dont h4 { color: var(--text-dim); border-bottom-color: var(--text-dim); }
+  .do-dont ul { list-style: none; }
+  .do-dont li { padding: 0.1in 0; border-bottom: 1px solid var(--line); font-family: "Space Grotesk", sans-serif; font-size: 11pt; font-weight: 500; }
+  .do-dont li::before { content: "— "; color: var(--crimson-hot); font-weight: 700; }
+  .do-dont--dont li::before { content: "× "; color: var(--text-dim); }
+
+  /* ───── Logo page ───── */
+  .logo-showcase { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35in; margin-top: 0.2in; }
+  .logo-panel { border: 1px solid var(--line); padding: 0.35in; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 2.1in; break-inside: avoid; }
+  .logo-panel--dark { background: var(--ink); }
+  .logo-panel--light { background: var(--white); }
+  .logo-panel--graphite { background: var(--surface-3); }
+  .logo-panel img.badge { max-width: 1.6in; max-height: 1.6in; object-fit: contain; }
+  .logo-panel .wordmark {
+    font-family: "Teko", sans-serif; font-weight: 700; font-size: 30pt; line-height: 0.9;
+    text-align: center; text-transform: uppercase; letter-spacing: -0.01em;
+  }
+  .logo-panel .wordmark--dark { color: var(--text); }
+  .logo-panel .wordmark--light { color: var(--ink); }
+  .logo-panel .wordmark .accent { color: var(--crimson-hot); }
+  .logo-panel--light .wordmark .accent { color: var(--crimson); }
+  .logo-caption {
+    font-family: "Oswald", sans-serif; font-size: 8pt; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--text-dim); margin-top: 0.15in; text-align: center;
+  }
+
+  /* ───── Numbered rule cards ───── */
+  .rule-stack { display: flex; flex-direction: column; gap: 0.1in; margin-top: 0.15in; }
+  .rule { display: grid; grid-template-columns: 36px 1fr; gap: 0.15in; padding: 0.12in 0; border-top: 1px solid var(--line); align-items: baseline; break-inside: avoid; }
+  .rule__num { font-family: "Oswald", sans-serif; font-weight: 700; font-size: 14pt; color: var(--crimson-hot); }
+  .rule__body strong { font-family: "Space Grotesk", sans-serif; font-weight: 700; color: var(--text); display: block; margin-bottom: 0.04in; font-size: 11pt; letter-spacing: 0.02em; }
+  .rule__body { font-family: "Inter", sans-serif; font-size: 10pt; font-weight: 300; color: var(--text-dim); line-height: 1.5; }
+
+  /* ───── Callout / quote ───── */
+  .callout {
+    border-left: 3px solid var(--crimson);
+    padding: 0.15in 0.3in;
+    margin: 0.3in 0;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 13pt;
+    font-style: italic;
+    color: var(--text);
+    max-width: 5.5in;
+  }
+
+  /* ───── Tagline system ───── */
+  .tagline-primary { font-family: "Teko", sans-serif; font-size: 96pt; font-weight: 700; letter-spacing: -0.02em; line-height: 0.9; text-transform: uppercase; color: var(--text); }
+  .tagline-primary .amp, .tagline-primary .dot { color: var(--crimson-hot); }
+  .tagline-secondary { font-family: "Oswald", sans-serif; font-size: 18pt; font-weight: 700; letter-spacing: 0.35em; text-transform: uppercase; color: var(--chrome); margin-top: 0.3in; }
+
+  /* ───── Word bank ───── */
+  .word-bank { display: flex; flex-wrap: wrap; gap: 0.1in; margin-top: 0.2in; }
+  .word-bank span { font-family: "Oswald", sans-serif; font-size: 10pt; letter-spacing: 0.2em; text-transform: uppercase; padding: 0.08in 0.18in; border: 1px solid var(--crimson); color: var(--text); }
+
+  /* ───── Contact / files ───── */
+  .file-row { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 0.25in; padding: 0.13in 0; border-bottom: 1px solid var(--line); font-size: 10.5pt; }
+  .file-row__name { font-family: "Space Grotesk", sans-serif; font-weight: 700; }
+  .file-row__note { color: var(--text-dim); font-weight: 300; }
+  .file-row__status { font-family: "Oswald", sans-serif; font-size: 9pt; letter-spacing: 0.25em; text-transform: uppercase; text-align: right; color: var(--gold); }
+  .file-row__status--ok { color: var(--green); }
+  .file-row__status--pending { color: var(--gold); }
+
+  .spacer { flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- =============================================== PAGE 1: COVER -->
+<section class="page cover">
+  <div class="cover__top">
+    <div class="cover__badge"><img src="./logo.png" alt="Alamo City Hitch & Go Co official badge" /></div>
+    <div class="cover__meta">
+      <div><strong>Brand Guide</strong></div>
+      <div>Version 1.0</div>
+      <div>2026</div>
+    </div>
+  </div>
+
+  <div class="cover__title">
+    <div class="eyebrow" style="margin-bottom: 0.4in;">Industrial Grade Reliability</div>
+    <h1>Alamo City<br>Hitch <span class="crimson">&amp; Go</span> Co</h1>
+    <div class="cover__tagline">Pull &amp; Go — The Complete Brand System</div>
+  </div>
+
+  <div class="cover__bottom">
+    <span>San Antonio, Texas</span>
+    <span class="rule"></span>
+    <span>Confidential — Owner Use</span>
+  </div>
+</section>
+
+<!-- =============================================== PAGE 2: TOC -->
+<section class="page">
+  <div class="page-header">
+    <span>Alamo City Hitch &amp; Go Co <span class="mark">//</span> Brand Guide</span>
+    <span>02</span>
+  </div>
+
+  <div class="eyebrow">Contents</div>
+  <h2 class="section" style="margin-top: 0.2in;">What&apos;s<br>Inside.</h2>
+
+  <ol class="toc">
+    <li><span class="num">01</span><span>The North Star — Industrial Architect</span><span class="page-no">03</span></li>
+    <li><span class="num">02</span><span>Logo System</span><span class="page-no">04</span></li>
+    <li><span class="num">03</span><span>Color Palette</span><span class="page-no">05</span></li>
+    <li><span class="num">04</span><span>Typography</span><span class="page-no">06</span></li>
+    <li><span class="num">05</span><span>Voice &amp; Tone</span><span class="page-no">07</span></li>
+    <li><span class="num">06</span><span>Taglines &amp; Messaging</span><span class="page-no">08</span></li>
+    <li><span class="num">07</span><span>Photography Direction</span><span class="page-no">09</span></li>
+    <li><span class="num">08</span><span>UI System &amp; Materials</span><span class="page-no">10</span></li>
+    <li><span class="num">09</span><span>File Library &amp; Governance</span><span class="page-no">11</span></li>
+  </ol>
+
+  <div class="spacer"></div>
+  <div class="page-footer">
+    <span>Pull &amp; Go</span>
+    <span>v1.0 — 2026</span>
+  </div>
+</section>
+
+<!-- =============================================== PAGE 3: NORTH STAR -->
+<section class="page">
+  <div class="page-header">
+    <span>01 <span class="mark">//</span> The North Star</span>
+    <span>03</span>
+  </div>
+
+  <div class="eyebrow">The North Star</div>
+  <h2 class="section" style="margin-top: 0.2in;">The Industrial<br>Architect.</h2>
+
+  <p class="lead">
+    Alamo City Hitch &amp; Go Co is not a trailer rental company with a rugged
+    aesthetic. It is a precision-engineered service disguised as a rugged one. Every
+    customer touchpoint — the booking flow, the pickup experience, the paperwork, the
+    chrome-on-graphite UI — signals the same thing: <strong>this is professional
+    equipment, handled professionally, returned on time, every time.</strong>
+  </p>
+
+  <div class="callout">&quot;Built for heavy duty. Designed for simplicity.&quot;</div>
+
+  <p>
+    The Industrial Architect north star is the filter every decision passes through.
+    When in doubt, ask: <em>Is this machined, or is this decorated?</em> A machined
+    choice is deliberate, load-bearing, and earns its presence. A decorated choice is
+    ornamental — and gets cut.
+  </p>
+
+  <h3 class="sub" style="margin-top: 0.3in;">The Three Promises</h3>
+  <div class="rule-stack">
+    <div class="rule">
+      <span class="rule__num">01</span>
+      <span class="rule__body"><strong>Rapid Pickup</strong>Every rental is ready when the customer arrives. No lines, no paperwork shuffling, no improvisation.</span>
+    </div>
+    <div class="rule">
+      <span class="rule__num">02</span>
+      <span class="rule__body"><strong>Pro-Inspected</strong>Every trailer is inspected before release. Tires, lights, coupler, safety chains — documented, not assumed.</span>
+    </div>
+    <div class="rule">
+      <span class="rule__num">03</span>
+      <span class="rule__body"><strong>24/7 Support</strong>A real person, reachable the whole time the trailer is out. Industrial reliability includes the people attached to it.</span>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="page-footer">
+    <span>01 // The North Star</span>
+    <span>Pull &amp; Go</span>
+  </div>
+</section>
+
+<!-- =============================================== PAGE 4: LOGO -->
+<section class="page">
+  <div class="page-header">
+    <span>02 <span class="mark">//</span> Logo System</span>
+    <span>04</span>
+  </div>
+
+  <div class="eyebrow">Logo System</div>
+  <h2 class="section" style="margin-top: 0.15in;">The Mark.</h2>
+
+  <p>
+    The brand uses two related marks. The <strong>primary badge</strong> is a navy-on-chrome
+    quatrefoil emblem framing a longhorn before the Alamo, anchored by four stars — Texas
+    heritage rendered as a precision-machined seal. The <strong>typographic lockup</strong>
+    is Teko Bold set tight, in all caps, with the ampersand carrying Alamo Crimson.
+    Together they cover every surface from social avatar to invoice header.
+  </p>
+
+  <div class="logo-showcase">
+    <div>
+      <div class="logo-panel logo-panel--dark">
+        <img class="badge" src="./logo.png" alt="Alamo City Hitch & Go Co badge on Ink surface" />
+      </div>
+      <div class="logo-caption">Primary Badge // on Ink</div>
+    </div>
+    <div>
+      <div class="logo-panel logo-panel--graphite">
+        <img class="badge" src="./logo.png" alt="Alamo City Hitch & Go Co badge on Graphite surface" />
+      </div>
+      <div class="logo-caption">Primary Badge // on Graphite</div>
+    </div>
+    <div>
+      <div class="logo-panel logo-panel--dark">
+        <div class="wordmark wordmark--dark">Alamo City<br>Hitch <span class="accent">&amp;</span> Go</div>
+      </div>
+      <div class="logo-caption">Wordmark Lockup // on Dark</div>
+    </div>
+    <div>
+      <div class="logo-panel logo-panel--light">
+        <div class="wordmark wordmark--light">Alamo City<br>Hitch <span class="accent">&amp;</span> Go</div>
+      </div>
+      <div class="logo-caption">Wordmark Lockup // on Light</div>
+    </div>
+  </div>
+
+  <h3 class="sub" style="margin-top: 0.25in;">The Rules</h3>
+  <div class="rule-stack">
+    <div class="rule">
+      <span class="rule__num">01</span>
+      <span class="rule__body"><strong>Clear space</strong>Around the badge: width of its chrome bezel on all sides. Around the wordmark: cap-height of the &quot;A&quot;.</span>
+    </div>
+    <div class="rule">
+      <span class="rule__num">02</span>
+      <span class="rule__body"><strong>Minimum size</strong>Badge 24&nbsp;mm / 96&nbsp;px. Wordmark 20&nbsp;mm / 120&nbsp;px. Smaller than that, use the wordmark alone.</span>
+    </div>
+    <div class="rule">
+      <span class="rule__num">03</span>
+      <span class="rule__body"><strong>Never</strong>No rotation, no recolor of the badge interior, no drop shadows, no stretching, no busy photo backgrounds without a scrim. Full color or not at all.</span>
+    </div>
+    <div class="rule">
+      <span class="rule__num">04</span>
+      <span class="rule__body"><strong>The ampersand</strong>In the wordmark, &quot;&amp;&quot; is always Alamo Crimson. Never black, never chrome.</span>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="page-footer">
+    <span>02 // Logo System</span>
+    <span>Pull &amp; Go</span>
+  </div>
+</section>
+
+<!-- =============================================== PAGE 5: COLOR -->
+<section class="page">
+  <div class="page-header">
+    <span>03 <span class="mark">//</span> Color Palette</span>
+    <span>05</span>
+  </div>
+
+  <div class="eyebrow">Color Palette</div>
+  <h2 class="section" style="margin-top: 0.2in;">Chrome on<br>Graphite.</h2>
+
+  <p style="margin-bottom: 0.2in;">
+    The palette runs dark by default. <strong>Graphite and navy</strong> carry 90% of
+    every surface. <strong>Crimson</strong> is the wayfinding accent — it marks
+    conversion paths, active states, and brand presence. <strong>Chrome and white</strong>
+    handle type and highlights. Nothing else.
+  </p>
+
+  <h3 class="sub">Primary</h3>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch__chip" style="background:#9B1C1C;"></div>
+      <div class="swatch__meta">
+        <div class="swatch__name">Alamo Crimson</div>
+        <div class="swatch__hex">#9B1C1C · RGB 155·28·28</div>
+        <div class="swatch__role">Primary action. CTAs, brand mark, active nav, eyebrow rules.</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch__chip" style="background:#EF4444;"></div>
+      <div class="swatch__meta">
+        <div class="swatch__name">Crimson Hot</div>
+        <div class="swatch__hex">#EF4444 · RGB 239·68·68</div>
+        <div class="swatch__role">Hover / focus state. Never a fill at rest.</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch__chip" style="background:linear-gradient(90deg,#FF4444,#DC2626,#7F1D1D);"></div>
+      <div class="swatch__meta">
+        <div class="swatch__name">Crimson Signature</div>
+        <div class="swatch__hex">Gradient · Hero word accent</div>
+        <div class="swatch__role">One hero headline word per page. Never UI.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub" style="margin-top: 0.3in;">Foundation</h3>
+  <div class="swatch-grid swatch-grid--5">
+    <div class="swatch">
+      <div class="swatch__chip" style="background:#0f131b;"></div>
+      <div class="swatch__meta">
+        <div class="swatch__name">Ink</div>
+        <div class="swatch__hex">#0F131B</div>
+        <div class="swatch__role">Page background.</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch__chip" style="background:#1C2A43;"></div>
+      <div class="swatch__meta">
+        <div class="swatch__name">Midnight Navy</div>
+        <div class="swatch__hex">#1C2A43</div>
+        <div class="swatch__role">Depth panels.</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch__chip" style="background:#23272F;"></div>
+      <div class="swatch__meta">
+        <div class="swatch__name">Gunmetal</div>
+        <div class="swatch__hex">#23272F</div>
+        <div class="swatch__role">Surfaces, cards.</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch__chip" style="background:#C0C5CE;"></div>
+      <div class="swatch__meta">
+        <div class="swatch__name">Chrome</div>
+        <div class="swatch__hex">#C0C5CE</div>
+        <div class="swatch__role">Icons, dividers.</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch__chip" style="background:#DFE2ED;"></div>
+      <div class="swatch__meta">
+        <div class="swatch__name">Technical White</div>
+        <div class="swatch__hex">#DFE2ED</div>
+        <div class="swatch__role">Typography.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub" style="margin-top: 0.3in;">Usage Ratio — The 60·30·10 Rule</h3>
+  <div style="display:flex; height: 0.5in; width: 100%; margin-top: 0.1in; border: 1px solid var(--line);">
+    <div style="flex: 60; background: var(--ink); display:flex; align-items:center; justify-content:center; font-family: Oswald; font-size: 9pt; letter-spacing: 0.25em; text-transform: uppercase; color: var(--text-dim);">60% Ink / Graphite</div>
+    <div style="flex: 30; background: var(--navy); display:flex; align-items:center; justify-content:center; font-family: Oswald; font-size: 9pt; letter-spacing: 0.25em; text-transform: uppercase; color: var(--text);">30% Navy &amp; Chrome</div>
+    <div style="flex: 10; background: var(--crimson); display:flex; align-items:center; justify-content:center; font-family: Oswald; font-size: 9pt; letter-spacing: 0.25em; text-transform: uppercase; color: #fff;">10% Crimson</div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="page-footer">
+    <span>03 // Color Palette</span>
+    <span>Pull &amp; Go</span>
+  </div>
+</section>
+
+<!-- =============================================== PAGE 6: TYPOGRAPHY -->
+<section class="page">
+  <div class="page-header">
+    <span>04 <span class="mark">//</span> Typography</span>
+    <span>06</span>
+  </div>
+
+  <div class="eyebrow">Typography</div>
+  <h2 class="section" style="margin-top: 0.2in;">Four Voices.<br>One System.</h2>
+
+  <div class="type-row">
+    <div class="type-row__meta">Teko · 700<span class="label">Display / Hero</span></div>
+    <div class="type-row__sample"><div class="sample-teko-hero">Pull &amp; Go.</div></div>
+  </div>
+  <div class="type-row">
+    <div class="type-row__meta">Teko · 700<span class="label">H1 / Section</span></div>
+    <div class="type-row__sample"><div class="sample-teko-h1">Heavy-Duty Trailers</div></div>
+  </div>
+  <div class="type-row">
+    <div class="type-row__meta">Space Grotesk · 700<span class="label">H2 / Card title</span></div>
+    <div class="type-row__sample"><div class="sample-sg-h2">20ft Car Hauler — $85 / 4 hours</div></div>
+  </div>
+  <div class="type-row">
+    <div class="type-row__meta">Space Grotesk · 700<span class="label">H3 / Label</span></div>
+    <div class="type-row__sample"><div class="sample-sg-h3">Select Your Rental Window</div></div>
+  </div>
+  <div class="type-row">
+    <div class="type-row__meta">Oswald · 700<span class="label">Eyebrow / Meta</span></div>
+    <div class="type-row__sample"><div class="sample-oswald-eyebrow">Industrial Grade Reliability</div></div>
+  </div>
+  <div class="type-row">
+    <div class="type-row__meta">Inter · 300<span class="label">Body / Long-form</span></div>
+    <div class="type-row__sample">
+      <p class="sample-inter-body" style="max-width: 4.8in;">
+        Hassle-free trailer rentals, built for heavy duty and designed for simplicity.
+        Every unit inspected, every pickup on schedule, every customer supported.
+        <strong style="color: var(--crimson-hot); font-weight: 700;">Pull &amp; Go.</strong>
+      </p>
+    </div>
+  </div>
+
+  <h3 class="sub" style="margin-top: 0.25in;">Rules</h3>
+  <div class="rule-stack">
+    <div class="rule">
+      <span class="rule__num">01</span>
+      <span class="rule__body"><strong>Teko is the voice</strong>Display only (44pt+). Never body, never labels. Its job is impact.</span>
+    </div>
+    <div class="rule">
+      <span class="rule__num">02</span>
+      <span class="rule__body"><strong>Oswald wears the uniform</strong>Eyebrows, meta, timestamps, page numbers. Always all-caps, always 0.25em+ tracking.</span>
+    </div>
+    <div class="rule">
+      <span class="rule__num">03</span>
+      <span class="rule__body"><strong>Inter speaks plainly</strong>300 for long-form, 500 for UI, 700 for emphasis. No italics outside quotes.</span>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="page-footer">
+    <span>04 // Typography</span>
+    <span>Pull &amp; Go</span>
+  </div>
+</section>
+
+<!-- =============================================== PAGE 7: VOICE -->
+<section class="page">
+  <div class="page-header">
+    <span>05 <span class="mark">//</span> Voice &amp; Tone</span>
+    <span>07</span>
+  </div>
+
+  <div class="eyebrow">Voice &amp; Tone</div>
+  <h2 class="section" style="margin-top: 0.2in;">Short. Mechanical.<br>Confident.</h2>
+
+  <p class="lead">
+    We sound like the foreman on the job — not the salesman in the lobby. Short
+    sentences. Active verbs. No exclamation points. No emoji. No &quot;y&apos;all come
+    back now.&quot; The voice is Texan in its plainness, not its folksiness.
+  </p>
+
+  <div class="two-col" style="margin-top: 0.3in;">
+    <div class="do-dont">
+      <h4>Do</h4>
+      <ul>
+        <li>Pull &amp; Go.</li>
+        <li>Book your trailer in under sixty seconds.</li>
+        <li>Inspected. Loaded. Ready.</li>
+        <li>Built for heavy duty.</li>
+        <li>San Antonio&apos;s top-rated trailer rentals.</li>
+      </ul>
+    </div>
+    <div class="do-dont do-dont--dont">
+      <h4>Don&apos;t</h4>
+      <ul>
+        <li>Come on down y&apos;all!</li>
+        <li>Book your awesome trailer now!</li>
+        <li>We&apos;re SUPER excited to serve you!</li>
+        <li>Your one-stop-shop for all your hauling needs.</li>
+        <li>Best in Texas — guaranteed!!!</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="sub" style="margin-top: 0.3in;">Word Bank</h3>
+  <div class="word-bank">
+    <span>Hassle-Free</span>
+    <span>Heavy-Duty</span>
+    <span>Pro-Inspected</span>
+    <span>Machined</span>
+    <span>Precision</span>
+    <span>Rugged</span>
+    <span>Reliable</span>
+    <span>Rapid</span>
+    <span>Industrial</span>
+    <span>Ready</span>
+    <span>Pull &amp; Go</span>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="page-footer">
+    <span>05 // Voice &amp; Tone</span>
+    <span>Pull &amp; Go</span>
+  </div>
+</section>
+
+<!-- =============================================== PAGE 8: TAGLINES -->
+<section class="page">
+  <div class="page-header">
+    <span>06 <span class="mark">//</span> Taglines &amp; Messaging</span>
+    <span>08</span>
+  </div>
+
+  <div class="eyebrow">Taglines &amp; Messaging</div>
+  <h2 class="section" style="margin-top: 0.2in;">The Anchors.</h2>
+
+  <div style="margin-top: 0.3in;">
+    <div class="sample-oswald-eyebrow" style="color: var(--text-dim);">Primary — Hero use</div>
+    <div class="tagline-primary">Pull <span class="amp">&amp;</span> Go<span class="dot">.</span></div>
+  </div>
+
+  <div style="margin-top: 0.5in;">
+    <div class="sample-oswald-eyebrow" style="color: var(--text-dim);">Secondary — Eyebrow</div>
+    <div class="tagline-secondary">Industrial Grade Reliability</div>
+  </div>
+
+  <h3 class="sub" style="margin-top: 0.5in;">Support Lines</h3>
+  <ul style="list-style:none;">
+    <li style="padding: 0.12in 0; border-bottom: 1px solid var(--line); font-family: 'Space Grotesk', sans-serif; font-size: 14pt;">Built for heavy duty, designed for simplicity.</li>
+    <li style="padding: 0.12in 0; border-bottom: 1px solid var(--line); font-family: 'Space Grotesk', sans-serif; font-size: 14pt;">San Antonio&apos;s top-rated trailer rentals.</li>
+    <li style="padding: 0.12in 0; border-bottom: 1px solid var(--line); font-family: 'Space Grotesk', sans-serif; font-size: 14pt;">Hassle-free. Heavy-duty. Heading out in sixty seconds.</li>
+    <li style="padding: 0.12in 0; border-bottom: 1px solid var(--line); font-family: 'Space Grotesk', sans-serif; font-size: 14pt;">Inspected. Loaded. Ready.</li>
+  </ul>
+
+  <div class="spacer"></div>
+  <div class="page-footer">
+    <span>06 // Taglines &amp; Messaging</span>
+    <span>Pull &amp; Go</span>
+  </div>
+</section>
+
+<!-- =============================================== PAGE 9: PHOTOGRAPHY -->
+<section class="page">
+  <div class="page-header">
+    <span>07 <span class="mark">//</span> Photography Direction</span>
+    <span>09</span>
+  </div>
+
+  <div class="eyebrow">Photography Direction</div>
+  <h2 class="section" style="margin-top: 0.2in;">Grayscale.<br>Low Angle. Dusk.</h2>
+
+  <p class="lead">
+    Brand photography is the single most visible expression of the Industrial
+    Architect. Shoot the equipment the way the equipment shoots itself on a job site —
+    not the way a stock photographer shoots a family road trip.
+  </p>
+
+  <h3 class="sub" style="margin-top: 0.25in;">The Specification</h3>
+  <div class="rule-stack">
+    <div class="rule">
+      <span class="rule__num">01</span>
+      <span class="rule__body"><strong>Grayscale default, color on interaction</strong>Hero imagery renders grayscale at 75% brightness until hovered, then fades to full color over 700ms. Prints stay grayscale.</span>
+    </div>
+    <div class="rule">
+      <span class="rule__num">02</span>
+      <span class="rule__body"><strong>Low angle, wide frame</strong>Camera at hitch height. 21:9 aspect preferred. Room on both sides for headline overlap.</span>
+    </div>
+    <div class="rule">
+      <span class="rule__num">03</span>
+      <span class="rule__body"><strong>Dusk lighting</strong>Golden hour through blue hour. Harsh midday sun is forbidden — it flattens the metal.</span>
+    </div>
+    <div class="rule">
+      <span class="rule__num">04</span>
+      <span class="rule__body"><strong>San Antonio geography</strong>Skyline silhouettes, industrial corridors, Hill Country back-roads. The location is a character, not a backdrop.</span>
+    </div>
+    <div class="rule">
+      <span class="rule__num">05</span>
+      <span class="rule__body"><strong>No stock</strong>Every image in the live product must be original brand photography. Licensed stock is grounds for replacement.</span>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top: 0.25in;">
+    Original brand photography shoot scheduled. Hero images currently render from a
+    placeholder URL and <em>must</em> be swapped before public launch.
+  </div>
+
+  <div class="spacer"></div>
+  <div class="page-footer">
+    <span>07 // Photography Direction</span>
+    <span>Pull &amp; Go</span>
+  </div>
+</section>
+
+<!-- =============================================== PAGE 10: UI SYSTEM -->
+<section class="page">
+  <div class="page-header">
+    <span>08 <span class="mark">//</span> UI System &amp; Materials</span>
+    <span>10</span>
+  </div>
+
+  <div class="eyebrow">UI System &amp; Materials</div>
+  <h2 class="section" style="margin-top: 0.2in;">Machined<br>Materials.</h2>
+
+  <p class="lead">
+    The interface is constructed the way a good machine is constructed — tolerances
+    tight, joinery invisible, no decorative screws. These are the material rules.
+  </p>
+
+  <h3 class="sub" style="margin-top: 0.25in;">The No-Line Rule</h3>
+  <p>
+    Surfaces separate through tonal steps (Ink → Gunmetal → Surface Bright), not
+    through hairline borders. The only permitted border is the <strong>ghost border</strong>
+    — outline-variant at 15% opacity — reserved for interactive input edges.
+  </p>
+
+  <h3 class="sub" style="margin-top: 0.2in;">Glass Panels</h3>
+  <p>
+    Floating containers (trust badges, nav, action panels) use a glass treatment:
+    <code>backdrop-filter: blur(24px)</code> over a 70% opacity gunmetal fill. Reserved
+    for elevated surfaces. Never a page background.
+  </p>
+
+  <h3 class="sub" style="margin-top: 0.2in;">Editorial Grid</h3>
+  <p>
+    Twelve-column editorial grid. Headlines commonly claim 8 columns, trust badges
+    claim 4, and hero photography breaks the grid intentionally — offset by 2 columns
+    to imply motion.
+  </p>
+
+  <h3 class="sub" style="margin-top: 0.2in;">Corners &amp; Shadows</h3>
+  <p>
+    Corner radius tops out at <strong>4&nbsp;px</strong> (<code>--radius-md</code>).
+    Anything rounder reads as consumer-soft and violates the mechanical voice. Shadows
+    are ambient, not decorative — <code>0px 20px 40px rgba(0,0,0,0.4)</code>. Feel
+    them before you see them.
+  </p>
+
+  <div class="spacer"></div>
+  <div class="page-footer">
+    <span>08 // UI System &amp; Materials</span>
+    <span>Pull &amp; Go</span>
+  </div>
+</section>
+
+<!-- =============================================== PAGE 11: FILES & GOVERNANCE -->
+<section class="page">
+  <div class="page-header">
+    <span>09 <span class="mark">//</span> File Library &amp; Governance</span>
+    <span>11</span>
+  </div>
+
+  <div class="eyebrow">Files &amp; Governance</div>
+  <h2 class="section" style="margin-top: 0.2in;">Sources<br>of Truth.</h2>
+
+  <p>
+    The live product is the canonical brand implementation. This guide mirrors it.
+    When the two disagree, the product wins and the guide gets updated within one
+    sprint.
+  </p>
+
+  <h3 class="sub" style="margin-top: 0.3in;">File Library</h3>
+  <div class="file-row" style="border-top: 1px solid var(--line);">
+    <span class="file-row__name">logo.png</span>
+    <span class="file-row__note">Primary badge raster, 420×367 — bundled with this guide.</span>
+    <span class="file-row__status file-row__status--ok">Live</span>
+  </div>
+  <div class="file-row">
+    <span class="file-row__name">logo.svg</span>
+    <span class="file-row__note">Vector master — to be produced from business-card artwork.</span>
+    <span class="file-row__status file-row__status--pending">Pending</span>
+  </div>
+  <div class="file-row">
+    <span class="file-row__name">business-cards.pdf</span>
+    <span class="file-row__note">Print-ready card artwork.</span>
+    <span class="file-row__status file-row__status--ok">In Drive</span>
+  </div>
+  <div class="file-row">
+    <span class="file-row__name">photography/</span>
+    <span class="file-row__note">Original brand photography shoot.</span>
+    <span class="file-row__status file-row__status--pending">Pending</span>
+  </div>
+  <div class="file-row">
+    <span class="file-row__name">rental-agreement.pdf</span>
+    <span class="file-row__note">Draft contract template — pending Texas attorney review.</span>
+    <span class="file-row__status file-row__status--pending">Draft</span>
+  </div>
+
+  <h3 class="sub" style="margin-top: 0.3in;">Governance</h3>
+  <p>
+    Any change to color, typography, or logo usage is made <strong>in code first</strong>
+    (<code>src/app/globals.css</code>) and re-exported to this guide. Vendors needing
+    assets before a revision ships should contact the project owner for a current
+    token snapshot.
+  </p>
+
+  <div class="spacer"></div>
+  <div class="page-footer">
+    <span>09 // File Library &amp; Governance</span>
+    <span>v1.0 · Pull &amp; Go</span>
+  </div>
+</section>
+
+</body>
+</html>
