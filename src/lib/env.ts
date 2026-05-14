@@ -41,6 +41,19 @@ export const stripeWebhookSecret = read("STRIPE_WEBHOOK_SECRET");
 // ─── App ─────────────────────────────────────────────────
 export const appUrl = read("NEXT_PUBLIC_APP_URL") ?? "http://localhost:3000";
 
+// ─── Auth ────────────────────────────────────────────────
+/**
+ * HMAC signing key for session + magic-link tokens.
+ * Production deployments MUST set this. Dev falls back to a constant
+ * so the build doesn't break before keys are configured — but every
+ * stub-mode token is therefore predictable and must never be trusted
+ * across machines.
+ */
+const DEV_FALLBACK_SECRET =
+  "dev-only-fallback-secret-do-not-use-in-production-rotate-via-AUTH_SECRET";
+export const authSecret = read("AUTH_SECRET") ?? DEV_FALLBACK_SECRET;
+export const hasProductionAuthSecret = read("AUTH_SECRET") !== undefined;
+
 // ─── Mode gates ──────────────────────────────────────────
 /**
  * True when the Firebase Admin SDK has enough config to make real calls.
