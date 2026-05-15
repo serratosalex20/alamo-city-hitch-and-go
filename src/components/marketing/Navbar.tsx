@@ -6,10 +6,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 
+// Audit 2026-05-15 fix: removed /locations from the nav until a real
+// multi-location story exists. The business operates from a single San
+// Antonio yard right now — linking to a "Locations" page made the nav
+// look like a chain (and 404'd, since the page didn't exist). Add this
+// back when expansion happens.
 const navLinks = [
   { label: "Fleet", href: "/fleet" },
   { label: "Rates", href: "/rates" },
-  { label: "Locations", href: "/locations" },
   { label: "Terms", href: "/terms" },
 ];
 
