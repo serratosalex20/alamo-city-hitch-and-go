@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, Teko, Oswald } from "next/font/google";
+import { appUrl } from "@/lib/env";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -47,7 +48,11 @@ export const metadata: Metadata = {
     "san antonio trailer rentals near me",
     "trailer rental near me same day",
   ],
-  metadataBase: new URL("https://alamocityhitch.com"),
+  // Reads NEXT_PUBLIC_APP_URL via @/lib/env, set on Vercel to the live deployment.
+  // Falls back to localhost in dev. Audit 2026-05-15 fix: was hardcoded to a
+  // DNS-NXDOMAIN domain (alamocityhitch.com) which made every canonical URL
+  // point at a dead host, blocking Google indexing of the live vercel.app site.
+  metadataBase: new URL(appUrl),
   alternates: {
     canonical: "/",
   },
