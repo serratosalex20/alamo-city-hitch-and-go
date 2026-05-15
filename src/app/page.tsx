@@ -2,15 +2,28 @@ import { Navbar } from "@/components/marketing/Navbar";
 import { Hero } from "@/components/marketing/Hero";
 import { FeatureGrid } from "@/components/marketing/FeatureGrid";
 import { Footer } from "@/components/marketing/Footer";
+import { appUrl } from "@/lib/env";
 
+/**
+ * LocalBusiness schema for organic search rich results.
+ *
+ * Audit 2026-05-15 fix: removed fabricated `aggregateRating` (5★/127 reviews)
+ * and placeholder `telephone` (a 555 number). Google's structured-data policy
+ * (https://developers.google.com/search/docs/appearance/structured-data/sd-policies)
+ * specifies review snippets must reflect real, originally-collected reviews;
+ * publishing a fake aggregate is a manual-action risk.
+ *
+ * Re-add `telephone`, `aggregateRating`, and street address only when verifiable
+ * data exists (e.g., once GBP is live and reviews are real). `url` is now derived
+ * from NEXT_PUBLIC_APP_URL so it always points at the live deployment.
+ */
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   name: "Alamo City Hitch & Go Co.",
   description:
     "San Antonio's top-rated trailer rentals. Industrial-grade utility trailers, car haulers, and enclosed cargo trailers.",
-  url: "https://alamocityhitch.com",
-  telephone: "+12105550123",
+  url: appUrl,
   address: {
     "@type": "PostalAddress",
     addressLocality: "San Antonio",
@@ -31,11 +44,6 @@ const jsonLd = {
     closes: "22:00",
   },
   priceRange: "$$",
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue: "5",
-    reviewCount: "127",
-  },
 };
 
 export default function HomePage() {
