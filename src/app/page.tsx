@@ -1,6 +1,8 @@
 import { Navbar } from "@/components/marketing/Navbar";
 import { Hero } from "@/components/marketing/Hero";
+import { PricingCallout } from "@/components/marketing/PricingCallout";
 import { FeatureGrid } from "@/components/marketing/FeatureGrid";
+import { Comparison } from "@/components/marketing/Comparison";
 import { TrustBlock } from "@/components/marketing/TrustBlock";
 import { FAQ } from "@/components/marketing/FAQ";
 import { Footer } from "@/components/marketing/Footer";
@@ -59,7 +61,9 @@ export default function HomePage() {
       <Navbar />
       <main id="main-content" className="relative min-h-screen pt-24 overflow-hidden">
         <Hero />
+        <PricingCallout />
         <FeatureGrid />
+        <Comparison />
         <TrustBlock />
         <FAQ />
 
