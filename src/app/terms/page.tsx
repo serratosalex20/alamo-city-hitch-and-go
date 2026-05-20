@@ -46,7 +46,7 @@ const sections: Section[] = [
   {
     heading: "Refundable Deposit",
     body:
-      "Every rental requires a refundable deposit hold (the amount varies by trailer class). It is a pre-authorization on your card, not a charge. The hold releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning, fuel replacement, or unpaid overtime is owed, we capture only the amount due and release the remainder.",
+      "Every rental requires a refundable deposit hold — $300 on the enclosed trailers, $200 on the dump trailer. It is a pre-authorization on your card, not a charge. The hold releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning ($100 flat), or unpaid overtime is owed, we capture only the amount due and release the remainder.",
   },
   {
     heading: "Insurance",
@@ -66,7 +66,12 @@ const sections: Section[] = [
   {
     heading: "Late Return",
     body:
-      "If the trailer comes back late without an approved extension, a flat late fee applies (in addition to any continued-use block charges). The flat late fee is materially higher than the approved extension rate — request the extension in advance, not after.",
+      "If the trailer comes back late without an approved extension, a flat $100 late fee applies (in addition to any continued-use block charges). The $100 late fee is materially higher than the approved extension rate — request the extension in advance, not after.",
+  },
+  {
+    heading: "Cleaning Fee",
+    body:
+      "A flat $100 cleaning fee applies only if the trailer is returned uncleaned — meaning trash, mud, debris, manure, paint splatter, or any soiling that requires more than about 15 minutes of cleanup time. Sweep the deck and clear any obvious mess before return and the fee doesn't apply.",
   },
   {
     heading: "Damage, Loss & Inspection",

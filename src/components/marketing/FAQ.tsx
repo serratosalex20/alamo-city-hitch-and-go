@@ -36,7 +36,7 @@ const faqs: FAQ[] = [
   {
     question: "How long can I rent a trailer?",
     answer:
-      "Rentals come in four block sizes: 4, 12, 24, or 36 hours. Pick the block that matches your job. If you need more time mid-rental, extensions sell in 4-hour blocks at a lower per-hour rate than going over — request through your customer dashboard before your scheduled return time.",
+      "Rentals come in four block sizes: Half Day (12 hours), Full Day (24 hours), 3 Days, or 2 Weeks. Pick the block that matches your job. If you need more time mid-rental, extensions sell in 4-hour blocks — request through your customer dashboard before your scheduled return time so you don't trigger the late fee.",
   },
   {
     question: "Do I need insurance to rent a trailer?",
@@ -51,12 +51,17 @@ const faqs: FAQ[] = [
   {
     question: "How much does a trailer rental cost in San Antonio?",
     answer:
-      "Block rates start at $25 for a 4-hour rental of our 10' utility trailer. See the full price matrix on our rates page — every block of every trailer is priced openly, no quote forms or hidden fees. Texas sales tax (Bexar County combined, 8.25%) applies to the rental fee.",
+      "Block rates start at $90 for a Half Day (12 hours) on our 20' or 24' enclosed trailers, $140 for a Full Day. 3-Day and 2-Week blocks are also available at lower per-day rates. See the full price matrix on our rates page — every block of every trailer is priced openly, no quote forms or hidden fees. Texas sales tax (Bexar County combined, 8.25%) applies to the rental fee.",
   },
   {
     question: "What if I'm late returning the trailer?",
     answer:
-      "A flat late fee applies if the trailer comes back after the scheduled return time without an approved extension. The flat late fee is materially higher than the extension rate — request the extension in advance through your dashboard. After roughly 24 hours overdue with no contact, the trailer is treated as abandoned and law enforcement may be notified.",
+      "A flat $100 late fee applies if the trailer comes back after the scheduled return time without an approved extension. That's materially more than the per-block extension rate — request the extension in advance through your dashboard. After roughly 24 hours overdue with no contact, the trailer is treated as abandoned and law enforcement may be notified.",
+  },
+  {
+    question: "Is there a cleaning fee?",
+    answer:
+      "Only if the trailer is returned uncleaned — meaning trash, mud, debris, manure, paint splatter, or any soiling that requires more than about 15 minutes of cleanup. The flat cleaning fee is $100 and is captured from your deposit hold. Sweep the deck and clear any obvious mess before return and you're set.",
   },
   {
     question: "Can I take the trailer outside of Texas?",
