@@ -1,16 +1,40 @@
 "use client";
 
+/**
+ * Navbar — primary site chrome.
+ *
+ * Direction A: "Glued Glass-on-Ink" (per the comparison mockup at
+ * deliverables/mockups/navbar-comparison.html).
+ *
+ * Design choices:
+ *   - Sticky at the top edge with a glass-blur background. Ink at 70%
+ *     opacity reads as neutral graphite — no longer competes with the
+ *     navy interior of the brand badge for attention.
+ *   - Hairline bottom border at ~5% white defines the navbar edge
+ *     without adding visual weight.
+ *   - Logo-only on mobile (the badge IS the identity at small sizes).
+ *     Logo + "Alamo City Hitch & Go" wordmark on >=md (no "Co." —
+ *     dropped per audit 2026-05-20 owner Q&A).
+ *   - Rounded-full crimson pill for the Rent Now CTA — feels more
+ *     premium than a square button and matches current Awwwards /
+ *     Dribbble navbar patterns.
+ *   - Tightened vertical padding (py-3) so the bar sits at ~56-60px,
+ *     leaving more room for hero content below.
+ *
+ * Preserved from prior versions:
+ *   - Session-aware Sign In / Account link via /api/auth/me (Sprint 2)
+ *   - usePathname() driven aria-current on the active nav link
+ *   - Mobile hamburger menu with the same nav links + session link
+ *   - Three-state sessionEmail (undefined = loading, null = signed out,
+ *     string = signed in) to avoid the "Sign In -> Account" flash
+ */
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 
-// Audit 2026-05-15 fix: removed /locations from the nav until a real
-// multi-location story exists. The business operates from a single San
-// Antonio yard right now — linking to a "Locations" page made the nav
-// look like a chain (and 404'd, since the page didn't exist). Add this
-// back when expansion happens.
 const navLinks = [
   { label: "Fleet", href: "/fleet" },
   { label: "Rates", href: "/rates" },
@@ -22,9 +46,6 @@ export function Navbar() {
   const [sessionEmail, setSessionEmail] = useState<string | null | undefined>(undefined);
   const pathname = usePathname();
 
-  // Fetch session once on mount. `undefined` = loading, `null` = signed out,
-  // `string` = signed-in email. Render neutral while loading so the nav
-  // doesn't flash "Sign In" → "Account" on every page load.
   useEffect(() => {
     let cancelled = false;
     fetch("/api/auth/me", { cache: "no-store" })
@@ -42,34 +63,34 @@ export function Navbar() {
 
   return (
     <header
-      className="fixed top-0 w-full z-50 bg-secondary-container/90 backdrop-blur-xl shadow-ambient"
+      className="fixed top-0 w-full z-50 bg-background/70 backdrop-blur-2xl border-b border-white/5"
       role="banner"
     >
       <nav
-        className="flex justify-between items-center px-8 py-4 max-w-none w-full"
+        className="flex items-center justify-between gap-4 px-4 md:px-6 py-3 max-w-7xl mx-auto"
         aria-label="Main navigation"
       >
-        {/* Logo */}
+        {/* Brand: logo + wordmark (wordmark hidden on mobile) */}
         <Link
           href="/"
-          className="flex items-center gap-3 min-h-[44px]"
-          aria-label="Alamo City Hitch & Go Co. — Home"
+          className="flex items-center gap-2.5 min-h-[44px] -ml-1 pl-1 pr-2 hover:opacity-90 transition-opacity"
+          aria-label="Alamo City Hitch & Go — Home"
         >
           <Image
             src="/logo.png"
             alt=""
-            width={80}
-            height={80}
-            className="rounded-sm w-14 md:w-16 h-auto"
+            width={1500}
+            height={1312}
+            className="w-10 md:w-11 h-auto"
             priority
           />
-          <span className="text-3xl font-bold tracking-widest text-white font-teko uppercase">
-            ALAMO CITY HITCH &amp; GO CO.
+          <span className="hidden md:inline-block font-teko font-bold text-2xl tracking-[0.02em] uppercase text-white leading-none whitespace-nowrap">
+            Alamo City Hitch <span className="text-primary">&amp;</span> Go
           </span>
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-2 font-headline tracking-tighter uppercase text-sm">
+        {/* Desktop nav links */}
+        <div className="hidden md:flex items-center gap-1 font-headline tracking-[0.15em] uppercase text-xs font-medium">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -77,10 +98,8 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 aria-current={isActive ? "page" : undefined}
-                className={`min-h-[44px] min-w-[44px] flex items-center justify-center px-4 transition-colors ${
-                  isActive
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-tertiary hover:text-white"
+                className={`min-h-[44px] flex items-center px-3.5 transition-colors ${
+                  isActive ? "text-white" : "text-on-surface-variant hover:text-white"
                 }`}
               >
                 {link.label}
@@ -89,14 +108,14 @@ export function Navbar() {
           })}
         </div>
 
+        {/* Right cluster: session link, CTA, mobile hamburger */}
         <div className="flex items-center gap-2">
-          {/* Session-aware Sign In / Account link.
-              Hidden while loading (sessionEmail === undefined) to avoid
-              a "Sign In" → "Account" flash on every page navigation. */}
+          {/* Session-aware Sign In / Account (desktop only). Hidden while
+              loading to avoid a "Sign In" -> "Account" flash. */}
           {sessionEmail === null && (
             <Link
               href="/sign-in"
-              className="hidden md:flex min-h-[44px] items-center px-4 font-headline tracking-tighter uppercase text-sm text-tertiary hover:text-white transition-colors"
+              className="hidden md:flex min-h-[44px] items-center px-3 font-headline tracking-[0.15em] uppercase text-xs font-medium text-on-surface-variant hover:text-white transition-colors"
             >
               Sign In
             </Link>
@@ -104,7 +123,7 @@ export function Navbar() {
           {typeof sessionEmail === "string" && (
             <Link
               href="/account"
-              className="hidden md:flex min-h-[44px] items-center gap-2 px-4 font-headline tracking-tighter uppercase text-sm text-tertiary hover:text-white transition-colors"
+              className="hidden md:flex min-h-[44px] items-center gap-1.5 px-3 font-headline tracking-[0.15em] uppercase text-xs font-medium text-on-surface-variant hover:text-white transition-colors"
               aria-label={`Account — signed in as ${sessionEmail}`}
             >
               <Icon name="person" className="text-base" />
@@ -112,18 +131,18 @@ export function Navbar() {
             </Link>
           )}
 
-          {/* CTA */}
+          {/* Primary CTA — rounded-full pill in Alamo Crimson */}
           <Link
             href="/book"
-            className="bg-primary-container text-white px-6 py-3 min-h-[44px] font-bold tracking-widest hover:brightness-110 transition-all duration-300 active:scale-90 font-label text-sm flex items-center uppercase"
+            className="bg-primary-action text-white px-5 py-2.5 rounded-full font-headline font-bold tracking-[0.15em] uppercase text-xs hover:brightness-110 active:scale-[0.97] transition-all min-h-[40px] inline-flex items-center whitespace-nowrap"
           >
-            RENT NOW
+            Rent Now
           </Link>
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center text-on-surface"
+            className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center text-white hover:text-primary transition-colors"
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-nav-menu"
             aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
@@ -133,11 +152,11 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile menu drawer — opens beneath the navbar */}
       {mobileMenuOpen && (
         <div
           id="mobile-nav-menu"
-          className="md:hidden bg-surface-container/95 backdrop-blur-xl border-t border-white/5 px-8 py-4 space-y-1"
+          className="md:hidden bg-background/95 backdrop-blur-2xl border-t border-white/5 px-4 py-3 space-y-1"
           role="menu"
         >
           {navLinks.map((link) => {
@@ -149,9 +168,9 @@ export function Navbar() {
                 role="menuitem"
                 aria-current={isActive ? "page" : undefined}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block min-h-[44px] py-3 px-4 font-headline uppercase tracking-wider text-sm transition-colors ${
+                className={`block min-h-[44px] py-3 px-4 font-headline uppercase tracking-[0.15em] text-sm font-medium transition-colors ${
                   isActive
-                    ? "text-primary bg-primary/10"
+                    ? "text-white bg-white/5"
                     : "text-on-surface-variant hover:text-white hover:bg-white/5"
                 }`}
               >
@@ -164,7 +183,7 @@ export function Navbar() {
               href="/sign-in"
               role="menuitem"
               onClick={() => setMobileMenuOpen(false)}
-              className="block min-h-[44px] py-3 px-4 font-headline uppercase tracking-wider text-sm text-on-surface-variant hover:text-white hover:bg-white/5 transition-colors border-t border-white/5 mt-2 pt-4"
+              className="block min-h-[44px] py-3 px-4 font-headline uppercase tracking-[0.15em] text-sm font-medium text-on-surface-variant hover:text-white hover:bg-white/5 transition-colors border-t border-white/5 mt-2 pt-4"
             >
               Sign In
             </Link>
@@ -174,7 +193,7 @@ export function Navbar() {
               href="/account"
               role="menuitem"
               onClick={() => setMobileMenuOpen(false)}
-              className="block min-h-[44px] py-3 px-4 font-headline uppercase tracking-wider text-sm text-on-surface-variant hover:text-white hover:bg-white/5 transition-colors border-t border-white/5 mt-2 pt-4"
+              className="block min-h-[44px] py-3 px-4 font-headline uppercase tracking-[0.15em] text-sm font-medium text-on-surface-variant hover:text-white hover:bg-white/5 transition-colors border-t border-white/5 mt-2 pt-4"
             >
               Account
             </Link>

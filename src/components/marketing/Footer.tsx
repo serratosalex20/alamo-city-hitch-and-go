@@ -31,7 +31,7 @@ export function Footer() {
         {/* Brand + locality */}
         <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
           <span className="text-lg font-black text-white font-headline tracking-widest uppercase">
-            ALAMO CITY HITCH &amp; GO CO.
+            ALAMO CITY HITCH <span className="text-primary">&amp;</span> GO
           </span>
           <address className="not-italic font-body text-xs uppercase tracking-widest text-tertiary/80">
             San Antonio, Texas &nbsp;&middot;&nbsp; Heavy-Duty Reliability
