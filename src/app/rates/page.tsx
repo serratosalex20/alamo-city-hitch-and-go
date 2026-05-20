@@ -189,9 +189,10 @@ export default function RatesPage() {
             to the rental fee only. Refundable deposit is a pre-authorization hold on your card, not a charge.
           </p>
           <p>
-            <strong className="text-on-surface">Extensions</strong> sell in 4-hour blocks. Approved extensions
-            cost materially less than the flat late-return fee — request an extension before your scheduled
-            return time via your dashboard.
+            <strong className="text-on-surface">Mid-rental extensions</strong> are billed in 4-hour blocks
+            so you only pay for the time you actually need &mdash; not a full half-day. Approved extensions
+            cost materially less than the $100 flat late-return fee. Request from your dashboard before your
+            scheduled return time.
           </p>
           <p>
             Full terms in our <Link href="/terms" className="text-primary hover:underline">rental agreement</Link>.

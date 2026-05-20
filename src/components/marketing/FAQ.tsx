@@ -36,7 +36,7 @@ const faqs: FAQ[] = [
   {
     question: "How long can I rent a trailer?",
     answer:
-      "Rentals come in four block sizes: Half Day (12 hours), Full Day (24 hours), 3 Days, or 2 Weeks. Pick the block that matches your job. If you need more time mid-rental, extensions sell in 4-hour blocks — request through your customer dashboard before your scheduled return time so you don't trigger the late fee.",
+      "Rentals come in four block sizes: Half Day (12 hours), Full Day (24 hours), 3 Days, or 2 Weeks. Pick the block that matches your job. If you need more time mid-rental, extensions are billed in 4-hour blocks — so you only pay for the time you actually need, not a full half-day. Request through your customer dashboard before your scheduled return time so you don't trigger the late fee.",
   },
   {
     question: "Do I need insurance to rent a trailer?",

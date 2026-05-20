@@ -61,7 +61,7 @@ const sections: Section[] = [
   {
     heading: "Extensions",
     body:
-      "Need more time? Request an extension through your customer dashboard or by calling us BEFORE the scheduled return time. Extensions sell in 4-hour blocks. An approved extension confirms via SMS or email and the new return time becomes binding.",
+      "Need more time? Request an extension through your customer dashboard or by calling us BEFORE the scheduled return time. Mid-rental extensions are billed in 4-hour blocks — so you only pay for the time you actually need, not a full half-day. An approved extension confirms via SMS or email and the new return time becomes binding.",
   },
   {
     heading: "Late Return",

@@ -19,9 +19,12 @@ import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { trailers } from "@/lib/data/trailers";
 
-// Derive the actual block-rate range from the seed data so the headline
-// number stays in sync if the owner changes pricing in src/lib/data/trailers.ts.
+// Derive the entry-point price from the seed data so the headline number
+// stays in sync if the owner changes pricing in src/lib/data/trailers.ts.
 // Sprint 3.3 — pricing keys are now semantic strings (halfDay/fullDay/etc).
+// 2026-05-20 — switched from min-to-max range to "Starting at $minRate":
+// anchoring on the low number is the price-psychology standard for rental
+// services and removes the awkward "$1200" upper bound from the hero.
 const allBlockRates = trailers.flatMap((t) => [
   t.pricing.halfDay,
   t.pricing.fullDay,
@@ -29,7 +32,6 @@ const allBlockRates = trailers.flatMap((t) => [
   t.pricing.twoWeeks,
 ]);
 const minRate = Math.min(...allBlockRates);
-const maxRate = Math.max(...allBlockRates);
 
 export function PricingCallout() {
   return (
@@ -50,9 +52,8 @@ export function PricingCallout() {
             id="pricing-callout-heading"
             className="font-teko text-4xl md:text-5xl font-bold tracking-tighter uppercase leading-none mb-4"
           >
-            <span className="text-primary">${minRate}&ndash;${maxRate}</span> per block.
-            <br className="md:hidden" />
-            <span className="text-on-surface-variant"> Every rate published.</span>
+            <span className="text-primary">Starting at ${minRate}</span>
+            <span className="text-on-surface-variant"> &middot; Every rate published.</span>
           </h2>
           <p className="text-on-surface-variant text-sm md:text-base font-light leading-relaxed max-w-2xl">
             No quote forms, no &quot;call for a price&quot; runaround, no mileage

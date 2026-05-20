@@ -37,14 +37,18 @@ export const metadata: Metadata = {
     template: "%s | Alamo City Hitch & Go Co.",
   },
   description:
-    "Heavy-duty trailer rentals in San Antonio, TX. Industrial-grade utility trailers, car haulers, and enclosed cargo trailers. Same-day pickup. Pull & Go.",
+    "Heavy-duty trailer rentals in San Antonio, TX. Industrial-grade enclosed and dump trailers in Half Day, Full Day, 3-Day, or 2-Week blocks. Same-day pickup. Pull & Go.",
+  // Sprint 3.3 fleet realignment: dropped utility + car-hauler keywords
+  // (no longer in fleet), added enclosed + dump + moving + construction.
+  // Meta-keywords is deprecated by Google for ranking but harmless;
+  // these strings still inform some site-search engines + AI crawlers.
   keywords: [
     "trailer rental san antonio",
     "trailer rental san antonio tx",
-    "utility trailer rental san antonio",
-    "car hauler rental san antonio",
     "enclosed trailer rental san antonio",
-    "heavy duty trailer rental texas",
+    "dump trailer rental san antonio",
+    "moving trailer rental san antonio",
+    "construction trailer rental san antonio",
     "san antonio trailer rentals near me",
     "trailer rental near me same day",
   ],
