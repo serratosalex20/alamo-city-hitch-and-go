@@ -21,6 +21,26 @@
 
 ---
 
+## QUEUED — Full Copy & SEO Audit (next session, 2026-05-20)
+
+Hybrid Option 3 from the 2026-05-20 review: quick wins shipped in
+commit 28f050a (Starting at $90, 4h extension clarity, fleet-aligned
+keywords). Full audit deferred and scoped here so next session
+resumes cleanly.
+
+**Deliverable:** `deliverables/audits/copy-audit-2026-05-20.md` covering:
+- SEO keyword map (current targets vs. recommended targets, with reasoning per keyword + re-map for the new enclosed+dump fleet)
+- Page-by-page copy inventory across `/`, `/fleet`, `/book`, `/rates`, `/terms`, `/sign-in`, FAQ, Comparison, TrustBlock, PricingCallout, Hero, FeatureGrid, Footer — current copy, score (works / weak / wrong), proposed rewrite, reasoning
+- Voice consistency check against the brand guide ("Industrial Architect" north star, "Pull & Go" tagline system, word bank usage)
+- Metadata audit — every `<title>`, `description`, OG, JSON-LD field cross-checked against current fleet + offerings
+- Local SEO signals — neighborhoods to target (Alamo Heights, Stone Oak, Helotes, Schertz, New Braunfels)
+- Conversion-copy wins — A/B-worthy rewrites in CTAs, microcopy, error states
+- AI/LLM-citability — semantic structure, FAQPage already in place, LocalBusiness already in place; what else gets us into "People Also Ask" boxes and AI Overviews
+
+**Approach:** 3 phases — (1) strategic findings report, no code; (2) owner reviews + marks "yes/no/tweak" per item; (3) implementation in 5-10 commits with build verify after each.
+
+---
+
 ## ACTIVE SPRINT — Sprint 2: Auth + Stripe (2026-05-14)
 
 > Goal: turn the visual booking wizard into a real transaction flow. Sprint 1 shipped a render-only site; Sprint 2 makes it accept money and create user accounts.

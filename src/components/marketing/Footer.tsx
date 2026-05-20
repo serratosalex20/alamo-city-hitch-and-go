@@ -24,7 +24,7 @@ const footerLinks = [
 export function Footer() {
   return (
     <footer
-      className="w-full py-12 bg-surface-container-high border-t border-white/10"
+      className="w-full pt-12 pb-6 bg-surface-container-high border-t border-white/10"
       role="contentinfo"
     >
       <div className="max-w-7xl mx-auto px-8 md:px-12 flex flex-col md:flex-row justify-between items-center gap-8">
@@ -53,6 +53,21 @@ export function Footer() {
             </Link>
           ))}
         </nav>
+      </div>
+
+      {/* Agency attribution — hairline divider + low-contrast credit */}
+      <div className="max-w-7xl mx-auto px-8 md:px-12 mt-10 pt-5 border-t border-white/5">
+        <p className="text-center font-body text-[10px] uppercase tracking-[0.25em] text-tertiary/50">
+          Built by{" "}
+          <a
+            href="https://digitalaiads.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-tertiary/80 hover:text-primary transition-colors"
+          >
+            Digital AI Ads
+          </a>
+        </p>
       </div>
     </footer>
   );
