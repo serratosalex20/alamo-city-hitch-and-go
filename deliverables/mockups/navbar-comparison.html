@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Navbar Comparison — Direction A vs Direction B</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Space+Grotesk:wght@500;700&family=Inter:wght@300;400;500;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* ───── Real brand tokens from src/app/globals.css ───── */
+  :root {
+    --ink: #0f131b;
+    --surface: #181c23;
+    --surface-2: #1c2027;
+    --surface-3: #262a32;
+    --surface-4: #31353d;
+    --line: rgba(223, 226, 237, 0.12);
+    --text: #dfe2ed;
+    --text-dim: #b0aea5;
+    --crimson: #9B1C1C;
+    --crimson-hot: #EF4444;
+    --navy: #1C2A43;
+    --chrome: #C0C5CE;
+    --gold: #F59E0B;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #050810;
+    color: var(--text);
+    font-family: "Inter", system-ui, sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ───── Page header ───── */
+  .page-header {
+    padding: 4rem 2rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .page-header h1 {
+    font-family: "Teko", sans-serif;
+    font-size: 64px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 0.9;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .page-header h1 .crimson {
+    background: linear-gradient(90deg, #FF4444, #DC2626, #7F1D1D);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .page-header p {
+    color: var(--text-dim);
+    font-size: 16px;
+    font-weight: 300;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ───── Section wrapper for each Direction ───── */
+  .direction {
+    padding: 4rem 2rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .direction__header {
+    max-width: 1400px;
+    margin: 0 auto 3rem;
+  }
+  .direction__eyebrow {
+    font-family: "Oswald", sans-serif;
+    font-size: 11pt;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--crimson-hot);
+    margin-bottom: 0.5rem;
+  }
+  .direction__title {
+    font-family: "Teko", sans-serif;
+    font-size: 52px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .direction__desc {
+    color: var(--text-dim);
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 700px;
+  }
+  .direction__desc strong { color: var(--text); font-weight: 500; }
+
+  /* ───── Two-up viewport comparison ───── */
+  .viewports {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: start;
+  }
+  @media (max-width: 1100px) {
+    .viewports { grid-template-columns: 1fr; }
+  }
+
+  .viewport-card {
+    background: #0a0e16;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .viewport-card__label {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+    padding: 0.6rem 1rem;
+    font-family: "Oswald", sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .viewport-card__label .px { color: var(--crimson-hot); }
+  .viewport-card__frame {
+    background: var(--ink);
+    height: 480px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ═════════════════════════════════════════════════════════
+     DIRECTION A — Glued Glass-on-Ink
+     ═════════════════════════════════════════════════════════ */
+
+  .nav-a {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(15, 19, 27, 0.7);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border-bottom: 1px solid rgba(223, 226, 237, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+  }
+  .nav-a__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+    min-height: 44px;
+  }
+  .nav-a__logo {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+  .nav-a__wordmark {
+    font-family: "Teko", sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    line-height: 0.95;
+    color: var(--text);
+    text-transform: uppercase;
+    white-space: nowrap;
+    display: none;
+  }
+  .nav-a__wordmark .accent { color: var(--crimson-hot); }
+
+  .nav-a__links {
+    display: none;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .nav-a__link {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 0.6rem 0.9rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+  }
+  .nav-a__link:hover { color: var(--text); }
+
+  .nav-a__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .nav-a__signin {
+    display: none;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 0.6rem 0.9rem;
+    min-height: 44px;
+    align-items: center;
+  }
+  .nav-a__cta {
+    background: var(--crimson);
+    color: white;
+    text-decoration: none;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    transition: filter 0.2s;
+  }
+  .nav-a__cta:hover { filter: brightness(1.15); }
+  .nav-a__hamburger {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+  .nav-a__hamburger svg { width: 22px; height: 22px; }
+
+  /* Direction A — desktop variant (in 1200px viewport) */
+  .vp-desktop .nav-a__wordmark { display: block; }
+  .vp-desktop .nav-a__links { display: flex; }
+  .vp-desktop .nav-a__signin { display: inline-flex; }
+  .vp-desktop .nav-a__hamburger { display: none; }
+  .vp-desktop .nav-a { padding: 0.65rem 1.5rem; }
+
+  /* ═════════════════════════════════════════════════════════
+     DIRECTION B — Floating Pill
+     ═════════════════════════════════════════════════════════ */
+
+  .nav-b-wrapper {
+    position: sticky;
+    top: 0.75rem;
+    z-index: 50;
+    padding: 0 0.75rem;
+  }
+  .nav-b {
+    background: rgba(15, 19, 27, 0.7);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid rgba(223, 226, 237, 0.08);
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.65rem 0.5rem 0.65rem;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  }
+  .nav-b__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    padding-left: 0.25rem;
+    min-height: 40px;
+  }
+  .nav-b__logo {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+  .nav-b__wordmark {
+    font-family: "Teko", sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.02em;
+    line-height: 0.95;
+    color: var(--text);
+    text-transform: uppercase;
+    white-space: nowrap;
+    display: none;
+    padding-right: 0.5rem;
+  }
+  .nav-b__wordmark .accent { color: var(--crimson-hot); }
+
+  .nav-b__links {
+    display: none;
+    align-items: center;
+    gap: 0.1rem;
+    border-left: 1px solid var(--line);
+    padding-left: 0.5rem;
+    margin-left: 0.25rem;
+  }
+  .nav-b__link {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 0.55rem 0.85rem;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    border-radius: 999px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .nav-b__link:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+
+  .nav-b__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .nav-b__signin {
+    display: none;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 0.55rem 0.85rem;
+    border-radius: 999px;
+    min-height: 36px;
+    align-items: center;
+  }
+  .nav-b__cta {
+    background: var(--crimson);
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1.05rem;
+    border-radius: 999px;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    transition: filter 0.2s;
+  }
+  .nav-b__cta:hover { filter: brightness(1.15); }
+  .nav-b__hamburger {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    border-radius: 999px;
+  }
+  .nav-b__hamburger svg { width: 20px; height: 20px; }
+
+  /* Direction B — desktop variant */
+  .vp-desktop .nav-b__wordmark { display: block; }
+  .vp-desktop .nav-b__links { display: flex; }
+  .vp-desktop .nav-b__signin { display: inline-flex; }
+  .vp-desktop .nav-b__hamburger { display: none; }
+  .vp-desktop .nav-b-wrapper { padding: 0 1rem; }
+  .vp-desktop .nav-b { max-width: 1100px; margin: 0 auto; padding: 0.5rem 0.5rem 0.5rem 0.85rem; }
+
+  /* ───── Fake hero behind the navbar so the glass effect reads ───── */
+  .fake-hero {
+    height: 800px;
+    background:
+      radial-gradient(ellipse at top right, rgba(155, 28, 28, 0.18), transparent 50%),
+      linear-gradient(to bottom, var(--ink), #0a0e16);
+    padding: 4rem 1.25rem 2rem;
+    color: var(--text);
+  }
+  .fake-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: "Oswald", sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--crimson-hot);
+    margin-bottom: 1rem;
+  }
+  .fake-hero__eyebrow::before {
+    content: "";
+    width: 20px;
+    height: 2px;
+    background: var(--crimson-hot);
+  }
+  .fake-hero__title {
+    font-family: "Teko", sans-serif;
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .fake-hero__title .crimson {
+    background: linear-gradient(90deg, #FF4444, #DC2626, #7F1D1D);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .fake-hero__body {
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 1.65;
+    max-width: 300px;
+  }
+  .vp-desktop .fake-hero { padding: 5rem 3rem 2rem; }
+  .vp-desktop .fake-hero__title { font-size: 80px; }
+  .vp-desktop .fake-hero__body { font-size: 16px; max-width: 460px; }
+
+  /* ───── Pros / Cons footer per direction ───── */
+  .pros-cons {
+    max-width: 1400px;
+    margin: 2rem auto 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 700px) { .pros-cons { grid-template-columns: 1fr; } }
+
+  .pros, .cons {
+    background: var(--surface-2);
+    border-left: 3px solid var(--crimson);
+    padding: 1.25rem 1.5rem;
+  }
+  .cons { border-left-color: var(--text-dim); }
+  .pros h4, .cons h4 {
+    font-family: "Oswald", sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--crimson-hot);
+    margin-bottom: 0.65rem;
+  }
+  .cons h4 { color: var(--text-dim); }
+  .pros ul, .cons ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  .pros li, .cons li {
+    padding: 0.3rem 0;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.5;
+    padding-left: 1.25rem;
+    position: relative;
+  }
+  .pros li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--crimson-hot);
+    font-weight: 700;
+  }
+  .cons li::before {
+    content: "×";
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+    font-weight: 700;
+  }
+
+  /* ───── Final recommendation block ───── */
+  .rec {
+    background: linear-gradient(135deg, var(--ink), #15192a);
+    border: 1px solid rgba(155, 28, 28, 0.3);
+    padding: 3rem 2rem;
+    text-align: center;
+    margin: 3rem auto 0;
+    max-width: 1100px;
+  }
+  .rec h2 {
+    font-family: "Teko", sans-serif;
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 0.75rem;
+  }
+  .rec h2 .crimson { color: var(--crimson-hot); }
+  .rec p {
+    color: var(--text-dim);
+    font-size: 15px;
+    font-weight: 300;
+    max-width: 720px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ Page header ═══ -->
+<header class="page-header">
+  <h1>Navbar <span class="crimson">Comparison</span></h1>
+  <p>Direction A (glued glass) vs Direction B (floating pill). Mobile + desktop side by side. Real brand tokens, live logo URL.</p>
+</header>
+
+<!-- ═══ DIRECTION A ═══ -->
+<section class="direction">
+  <div class="direction__header">
+    <div class="direction__eyebrow">Direction A</div>
+    <h2 class="direction__title">Glued Glass-on-Ink</h2>
+    <p class="direction__desc">
+      Standard sticky navbar pinned to the very top edge. <strong>Ink background at 70% opacity</strong> with a strong backdrop-blur — the classic "floating glass" effect you see on Linear, Stripe, Resend, and most premium SaaS sites in 2026. Hairline bottom border defines the edge. <strong>Logo-only on mobile, logo + wordmark on desktop.</strong> Safe, polished, ages well.
+    </p>
+  </div>
+
+  <div class="viewports">
+    <!-- A · Mobile -->
+    <div class="viewport-card">
+      <div class="viewport-card__label">
+        <span>Direction A · Mobile</span>
+        <span class="px">360px</span>
+      </div>
+      <div class="viewport-card__frame">
+        <header class="nav-a">
+          <a href="#" class="nav-a__brand">
+            <img class="nav-a__logo" src="https://alamo-city-hitch-and-go.vercel.app/logo.png" alt="Alamo City Hitch & Go badge" />
+          </a>
+          <div class="nav-a__actions">
+            <a href="#" class="nav-a__cta">Rent Now</a>
+            <button class="nav-a__hamburger" aria-label="Menu">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </header>
+        <div class="fake-hero">
+          <div class="fake-hero__eyebrow">Industrial Grade Reliability</div>
+          <h1 class="fake-hero__title">
+            San Antonio's <br>
+            <span class="crimson">Top-Rated</span> <br>
+            Trailer Rentals
+          </h1>
+          <p class="fake-hero__body">Hassle-free trailer rentals. Built for heavy duty, designed for simplicity. Pull & Go.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- A · Desktop -->
+    <div class="viewport-card vp-desktop">
+      <div class="viewport-card__label">
+        <span>Direction A · Desktop</span>
+        <span class="px">≥1100px</span>
+      </div>
+      <div class="viewport-card__frame">
+        <header class="nav-a">
+          <a href="#" class="nav-a__brand">
+            <img class="nav-a__logo" src="https://alamo-city-hitch-and-go.vercel.app/logo.png" alt="Alamo City Hitch & Go badge" />
+            <span class="nav-a__wordmark">Alamo City Hitch <span class="accent">&amp;</span> Go</span>
+          </a>
+          <nav class="nav-a__links">
+            <a href="#" class="nav-a__link">Fleet</a>
+            <a href="#" class="nav-a__link">Rates</a>
+            <a href="#" class="nav-a__link">Terms</a>
+          </nav>
+          <div class="nav-a__actions">
+            <a href="#" class="nav-a__signin">Sign In</a>
+            <a href="#" class="nav-a__cta">Rent Now</a>
+          </div>
+        </header>
+        <div class="fake-hero">
+          <div class="fake-hero__eyebrow">Industrial Grade Reliability</div>
+          <h1 class="fake-hero__title">
+            San Antonio's <br>
+            <span class="crimson">Top-Rated</span> Trailer Rentals
+          </h1>
+          <p class="fake-hero__body">Hassle-free trailer rentals. Built for heavy duty, designed for simplicity. Pull & Go.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Pros</h4>
+      <ul>
+        <li>Familiar pattern — visitors don't have to learn anything new</li>
+        <li>Maximum visible content area (no extra margin around the bar)</li>
+        <li>Easier to nail responsive behavior across edge cases</li>
+        <li>Reads as polished and grown-up; same family as Stripe / Linear / Resend</li>
+        <li>~30 min to implement, low responsive-QA risk</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Cons</h4>
+      <ul>
+        <li>Less brand-distinctive than a floating pill</li>
+        <li>Doesn't catch the eye on its own — relies on logo + hero to do the work</li>
+        <li>Visually similar to most SaaS marketing sites (good or bad, depending)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ DIRECTION B ═══ -->
+<section class="direction">
+  <div class="direction__header">
+    <div class="direction__eyebrow">Direction B</div>
+    <h2 class="direction__title">Floating Pill</h2>
+    <p class="direction__desc">
+      Same glass treatment but the entire header is a <strong>rounded-full pill</strong> that floats away from the top edge with 12–16px of margin. Sits <em>over</em> the page content rather than glued to it. This is the 2026 Awwwards/Dribbble pattern of choice — Vercel 2025 redesign, Granola, recent Framer templates. <strong>Higher visual ceiling, more brand-distinctive,</strong> but takes longer to nail edge cases (scrollbar offset, small viewports, when content scrolls underneath).
+    </p>
+  </div>
+
+  <div class="viewports">
+    <!-- B · Mobile -->
+    <div class="viewport-card">
+      <div class="viewport-card__label">
+        <span>Direction B · Mobile</span>
+        <span class="px">360px</span>
+      </div>
+      <div class="viewport-card__frame">
+        <div class="nav-b-wrapper">
+          <header class="nav-b">
+            <a href="#" class="nav-b__brand">
+              <img class="nav-b__logo" src="https://alamo-city-hitch-and-go.vercel.app/logo.png" alt="Alamo City Hitch & Go badge" />
+            </a>
+            <div class="nav-b__actions">
+              <a href="#" class="nav-b__cta">Rent Now</a>
+              <button class="nav-b__hamburger" aria-label="Menu">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </header>
+        </div>
+        <div class="fake-hero">
+          <div class="fake-hero__eyebrow">Industrial Grade Reliability</div>
+          <h1 class="fake-hero__title">
+            San Antonio's <br>
+            <span class="crimson">Top-Rated</span> <br>
+            Trailer Rentals
+          </h1>
+          <p class="fake-hero__body">Hassle-free trailer rentals. Built for heavy duty, designed for simplicity. Pull & Go.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- B · Desktop -->
+    <div class="viewport-card vp-desktop">
+      <div class="viewport-card__label">
+        <span>Direction B · Desktop</span>
+        <span class="px">≥1100px</span>
+      </div>
+      <div class="viewport-card__frame">
+        <div class="nav-b-wrapper">
+          <header class="nav-b">
+            <a href="#" class="nav-b__brand">
+              <img class="nav-b__logo" src="https://alamo-city-hitch-and-go.vercel.app/logo.png" alt="Alamo City Hitch & Go badge" />
+              <span class="nav-b__wordmark">Alamo City Hitch <span class="accent">&amp;</span> Go</span>
+            </a>
+            <nav class="nav-b__links">
+              <a href="#" class="nav-b__link">Fleet</a>
+              <a href="#" class="nav-b__link">Rates</a>
+              <a href="#" class="nav-b__link">Terms</a>
+            </nav>
+            <div class="nav-b__actions">
+              <a href="#" class="nav-b__signin">Sign In</a>
+              <a href="#" class="nav-b__cta">Rent Now</a>
+            </div>
+          </header>
+        </div>
+        <div class="fake-hero">
+          <div class="fake-hero__eyebrow">Industrial Grade Reliability</div>
+          <h1 class="fake-hero__title">
+            San Antonio's <br>
+            <span class="crimson">Top-Rated</span> Trailer Rentals
+          </h1>
+          <p class="fake-hero__body">Hassle-free trailer rentals. Built for heavy duty, designed for simplicity. Pull & Go.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Pros</h4>
+      <ul>
+        <li>Distinctive — feels designed, not templated</li>
+        <li>Floating pill is the strongest 2026 navbar trend (Vercel, Granola, Framer)</li>
+        <li>Better visual hierarchy: the pill says "this is the brand" before content even loads</li>
+        <li>Ambient drop shadow under the pill adds depth without being heavy</li>
+        <li>Sets a higher design ceiling for the rest of the site to match</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Cons</h4>
+      <ul>
+        <li>~2× the responsive-QA work (very-narrow phones, ultrawide, scrollbar offset)</li>
+        <li>The pill silhouette can feel cramped if the nav link count grows</li>
+        <li>Some users perceive floating UI as "still loading" for a second on slow connections</li>
+        <li>Backdrop-blur is expensive — slight perf hit on older Android</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Recommendation ═══ -->
+<div class="rec">
+  <h2>My recommendation: <span class="crimson">A now, B later</span></h2>
+  <p>
+    Ship Direction A as part of the current sprint — it's a clean, durable upgrade over the current 4-line-wrap navbar and lets us close the navbar issue this hour. Once you're driving real traffic and have customer feedback, do Direction B as part of a "v2 polish" pass when the design ceiling for the rest of the site has caught up. Going straight to B now means we're polishing one component to a higher level than the surrounding pages have reached yet — risky.
+  </p>
+</div>
+
+</body>
+</html>
