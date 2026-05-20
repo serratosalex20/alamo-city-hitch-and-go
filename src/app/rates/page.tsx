@@ -17,16 +17,14 @@ import { Navbar } from "@/components/marketing/Navbar";
 import { Footer } from "@/components/marketing/Footer";
 import { Icon } from "@/components/ui/Icon";
 import { trailers } from "@/lib/data/trailers";
-import { calculatePrice, formatUsd } from "@/lib/booking/pricing";
+import { calculatePrice, formatUsd, ALL_DURATIONS, DURATION_LABELS } from "@/lib/booking/pricing";
 
 export const metadata: Metadata = {
   title: "Rates",
   description:
-    "Transparent trailer rental pricing in San Antonio. Utility, car hauler, and enclosed cargo trailers in 4h / 12h / 24h / 36h blocks. No hidden fees.",
+    "Transparent trailer rental pricing in San Antonio. Enclosed and dump trailers in Half Day / Full Day / 3 Days / 2 Weeks blocks. No hidden fees.",
   alternates: { canonical: "/rates" },
 };
-
-const BLOCKS = [4, 12, 24, 36] as const;
 
 export default function RatesPage() {
   return (
@@ -109,12 +107,12 @@ export default function RatesPage() {
 
               {/* Block grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-outline-variant/10 border-b border-outline-variant/15">
-                {BLOCKS.map((block) => {
-                  const quote = calculatePrice(trailer.id, block);
+                {ALL_DURATIONS.map((duration) => {
+                  const quote = calculatePrice(trailer.id, duration);
                   return (
-                    <div key={block} className="p-5 md:p-6 text-center">
+                    <div key={duration} className="p-5 md:p-6 text-center">
                       <div className="font-headline uppercase tracking-widest text-[10px] font-bold text-on-surface-variant mb-2">
-                        {block}-Hour Block
+                        {DURATION_LABELS[duration]}
                       </div>
                       <div className="font-teko text-4xl md:text-5xl font-bold text-on-surface leading-none mb-1">
                         {formatUsd(quote.rentalCents)}

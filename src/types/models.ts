@@ -9,7 +9,17 @@
 // ─── Trailer ────────────────────────────────────────────
 
 export type TrailerType = "utility" | "car_hauler" | "enclosed" | "dump" | "flatbed" | "gooseneck";
-export type TrailerStatus = "available" | "rented" | "maintenance";
+
+/**
+ * Trailer lifecycle status.
+ *   - available  : in inventory, bookable
+ *   - rented     : currently on an active rental
+ *   - maintenance: out of service for repairs/inspection
+ *   - coming_soon: announced to the market but not yet bookable
+ *                  (Sprint 3.3 added — rendered on the fleet page with
+ *                   a "Coming Soon" badge, filtered from booking flow.)
+ */
+export type TrailerStatus = "available" | "rented" | "maintenance" | "coming_soon";
 
 export interface Trailer {
   id: string;
@@ -27,14 +37,19 @@ export interface Trailer {
     lengthFeet: number;
     heightInches?: number; // enclosed only
   };
+  /**
+   * Sprint 3.3 — pricing keys mirror the `RentalDuration` enum
+   * exactly, so `calculatePrice()` can do `trailer.pricing[duration]`
+   * with no translation layer.
+   */
   pricing: {
-    rate4h: number;
-    rate12h: number;
-    rate24h: number;
-    rate36h: number;
+    halfDay: number;    // 12 hours
+    fullDay: number;    // 24 hours
+    threeDays: number;  // 72 hours
+    twoWeeks: number;   // 336 hours
   };
-  deposit: number;          // security deposit amount
-  badge?: string;           // e.g. "Ready For Pickup", "Commercial Grade"
+  deposit: number;          // security deposit amount (USD whole dollars)
+  badge?: string;           // e.g. "Ready For Pickup", "Coming Soon"
   inventoryCount: number;   // how many physical units of this class
   virtualBoost: number;     // admin can artificially inflate availability
   status: TrailerStatus;
@@ -85,7 +100,20 @@ export type BookingStatus =
   | "completed"
   | "cancelled";
 
-export type RentalDuration = 4 | 12 | 24 | 36;
+/**
+ * Sprint 3.3 — semantic duration keys instead of hour numbers.
+ *
+ * Old: 4 | 12 | 24 | 36 (hour-number union).
+ * New: semantic string keys that mirror Trailer.pricing field names exactly.
+ *
+ * Why semantic keys:
+ *   - "two_weeks" reads better than "336" in code and UI
+ *   - Decouples brand language ("Full Day") from operational math
+ *   - Avoids debates about whether "24" means midnight-midnight or 24 elapsed
+ *
+ * For the math, see DURATION_HOURS in src/lib/booking/pricing.ts.
+ */
+export type RentalDuration = "halfDay" | "fullDay" | "threeDays" | "twoWeeks";
 
 export interface Booking {
   id: string;

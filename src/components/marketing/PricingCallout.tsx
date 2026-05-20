@@ -21,11 +21,12 @@ import { trailers } from "@/lib/data/trailers";
 
 // Derive the actual block-rate range from the seed data so the headline
 // number stays in sync if the owner changes pricing in src/lib/data/trailers.ts.
+// Sprint 3.3 — pricing keys are now semantic strings (halfDay/fullDay/etc).
 const allBlockRates = trailers.flatMap((t) => [
-  t.pricing.rate4h,
-  t.pricing.rate12h,
-  t.pricing.rate24h,
-  t.pricing.rate36h,
+  t.pricing.halfDay,
+  t.pricing.fullDay,
+  t.pricing.threeDays,
+  t.pricing.twoWeeks,
 ]);
 const minRate = Math.min(...allBlockRates);
 const maxRate = Math.max(...allBlockRates);
@@ -55,9 +56,9 @@ export function PricingCallout() {
           </h2>
           <p className="text-on-surface-variant text-sm md:text-base font-light leading-relaxed max-w-2xl">
             No quote forms, no &quot;call for a price&quot; runaround, no mileage
-            surprises. Pick a trailer, pick a 4 / 12 / 24 / 36-hour block, see the
-            total before you book. Texas sales tax called out. Refundable deposit
-            is a hold, not a charge.
+            surprises. Pick a trailer, pick a Half Day, Full Day, 3-Day, or
+            2-Week block, see the total before you book. Texas sales tax called
+            out. Refundable deposit is a hold, not a charge.
           </p>
         </div>
 

@@ -37,7 +37,8 @@ const initialFormData: BookingFormData = {
   trailerSlug: "",
   date: "",
   time: "",
-  duration: 24,
+  // Sprint 3.3 — semantic duration keys replace hour numbers.
+  duration: "fullDay",
   firstName: "",
   lastName: "",
   email: "",

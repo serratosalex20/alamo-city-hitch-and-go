@@ -25,6 +25,7 @@
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { trailers } from "@/lib/data/trailers";
+import { DURATION_LABELS } from "@/lib/booking/pricing";
 import type { BookingFormData } from "@/app/book/page";
 
 interface Props {
@@ -162,7 +163,7 @@ export function StepPayment({ formData, onBack, onSuccess }: Props) {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-on-surface-variant">
-                  Rental Fee ({formData.duration}h)
+                  Rental Fee ({DURATION_LABELS[formData.duration]})
                 </span>
                 <span className="font-bold">{checkout.display.rental}</span>
               </div>

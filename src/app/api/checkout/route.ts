@@ -22,11 +22,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { calculatePrice, formatUsd } from "@/lib/booking/pricing";
 import { getStripe, hasStripe } from "@/lib/stripe/server";
-import type { RentalDuration } from "@/types/models";
+// Sprint 3.3 — RentalDuration is no longer imported; Zod enum carries the type.
 
+// Sprint 3.3 — duration is now a semantic string union.
 const Body = z.object({
   trailerId: z.string().min(1, "Missing trailerId"),
-  duration: z.union([z.literal(4), z.literal(12), z.literal(24), z.literal(36)]),
+  duration: z.enum(["halfDay", "fullDay", "threeDays", "twoWeeks"]),
   email: z.string().email("Enter a valid email address."),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
@@ -59,7 +60,8 @@ export async function POST(request: Request) {
   // ─── Compute prices server-side (never trust the client) ───
   let quote;
   try {
-    quote = calculatePrice(body.trailerId, body.duration as RentalDuration);
+    // Sprint 3.3 — Zod enum infers RentalDuration exactly; no cast needed.
+    quote = calculatePrice(body.trailerId, body.duration);
   } catch (err) {
     return NextResponse.json(
       { ok: false, error: err instanceof Error ? err.message : "Pricing failed." },
@@ -124,8 +126,8 @@ export async function POST(request: Request) {
       currency: "usd",
       customer: customer.id,
       capture_method: "automatic",
-      description: `Trailer rental ${body.duration}h — ${body.trailerId}`,
-      metadata: { trailerId: body.trailerId, duration: String(body.duration), kind: "rental" },
+      description: `Trailer rental (${body.duration}) — ${body.trailerId}`,
+      metadata: { trailerId: body.trailerId, duration: body.duration, kind: "rental" },
     });
 
     const deposit = await stripe.paymentIntents.create({

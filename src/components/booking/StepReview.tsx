@@ -2,6 +2,7 @@
 
 import { Icon } from "@/components/ui/Icon";
 import { trailers } from "@/lib/data/trailers";
+import { DURATION_LABELS } from "@/lib/booking/pricing";
 import type { BookingFormData } from "@/app/book/page";
 
 interface Props {
@@ -14,8 +15,9 @@ export function StepReview({ formData, onBack, onContinue }: Props) {
   const trailer = trailers.find((t) => t.id === formData.trailerId);
   if (!trailer) return null;
 
-  const priceKey = `rate${formData.duration}h` as keyof typeof trailer.pricing;
-  const rentalPrice = trailer.pricing[priceKey];
+  // Sprint 3.3 — direct lookup: pricing keys mirror RentalDuration values.
+  const rentalPrice = trailer.pricing[formData.duration];
+  const durationLabel = DURATION_LABELS[formData.duration];
 
   return (
     <div>
@@ -74,7 +76,7 @@ export function StepReview({ formData, onBack, onContinue }: Props) {
               <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant">
                 Duration
               </span>
-              <span className="font-bold">{formData.duration} Hours</span>
+              <span className="font-bold">{durationLabel}</span>
             </div>
           </div>
         </div>
@@ -109,7 +111,7 @@ export function StepReview({ formData, onBack, onContinue }: Props) {
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
               <span className="text-on-surface-variant">
-                Rental Fee ({formData.duration}h)
+                Rental Fee ({durationLabel})
               </span>
               <span className="font-bold">${rentalPrice}.00</span>
             </div>

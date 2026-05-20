@@ -2,6 +2,7 @@
 
 import type { BookingFormData } from "@/app/book/page";
 import type { RentalDuration } from "@/types/models";
+import { ALL_DURATIONS, DURATION_LABELS } from "@/lib/booking/pricing";
 
 interface Props {
   formData: BookingFormData;
@@ -10,12 +11,14 @@ interface Props {
   onBack: () => void;
 }
 
-const durations: { value: RentalDuration; label: string; description: string }[] = [
-  { value: 4, label: "4 Hours", description: "Quick local haul" },
-  { value: 12, label: "12 Hours", description: "Half-day project" },
-  { value: 24, label: "24 Hours", description: "Full day rental" },
-  { value: 36, label: "36 Hours", description: "Extended project" },
-];
+// Sprint 3.3 — durations come from the pricing lib so the wizard and
+// the /rates page can't drift. Order is fixed by ALL_DURATIONS.
+const durationDescriptions: Record<RentalDuration, string> = {
+  halfDay: "12-hour block",
+  fullDay: "24-hour block",
+  threeDays: "Three-day project",
+  twoWeeks: "Two-week rental",
+};
 
 export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
   const today = new Date().toISOString().split("T")[0];
@@ -73,24 +76,24 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
             Rental Duration
           </legend>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3" role="radiogroup" aria-label="Select rental duration">
-            {durations.map((d) => (
+            {ALL_DURATIONS.map((d) => (
               <button
-                key={d.value}
-                onClick={() => updateForm({ duration: d.value })}
+                key={d}
+                onClick={() => updateForm({ duration: d })}
                 role="radio"
-                aria-checked={formData.duration === d.value}
-                aria-label={`${d.label} — ${d.description}`}
+                aria-checked={formData.duration === d}
+                aria-label={`${DURATION_LABELS[d]} — ${durationDescriptions[d]}`}
                 className={`p-4 min-h-[44px] text-center transition-all ${
-                  formData.duration === d.value
+                  formData.duration === d
                     ? "bg-primary-action text-white"
                     : "bg-surface-container hover:bg-surface-container-high text-on-surface"
                 }`}
               >
                 <span className="block font-headline font-bold text-lg">
-                  {d.label}
+                  {DURATION_LABELS[d]}
                 </span>
                 <span className="block text-[10px] uppercase tracking-wider opacity-70 mt-1">
-                  {d.description}
+                  {durationDescriptions[d]}
                 </span>
               </button>
             ))}

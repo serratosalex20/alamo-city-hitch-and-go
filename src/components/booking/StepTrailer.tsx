@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { Icon } from "@/components/ui/Icon";
-import { trailers } from "@/lib/data/trailers";
+// Sprint 3.3 — use bookableTrailers so "coming_soon" units don't appear
+// as selectable options. The /fleet page still shows them with a
+// "Coming Soon" badge so customers know what's next in the inventory.
+import { bookableTrailers } from "@/lib/data/trailers";
 import type { BookingFormData } from "@/app/book/page";
 
 interface Props {
@@ -30,13 +33,13 @@ export function StepTrailer({ formData, updateForm, onNext }: Props) {
         role="radiogroup"
         aria-label="Select a trailer"
       >
-        {trailers.map((trailer) => (
+        {bookableTrailers.map((trailer) => (
           <button
             key={trailer.id}
             onClick={() => selectTrailer(trailer.id, trailer.slug)}
             role="radio"
             aria-checked={formData.trailerId === trailer.id}
-            aria-label={`${trailer.name} — $${trailer.pricing.rate24h} per day, ${trailer.specs.gvwr.toLocaleString()} LBS GVWR`}
+            aria-label={`${trailer.name} — $${trailer.pricing.fullDay} per day, ${trailer.specs.gvwr.toLocaleString()} LBS GVWR`}
             className={`text-left flex flex-col bg-surface-container-low border transition-all duration-300 min-h-[44px] ${
               formData.trailerId === trailer.id
                 ? "border-primary ring-2 ring-primary/20"
@@ -58,7 +61,7 @@ export function StepTrailer({ formData, updateForm, onNext }: Props) {
                   {trailer.name}
                 </h3>
                 <span className="text-primary font-headline font-bold text-sm">
-                  ${trailer.pricing.rate24h}/day
+                  ${trailer.pricing.fullDay}/day
                 </span>
               </div>
               <p className="text-on-surface-variant text-xs leading-relaxed">

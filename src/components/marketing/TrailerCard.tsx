@@ -50,7 +50,7 @@ export function TrailerCard({ trailer }: TrailerCardProps) {
             {trailer.name}
           </h3>
           <span className="text-primary font-headline font-bold">
-            ${trailer.pricing.rate24h}/DAY
+            ${trailer.pricing.fullDay}/DAY
           </span>
         </div>
 
@@ -79,7 +79,7 @@ export function TrailerCard({ trailer }: TrailerCardProps) {
         {/* CTA */}
         <Link
           href={`/book?trailer=${trailer.slug}`}
-          aria-label={`Rent the ${trailer.name} — $${trailer.pricing.rate24h} per day`}
+          aria-label={`Rent the ${trailer.name} — $${trailer.pricing.fullDay} per day`}
           className="w-full min-h-[44px] bg-white/5 group-hover:bg-primary-action group-hover:text-white text-white py-4 font-headline font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/5"
         >
           RENT THIS TRAILER
