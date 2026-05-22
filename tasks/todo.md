@@ -21,12 +21,15 @@
 
 ---
 
-## QUEUED — Full Copy & SEO Audit (next session, 2026-05-20)
+## ACTIVE — Full Copy & SEO Audit (Hybrid Option 3)
+
+**Phase 1 — Strategic findings:** ✅ SHIPPED 2026-05-21
+**Phase 2 — Owner review:** ⏳ awaiting owner YES/NO/TWEAK per finding ID
+**Phase 3 — Implementation:** queued — 15 small commits planned, will start once Phase 2 markup is back
 
 Hybrid Option 3 from the 2026-05-20 review: quick wins shipped in
 commit 28f050a (Starting at $90, 4h extension clarity, fleet-aligned
-keywords). Full audit deferred and scoped here so next session
-resumes cleanly.
+keywords). Phase 1 audit shipped 2026-05-21.
 
 **Deliverable:** `deliverables/audits/copy-audit-2026-05-20.md` covering:
 - SEO keyword map (current targets vs. recommended targets, with reasoning per keyword + re-map for the new enclosed+dump fleet)
