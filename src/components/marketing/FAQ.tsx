@@ -36,7 +36,7 @@ const faqs: FAQ[] = [
   {
     question: "How long can I rent a trailer?",
     answer:
-      "Rentals come in four block sizes: Half Day (12 hours), Full Day (24 hours), 3 Days, or 2 Weeks. Pick the block that matches your job. If you need more time mid-rental, extensions are billed in 4-hour blocks — so you only pay for the time you actually need, not a full half-day. Request through your customer dashboard before your scheduled return time so you don't trigger the late fee.",
+      "Rentals come in four block sizes: Half Day (12 hours), Full Day (24 hours), 1 Week (7 days), or 2 Weeks (15 calendar days — we include one free day). Pick the block that matches your job. If you need more time mid-rental, extensions are billed in the same block sizes — Half Day, Full Day, 1 Week, or 2 Weeks — so you extend by one more block, not micro-billable hours. Request through your customer dashboard before your scheduled return time so you don't trigger the late fee.",
   },
   {
     question: "Do I need insurance to rent a trailer?",
@@ -46,12 +46,12 @@ const faqs: FAQ[] = [
   {
     question: "Is the security deposit charged to my card?",
     answer:
-      "No. The deposit is a pre-authorization hold, not a charge. It releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning, fuel replacement, or overtime is owed, we capture only the amount due and release the remainder.",
+      "No. The deposit is a $200 refundable pre-authorization hold, not a charge — the same amount across every trailer in the fleet. It releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning, fuel replacement, or overtime is owed, we capture only the amount due and release the remainder.",
   },
   {
     question: "How much does a trailer rental cost in San Antonio?",
     answer:
-      "Block rates start at $90 for a Half Day (12 hours) on our 20' or 24' enclosed trailers, $140 for a Full Day. 3-Day and 2-Week blocks are also available at lower per-day rates. See the full price matrix on our rates page — every block of every trailer is priced openly, no quote forms or hidden fees. Texas sales tax (Bexar County combined, 8.25%) applies to the rental fee.",
+      "Block rates start at $90 for a Half Day (12 hours) on our 20' enclosed trailer. The 24' enclosed and 14' dump start at $100 for a Half Day, $150 for a Full Day. 1-Week blocks are $850 (20') or $900 (24' and dump); 2-Week blocks are $1,680 or $1,800 and ship with one free day baked in (15 calendar days, not 14). See the full price matrix on our rates page — every block of every trailer is priced openly, no quote forms or hidden fees. Texas sales tax (Bexar County combined, 8.25%) applies to the rental fee.",
   },
   {
     question: "What if I'm late returning the trailer?",

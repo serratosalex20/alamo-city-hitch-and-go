@@ -186,13 +186,19 @@ export default function RatesPage() {
         <section className="mt-12 text-xs text-on-surface-variant font-light leading-relaxed space-y-2">
           <p>
             <strong className="text-on-surface">Texas sales tax (Bexar County combined, 8.25%)</strong> applies
-            to the rental fee only. Refundable deposit is a pre-authorization hold on your card, not a charge.
+            to the rental fee only. Refundable $200 deposit is a pre-authorization hold on your card, not a
+            charge — the same amount across every trailer in the fleet.
           </p>
           <p>
-            <strong className="text-on-surface">Mid-rental extensions</strong> are billed in 4-hour blocks
-            so you only pay for the time you actually need &mdash; not a full half-day. Approved extensions
-            cost materially less than the $100 flat late-return fee. Request from your dashboard before your
-            scheduled return time.
+            <strong className="text-on-surface">Mid-rental extensions</strong> are billed in the same block
+            sizes as the original rental — Half Day, Full Day, 1 Week, or 2 Weeks — so you extend by one
+            more block at a time. Approved extensions still cost materially less than the $100 flat late-return
+            fee. Request from your dashboard before your scheduled return time.
+          </p>
+          <p>
+            <strong className="text-on-surface">2-Week block ships with a free day.</strong> The published
+            $1,680 / $1,800 sticker price holds the trailer for 15 calendar days, not 14 — the 15th day is
+            on us.
           </p>
           <p>
             Full terms in our <Link href="/terms" className="text-primary hover:underline">rental agreement</Link>.

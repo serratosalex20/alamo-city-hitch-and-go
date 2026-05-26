@@ -46,7 +46,7 @@ const sections: Section[] = [
   {
     heading: "Refundable Deposit",
     body:
-      "Every rental requires a refundable deposit hold — $300 on the enclosed trailers, $200 on the dump trailer. It is a pre-authorization on your card, not a charge. The hold releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning ($100 flat), or unpaid overtime is owed, we capture only the amount due and release the remainder.",
+      "Every rental requires a $200 refundable deposit hold — the same amount across every trailer in the fleet. It is a pre-authorization on your card, not a charge. The hold releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning ($100 flat), or unpaid overtime is owed, we capture only the amount due and release the remainder.",
   },
   {
     heading: "Insurance",
@@ -61,7 +61,7 @@ const sections: Section[] = [
   {
     heading: "Extensions",
     body:
-      "Need more time? Request an extension through your customer dashboard or by calling us BEFORE the scheduled return time. Mid-rental extensions are billed in 4-hour blocks — so you only pay for the time you actually need, not a full half-day. An approved extension confirms via SMS or email and the new return time becomes binding.",
+      "Need more time? Request an extension through your customer dashboard or by calling us BEFORE the scheduled return time. Mid-rental extensions are billed in the same block sizes as the original rental — Half Day (12h), Full Day (24h), 1 Week, or 2 Weeks — so you extend by one more block at a time. An approved extension confirms via SMS or email and the new return time becomes binding.",
   },
   {
     heading: "Late Return",
