@@ -11,13 +11,14 @@ interface Props {
   onBack: () => void;
 }
 
-// Sprint 3.3 — durations come from the pricing lib so the wizard and
-// the /rates page can't drift. Order is fixed by ALL_DURATIONS.
+// Sprint 3.4 — durations come from the pricing lib so the wizard and
+// the /rates page can't drift. Order is fixed by ALL_DURATIONS. The
+// "Two-week" block ships with a free day baked in (15 calendar days).
 const durationDescriptions: Record<RentalDuration, string> = {
   halfDay: "12-hour block",
   fullDay: "24-hour block",
-  threeDays: "Three-day project",
-  twoWeeks: "Two-week rental",
+  oneWeek: "One-week rental",
+  twoWeeks: "Two-week rental — includes 1 free day (15 days)",
 };
 
 export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {

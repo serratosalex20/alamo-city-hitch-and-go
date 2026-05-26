@@ -28,7 +28,7 @@ import { trailers } from "@/lib/data/trailers";
 const allBlockRates = trailers.flatMap((t) => [
   t.pricing.halfDay,
   t.pricing.fullDay,
-  t.pricing.threeDays,
+  t.pricing.oneWeek,
   t.pricing.twoWeeks,
 ]);
 const minRate = Math.min(...allBlockRates);

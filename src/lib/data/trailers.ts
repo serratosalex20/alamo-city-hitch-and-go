@@ -1,23 +1,32 @@
 import type { Trailer } from "@/types/models";
 
 /**
- * Static trailer fleet seeded for Sprint 3.3 — Pricing & Fleet Restructure.
+ * Static trailer fleet seeded for Sprint 3.4 — Pricing & Block Restructure.
  *
- * Previous seed (utility / car hauler / enclosed cargo) was a placeholder
- * scaffold. This is the real launch fleet:
+ * Sprint 3.3 retired the placeholder utility/car-hauler scaffold; Sprint
+ * 3.4 finalizes the launch pricing matrix per owner decision 2026-05-22:
  *
- *   - 24' Enclosed Trailer  — bookable
- *   - 20' Enclosed Trailer  — bookable
- *   - 14' Dump Trailer       — coming soon (status filter keeps it out
- *                              of the booking wizard, fleet page shows
- *                              it with the "Coming Soon" badge)
+ *   - 24' Enclosed Trailer  — bookable, premium tier ($150/day)
+ *   - 20' Enclosed Trailer  — bookable, discount tier ($140/day)
+ *   - 14' Dump Trailer       — coming soon, premium tier ($150/day)
  *
- * Pricing is uniform-ish at launch ($140/day on all three) — owner can
- * widen the spread later if 24' demand outpaces 20'.
+ * Block pricing:
+ *
+ *   |              | Half Day | Full Day | 1 Week | 2 Weeks (15 days) |
+ *   | 24' Enclosed | $100     | $150     | $900   | $1,800            |
+ *   | 20' Enclosed | $90      | $140     | $850   | $1,680            |
+ *   | 14' Dump     | $100     | $150     | $900   | $1,800            |
+ *
+ * Refundable deposit is $200 across the fleet (was $300/$300/$200 in
+ * Sprint 3.3 — harmonized for simpler customer messaging).
+ *
+ * 2-week block is calendar-extended to 15 days (1 free day baked in)
+ * via DURATION_HOURS.twoWeeks = 360 in src/lib/booking/pricing.ts.
  *
  * Specs and images are flagged TODO(owner) — real specs + photography
- * arrive in the launch shoot. Replace the placeholder values + URLs
- * when assets land, then `git commit -m "data: real specs + photos"`.
+ * arrive in the launch shoot. Same for instructional videos (per-trailer
+ * URLs land incrementally as the owner films them; type fields exist
+ * on Trailer.instructionalVideoUrl / instructionalVideoPosterUrl).
  *
  * Replaced by Firestore reads once Sprint 4.0 ships persistence.
  */
@@ -44,21 +53,21 @@ export const trailers: Trailer[] = [
       heightInches: 84,
     },
     pricing: {
-      halfDay: 90,
-      fullDay: 140,
-      threeDays: 350,
-      twoWeeks: 1200,
+      halfDay: 100,
+      fullDay: 150,
+      oneWeek: 900,
+      twoWeeks: 1800,
     },
-    deposit: 300,
+    deposit: 200,
     badge: "Ready For Pickup",
     inventoryCount: 1,
     virtualBoost: 0,
     status: "available",
     createdAt: "2026-05-18T00:00:00Z",
-    updatedAt: "2026-05-18T00:00:00Z",
+    updatedAt: "2026-05-22T00:00:00Z",
   },
 
-  // ─── 20' Enclosed Trailer ─────────────────────────────────
+  // ─── 20' Enclosed Trailer (discount tier) ─────────────────
   {
     id: "trailer-002",
     name: "20' Enclosed Trailer",
@@ -82,16 +91,16 @@ export const trailers: Trailer[] = [
     pricing: {
       halfDay: 90,
       fullDay: 140,
-      threeDays: 350,
-      twoWeeks: 1200,
+      oneWeek: 850,
+      twoWeeks: 1680,
     },
-    deposit: 300,
+    deposit: 200,
     badge: "Ready For Pickup",
     inventoryCount: 1,
     virtualBoost: 0,
     status: "available",
     createdAt: "2026-05-18T00:00:00Z",
-    updatedAt: "2026-05-18T00:00:00Z",
+    updatedAt: "2026-05-22T00:00:00Z",
   },
 
   // ─── 14' Dump Trailer (Coming Soon) ───────────────────────
@@ -116,9 +125,9 @@ export const trailers: Trailer[] = [
     },
     pricing: {
       halfDay: 100,
-      fullDay: 140,
-      threeDays: 350,
-      twoWeeks: 1200,
+      fullDay: 150,
+      oneWeek: 900,
+      twoWeeks: 1800,
     },
     deposit: 200,
     badge: "Coming Soon",

@@ -23,11 +23,12 @@ import { z } from "zod";
 import { calculatePrice, formatUsd } from "@/lib/booking/pricing";
 import { getStripe, hasStripe } from "@/lib/stripe/server";
 // Sprint 3.3 — RentalDuration is no longer imported; Zod enum carries the type.
-
-// Sprint 3.3 — duration is now a semantic string union.
+// Sprint 3.4 — "threeDays" retired in favor of "oneWeek" per the pricing
+// restructure; keep this enum in lock-step with the RentalDuration union
+// in src/types/models.ts.
 const Body = z.object({
   trailerId: z.string().min(1, "Missing trailerId"),
-  duration: z.enum(["halfDay", "fullDay", "threeDays", "twoWeeks"]),
+  duration: z.enum(["halfDay", "fullDay", "oneWeek", "twoWeeks"]),
   email: z.string().email("Enter a valid email address."),
   firstName: z.string().min(1),
   lastName: z.string().min(1),

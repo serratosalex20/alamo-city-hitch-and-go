@@ -38,21 +38,30 @@ export interface Trailer {
     heightInches?: number; // enclosed only
   };
   /**
-   * Sprint 3.3 — pricing keys mirror the `RentalDuration` enum
-   * exactly, so `calculatePrice()` can do `trailer.pricing[duration]`
-   * with no translation layer.
+   * Sprint 3.4 — pricing keys mirror the `RentalDuration` enum exactly,
+   * so `calculatePrice()` can do `trailer.pricing[duration]` with no
+   * translation layer. 2-week block is calendar-extended to 15 days
+   * (1 free day baked in) per owner decision 2026-05-22.
    */
   pricing: {
     halfDay: number;    // 12 hours
     fullDay: number;    // 24 hours
-    threeDays: number;  // 72 hours
-    twoWeeks: number;   // 336 hours
+    oneWeek: number;    // 168 hours
+    twoWeeks: number;   // 360 hours (15-day calendar: 14d + 1 free day)
   };
   deposit: number;          // security deposit amount (USD whole dollars)
   badge?: string;           // e.g. "Ready For Pickup", "Coming Soon"
   inventoryCount: number;   // how many physical units of this class
   virtualBoost: number;     // admin can artificially inflate availability
   status: TrailerStatus;
+  /**
+   * Sprint 3.4 — per-trailer instructional video URL (towing, set-up,
+   * safety, rules). Optional because owner is filming progressively.
+   * When unset, the `<TrailerVideoPanel>` renders a "Video coming soon"
+   * placeholder instead of an embedded player.
+   */
+  instructionalVideoUrl?: string;
+  instructionalVideoPosterUrl?: string;
   createdAt: string;        // ISO date
   updatedAt: string;
 }
@@ -101,19 +110,21 @@ export type BookingStatus =
   | "cancelled";
 
 /**
- * Sprint 3.3 — semantic duration keys instead of hour numbers.
+ * Sprint 3.4 — semantic duration keys instead of hour numbers.
  *
- * Old: 4 | 12 | 24 | 36 (hour-number union).
- * New: semantic string keys that mirror Trailer.pricing field names exactly.
+ * Old (Sprint 3.3): halfDay | fullDay | threeDays | twoWeeks (3-day block).
+ * New (Sprint 3.4): halfDay | fullDay | oneWeek | twoWeeks. The 3-day
+ * block was retired in favor of a 1-week block per owner direction; the
+ * 2-week block is now calendar-extended to 15 days (1 free day baked in).
  *
  * Why semantic keys:
- *   - "two_weeks" reads better than "336" in code and UI
+ *   - "twoWeeks" reads better than "336" in code and UI
  *   - Decouples brand language ("Full Day") from operational math
  *   - Avoids debates about whether "24" means midnight-midnight or 24 elapsed
  *
  * For the math, see DURATION_HOURS in src/lib/booking/pricing.ts.
  */
-export type RentalDuration = "halfDay" | "fullDay" | "threeDays" | "twoWeeks";
+export type RentalDuration = "halfDay" | "fullDay" | "oneWeek" | "twoWeeks";
 
 export interface Booking {
   id: string;

@@ -11,15 +11,17 @@
  * is Bexar County's combined state + local sales tax — owner should
  * verify with their tax accountant before going live.
  *
- * Sprint 3.3 — Pricing & Fleet Restructure:
- *   - Duration keys are now semantic strings ("halfDay" | "fullDay" |
- *     "threeDays" | "twoWeeks") instead of hour numbers. Pricing field
- *     names on Trailer mirror them exactly so the lookup is direct.
- *   - Late fee is a flat $100 (Option B from the owner Q&A), not
- *     half-day-of-the-trailer math. Easier to communicate.
- *   - Cleaning fee added: $100 if returned uncleaned.
- *   - DURATION_HOURS map exposes the hour count for each key, used by
- *     the availability + conflict-detection libs to compute endTime.
+ * Sprint 3.4 — Pricing & Block Restructure (replaces Sprint 3.3):
+ *   - 3-day block retired; replaced by a 1-week block per owner direction.
+ *   - 2-week block extended to 15 calendar days (1 free day baked in),
+ *     so DURATION_HOURS.twoWeeks = 360 (was 336). availability + endTime
+ *     math automatically deliver the extra day.
+ *   - New pricing: $150 / $100 on 24' and 14'; 20' stays at $140 / $90
+ *     as the discount option. $200 deposit across the fleet.
+ *   - Late fee is a flat $100 (Option B from the Sprint 3.3 owner Q&A).
+ *   - Cleaning fee: $100 if returned uncleaned.
+ *   - Extension semantics now match block sizes (Half Day / Full Day /
+ *     1 Week / 2 Weeks) rather than 4-hour micro-blocks. See Sprint 3.4b.
  */
 
 import type { RentalDuration, Trailer } from "@/types/models";
@@ -28,27 +30,32 @@ import { trailers } from "@/lib/data/trailers";
 // TODO(owner): confirm with tax accountant — Bexar County combined rate.
 const TAX_RATE = 0.0825;
 
-/** Hours per rental-duration key. Used to compute `endTime = startTime + DURATION_HOURS[duration]`. */
+/**
+ * Hours per rental-duration key. Used to compute
+ * `endTime = startTime + DURATION_HOURS[duration]`.
+ * twoWeeks = 360h (not 336) because the 2-week block ships with a free
+ * day — the customer holds the trailer for 15 calendar days, not 14.
+ */
 export const DURATION_HOURS: Record<RentalDuration, number> = {
   halfDay: 12,
   fullDay: 24,
-  threeDays: 72,
-  twoWeeks: 336,
+  oneWeek: 168,
+  twoWeeks: 360,
 };
 
 /** Human-friendly labels for UI surfaces. Single source of truth. */
 export const DURATION_LABELS: Record<RentalDuration, string> = {
   halfDay: "Half Day",
   fullDay: "Full Day",
-  threeDays: "3 Days",
+  oneWeek: "1 Week",
   twoWeeks: "2 Weeks",
 };
 
-/** Short hour-marker for compact UI ("12h", "24h", "3d", "2w"). */
+/** Short hour-marker for compact UI ("12h", "24h", "1w", "2w"). */
 export const DURATION_SHORT: Record<RentalDuration, string> = {
   halfDay: "12h",
   fullDay: "24h",
-  threeDays: "3d",
+  oneWeek: "1w",
   twoWeeks: "2w",
 };
 
@@ -56,7 +63,7 @@ export const DURATION_SHORT: Record<RentalDuration, string> = {
 export const ALL_DURATIONS: RentalDuration[] = [
   "halfDay",
   "fullDay",
-  "threeDays",
+  "oneWeek",
   "twoWeeks",
 ];
 
