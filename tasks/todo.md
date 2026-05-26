@@ -44,6 +44,136 @@ keywords). Phase 1 audit shipped 2026-05-21.
 
 ---
 
+## ACTIVE SPRINT — Sprint 3.4: Pricing Refactor + About + Videos + Audit Phase 3 (2026-05-22)
+
+> Goal: ship the owner-approved pricing/block restructure, scaffold per-trailer instructional videos, add the /about page, and fold in the launch-blocker findings from the Phase 1 audit — all in one coherent sprint so the live site lands in a launch-ready state.
+
+**Status:** ⏳ awaiting owner sign-off on this plan. No code starts until approved.
+
+### Owner-locked decisions (2026-05-22 AskUserQuestion answers)
+
+1. **Pricing matrix (Sprint 3.4 new):**
+   | Trailer | Half Day | Full Day | 1 Week | 2 Weeks (15-day calendar) |
+   |---|---|---|---|---|
+   | 24' Enclosed | $100 | $150 | $900 | $1,800 |
+   | 20' Enclosed | $90 | $140 | $850 | $1,680 |
+   | 14' Dump | $100 | $150 | $900 | $1,800 |
+2. **Refundable deposit:** $200 across all three trailers (was $300/$300/$200).
+3. **Block rename:** `3 Days` → `1 Week`. TypeScript field rename `threeDays` → `oneWeek` throughout.
+4. **2-week incentive:** 15-day calendar duration (1 free day vs. 14-day rental) at the new sticker prices above. `availability.ts` honors a 15-day hold for 2-week bookings.
+5. **Extension semantics:** extensions match block sizes — Half Day / Full Day / 1 Week / 2 Weeks — instead of the current 4-hour micro-blocks. Customer mental model: "extend by one more block."
+6. **Instructional videos:** scaffold "coming soon" placeholders now. Real assets land later.
+7. **About page assets (owner photos, story copy):** scaffold with placeholders. Real assets land later.
+8. **Audit Phase 3 (15 commits) folds into this sprint.** Audit Phase 1 shipped as a snapshot (commit `d57ec55`); launch-blockers + auto-approved findings get implemented here. Judgment-call findings (CV-*, AI-*, voice tweaks) await Phase 2 owner markup separately.
+
+### Sub-sprints (commit-level breakdown)
+
+#### 3.4a — Data layer + type rename (~3 commits)
+- [ ] `src/types/models.ts` — rename `pricing.threeDays` → `pricing.oneWeek` in `Trailer` type. Update `RentalDuration` union: `"halfDay" | "fullDay" | "oneWeek" | "twoWeeks"`.
+- [ ] `src/lib/data/trailers.ts` — replace all three trailer pricing blocks with the matrix above. Drop deposit from $300/$300/$200 to $200 across the board. Add new optional field `instructionalVideoUrl?: string` (default unset).
+- [ ] `src/lib/booking/pricing.ts` — `ALL_DURATIONS` constant: `["halfDay", "fullDay", "oneWeek", "twoWeeks"]`. `DURATION_LABELS` map. `calculatePrice` signature unchanged.
+- [ ] Build verify after each commit (`npm run build`).
+
+#### 3.4b — Booking wizard updates (~2 commits)
+- [ ] `src/components/booking/StepDateTime.tsx` — block radio options use new labels. The 2-week option shows "(15 days)" subtitle to surface the calendar-extension perk.
+- [ ] `src/components/booking/StepReview.tsx` — summary line uses new block label.
+- [ ] `src/lib/booking/availability.ts` — `twoWeeks` book honors 15 calendar days, not 14. Document the 1-day buffer in code comment.
+- [ ] `src/app/book/page.tsx` — `initialFormData.duration` stays `"fullDay"` default. `BookingFormData.duration` type tracks new union.
+
+#### 3.4c — Marketing surface refactor (~4 commits)
+- [ ] `src/components/marketing/FAQ.tsx`:
+  - FAQ #1: rewrite extension language — "Extensions are billed in the same block sizes — Half Day, Full Day, 1 Week, or 2 Weeks — so you extend by one block at a time, not micro-billable hours."
+  - FAQ #4: update price floor — "Block rates start at $90 for a Half Day on our 20' enclosed trailer; $100 for the 24' enclosed and 14' dump."
+  - Add the 6 new FAQ entries from audit CO-FAQ-04 (one-way, same-day, vehicle question, hours, enclosed-vs-dump, advance booking) — these were YES'd implicitly by the launch-blocker bundle.
+- [ ] `src/components/marketing/PricingCallout.tsx` — `minRate` derivation still works ($90 still the floor); only the block-name copy needs update ("Half Day, Full Day, 1 Week, or 2 Weeks").
+- [ ] `src/app/rates/page.tsx`:
+  - Block-grid columns use new labels.
+  - 2-week column shows "(15 days · 1 free day)" subtitle.
+  - Per-trailer rows reflect new prices + new $200 deposit.
+  - Add `<RatesFAQ>` block (audit PG-RATES-06) — 4 questions: tax inclusion, deposit mechanics, extension billing, late-fee structure.
+  - Fine-print section: replace "3-Day" reference with "1-Week", update extension language to match new block-size semantics.
+- [ ] `src/app/terms/page.tsx`:
+  - Section 3 (Payment): "$100 cleaning fee" unchanged.
+  - Section 4 (Refundable Deposit): swap "$300 on enclosed, $200 on dump" → "$200 across all trailers."
+  - Section 6 (Extensions): rewrite to match new block-size extension semantics.
+
+#### 3.4d — Metadata + JSON-LD refresh (~2 commits)
+- [ ] `src/app/layout.tsx` — metadata description: replace "Half Day, Full Day, 3-Day, or 2-Week" with "Half Day, Full Day, 1 Week, or 2 Weeks."
+- [ ] `src/app/page.tsx` — LocalBusiness JSON-LD description (audit SW-01 + PG-HOME-07 fix): "San Antonio trailer rentals. Industrial-grade enclosed cargo trailers and dump trailers, available in Half Day, Full Day, 1 Week, and 2 Weeks blocks." Add `areaServed` array (audit SW-17): `["San Antonio, TX", "Alamo Heights", "Stone Oak", "Helotes", "Schertz", "New Braunfels", "Boerne", "Cibolo", "Bexar County, TX"]`.
+- [ ] `src/app/fleet/page.tsx` metadata description (audit SW-02): "Browse our San Antonio trailer fleet — enclosed cargo trailers (20' and 24') and dump trailers. Transparent block pricing. Same-day pickup."
+- [ ] `src/app/book/layout.tsx` metadata description: realign to new fleet/blocks.
+- [ ] `src/app/rates/page.tsx` metadata description: "Half Day / Full Day / 1 Week / 2 Weeks blocks."
+
+#### 3.4e — Audit Phase 3 launch-blockers + auto-approved fixes (~5 commits)
+These were marked launch-blockers or no-debate fixes in the Phase 1 audit. Folded in here.
+- [ ] **SW-13 + PG-FLEET-02** — fix `/fleet` "OUR LOCATIONS" → "SEE RATES" linking `/rates`.
+- [ ] **SW-03 + CO-HERO-06** — Hero image alt text: replace "utility trailer" reference with "enclosed trailer."
+- [ ] **SW-08 + PG-HOME-02** — title template: `"%s | Alamo City Hitch & Go Co."` → `"%s — Alamo City Hitch & Go"`. Drop "Co." across interior titles.
+- [ ] **SW-09 + PG-SIGNIN-01 + PG-ACCT-01** — add noindex metadata to `/sign-in`, `/sign-in/sent`, `/account`.
+- [ ] **PG-ACCT-03** — `/account` dashboard mock data: replace `"10' Utility Trailer"` with `"24' Enclosed Trailer"` and a realistic unit ID.
+- [ ] **CO-FOOT-02 + CO-FOOT-05 + SW-19** — Footer `<address>` semantics fix + visible hours line "Daily 6 AM – 10 PM" + SW-04 neighborhood-naming sentence.
+
+#### 3.4f — Instructional video scaffolding (~2 commits)
+- [ ] `src/types/models.ts` — `Trailer` interface gets `instructionalVideoUrl?: string` (already added in 3.4a) and `instructionalVideoPosterUrl?: string`.
+- [ ] New component `src/components/marketing/TrailerVideoPanel.tsx` — renders either an embedded video player (if URLs set) or a "Video coming soon" placeholder with brand-styled icon + caption.
+- [ ] Either embed in `TrailerCard` (compact thumbnail) OR scaffold per-trailer detail page `/fleet/[slug]` (closes audit PG-FLEET-07). **Decision: pick one based on owner preference — recommend the detail-page path since it also unlocks long-tail SEO. Default: detail-page if not specified.**
+- [ ] Video provider: YouTube embed (simplest, free, owner uploads to their own YouTube), Vercel-hosted via Vercel Blob (control + branding), or self-host. **Default: YouTube embed** — zero infra cost, zero new env vars, owner controls the assets.
+
+#### 3.4g — About page (~3 commits)
+- [ ] New route `src/app/about/page.tsx`. Sections in order:
+  1. Hero (Industrial Editorial style — Teko H1 + eyebrow + intro paragraph)
+  2. The Owners — photo grid placeholder (2-up with "Photos coming soon" frames) + bio placeholders
+  3. Our Story — short narrative ("San Antonio family business," origin paragraph)
+  4. Mission — one paragraph
+  5. Vision — one paragraph
+  6. Who We Serve — 3-4 bullets (homeowners, contractors, movers, landscapers)
+  7. CTA — "Book a trailer" → `/book`
+- [ ] Metadata: `title: "About"`, page-specific description, canonical, OG.
+- [ ] JSON-LD: `Organization` schema (logo, sameAs placeholders for social, founders array — actual Person schema slots in when bios are real).
+- [ ] Add `/about` to Navbar nav links (Fleet / Rates / About / Terms or Fleet / Rates / Terms / About — owner pick).
+- [ ] Add `/about` to Footer nav.
+- [ ] Add `/about` to sitemap.ts at priority 0.5.
+
+#### 3.4h — Legal doc + brand guide updates (~2 commits)
+- [ ] `deliverables/rental-agreement/rental-agreement.html` — version bump v0.2 → v0.3:
+  - §3.3 Rental Block: replace block list with "Half Day — 12h, Full Day — 24h, 1 Week — 7d, or 2 Weeks — 15d (includes 1 free day)."
+  - §5 Deposit table: three rows now all $200.
+  - §8 Extensions: rewrite to match new block-size extension semantics.
+  - §9 Cleaning Fee: unchanged.
+  - Title, header, cover-meta version + date.
+- [ ] `deliverables/brand-guide/brand-guide.html` — version bump v1.0 → v1.1:
+  - Page 6 (Typography sample) `"20ft Car Hauler — $85 / 4 hours"` → `"24' Enclosed Trailer — $150 / Full Day"`.
+  - Page 9 (Photography) callout reworded so "must be swapped" reads as a hard launch-blocker, not a forward-looking note.
+  - Page 11 (File Library) status check on `business-cards.pdf` and `rental-agreement.pdf` (now v0.3).
+
+#### 3.4i — Audit doc reconciliation (~1 commit)
+- [ ] `deliverables/audits/copy-audit-2026-05-20.md` — append a "Phase 3 Implementation Log" section noting which findings were shipped in Sprint 3.4 (with commit refs), which were superseded by the pricing refactor (PG-HOME-03 metadata description gets new text in 3.4d, etc.), and which are still pending owner markup. Audit doc itself stays the dated snapshot — the log is additive.
+
+### Estimated total commits
+
+**~24 commits.** Commit-on-write per project convention. Estimated 2-3 working sessions end-to-end.
+
+### Pending owner markup (does NOT block Sprint 3.4)
+
+These judgment-call audit findings still need YES/NO/TWEAK before Phase 3 closes 100%. Sprint 3.4 ships the launch-blockers; these ship in a follow-up if YES'd:
+
+- **CO-HERO-02** — Hero H1 "TOP-RATED" wording (rewrite vs. wait for real reviews)
+- **CO-HERO-05** — Hero 5-star trust-badge cleanup (drop until real reviews exist)
+- **PG-FLEET-03** — `/fleet` H1 rewrite for SEO
+- **CV-01..CV-08** — Conversion-copy A/B candidates
+- **AI-02** — speakable / HowTo / Vehicle / Article / llms.txt schema adds
+- **MD-02 / PG-HOME-05** — OG image (`opengraph-image.tsx`) — requires owner sign-off on visual direction
+- **MD-03** — favicon / apple-icon — derives from `logo.png`, low-risk YES
+
+### Open questions for owner sign-off
+
+1. **Video placement** — Per-trailer detail page (`/fleet/24-enclosed`, etc.) OR compact thumbnail inside `TrailerCard`? Recommend detail page (unlocks long-tail SEO per audit PG-FLEET-07). **Default if no answer: detail page.**
+2. **Video host** — YouTube embed (zero infra) vs. Vercel Blob (more control). Recommend YouTube. **Default if no answer: YouTube.**
+3. **Navbar slot for /about** — replace "Terms" or add as 4th item? Recommend 4th item: Fleet / Rates / About / Terms.
+4. **Sprint 3.4 commit-cadence** — ship sub-sprints 3.4a–3.4i in order with build verify after each (~24 commits), OR bundle into fewer larger commits (~8-10)? Recommend the granular cadence — easier rollback, clearer history.
+
+---
+
 ## ACTIVE SPRINT — Sprint 2: Auth + Stripe (2026-05-14)
 
 > Goal: turn the visual booking wizard into a real transaction flow. Sprint 1 shipped a render-only site; Sprint 2 makes it accept money and create user accounts.
