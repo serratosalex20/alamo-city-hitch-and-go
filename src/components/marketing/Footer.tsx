@@ -17,6 +17,7 @@ import Link from "next/link";
 const footerLinks = [
   { label: "Fleet", href: "/fleet" },
   { label: "Rates", href: "/rates" },
+  { label: "About", href: "/about" },
   { label: "Terms", href: "/terms" },
   { label: "Book", href: "/book" },
 ];

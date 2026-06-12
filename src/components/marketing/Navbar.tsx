@@ -38,6 +38,7 @@ import { Icon } from "@/components/ui/Icon";
 const navLinks = [
   { label: "Fleet", href: "/fleet" },
   { label: "Rates", href: "/rates" },
+  { label: "About", href: "/about" },
   { label: "Terms", href: "/terms" },
 ];
 

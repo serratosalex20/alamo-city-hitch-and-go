@@ -10,6 +10,7 @@
  *   - 0.9 - /book (the conversion path; second-most important URL)
  *   - 0.8 - /fleet (browse to book funnel)
  *   - 0.6 - /rates (informational, supports /book)
+ *   - 0.5 - /about (E-E-A-T / brand-story signal)
  *   - 0.3 - /terms (informational, low organic intent)
  *
  * Skipped intentionally:
@@ -28,6 +29,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${appUrl}/book`,  lastModified: now, changeFrequency: "weekly",  priority: 0.9 },
     { url: `${appUrl}/fleet`, lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
     { url: `${appUrl}/rates`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${appUrl}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${appUrl}/terms`, lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
   ];
 }
