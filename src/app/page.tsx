@@ -26,7 +26,7 @@ const jsonLd = {
   "@type": "LocalBusiness",
   name: "Alamo City Hitch & Go Co.",
   description:
-    "San Antonio's top-rated trailer rentals. Industrial-grade utility trailers, car haulers, and enclosed cargo trailers.",
+    "San Antonio trailer rentals. Industrial-grade enclosed cargo trailers and dump trailers, available in Half Day, Full Day, 1 Week, or 2 Weeks (15-day) blocks.",
   url: appUrl,
   address: {
     "@type": "PostalAddress",
@@ -39,6 +39,20 @@ const jsonLd = {
     latitude: 29.4241,
     longitude: -98.4936,
   },
+  // Sprint 3.4 — areaServed (audit SW-17) adds neighborhood-level local-SEO
+  // signal. Names communities customers actually search for inside the
+  // San Antonio metro plus the realistic tow radius (Bexar + surrounding).
+  areaServed: [
+    "San Antonio, TX",
+    "Alamo Heights",
+    "Stone Oak",
+    "Helotes",
+    "Schertz",
+    "New Braunfels",
+    "Boerne",
+    "Cibolo",
+    "Bexar County, TX",
+  ],
   openingHoursSpecification: {
     "@type": "OpeningHoursSpecification",
     dayOfWeek: [

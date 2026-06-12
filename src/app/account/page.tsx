@@ -8,8 +8,12 @@ import { getSession } from "@/lib/auth/session";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Fleet Command | Alamo City Hitch & Go Co.",
+  title: "Fleet Command",
   description: "Manage your active trailer rental, extend time, and access your documents.",
+  // Sprint 3.4 — audit SW-09 + PG-ACCT-01: signed-in dashboard is a
+  // private surface; keep it out of the index. Middleware already
+  // gates access, this prevents accidental SERP exposure.
+  robots: { index: false, follow: false },
 };
 
 export default async function AccountPage() {
@@ -63,8 +67,8 @@ export default async function AccountPage() {
 
         {/* Active Rental */}
         <ActiveRental
-          trailerName="10' Utility Trailer"
-          unitId="#TX-48092-B"
+          trailerName="24' Enclosed Trailer"
+          unitId="#TX-24E-001"
           hoursRemaining={18}
           totalHours={24}
         />

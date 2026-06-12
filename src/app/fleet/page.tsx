@@ -7,9 +7,10 @@ import { trailers } from "@/lib/data/trailers";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Fleet | Alamo City Hitch & Go Co. — Trailer Rental San Antonio TX",
+  title: "Fleet — Enclosed & Dump Trailers in San Antonio",
   description:
-    "Browse our fleet of industrial-grade utility trailers, car haulers, and enclosed cargo trailers. Transparent pricing. Same-day pickup in San Antonio.",
+    "Browse our San Antonio trailer fleet — enclosed cargo trailers (20' and 24') and dump trailers. Transparent block pricing. Same-day pickup. Pull & Go.",
+  alternates: { canonical: "/fleet" },
 };
 
 export default function FleetPage() {

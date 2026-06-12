@@ -22,7 +22,7 @@ import { calculatePrice, formatUsd, ALL_DURATIONS, DURATION_LABELS } from "@/lib
 export const metadata: Metadata = {
   title: "Rates",
   description:
-    "Transparent trailer rental pricing in San Antonio. Enclosed and dump trailers in Half Day / Full Day / 3 Days / 2 Weeks blocks. No hidden fees.",
+    "Transparent trailer rental pricing in San Antonio. Enclosed and dump trailers in Half Day / Full Day / 1 Week / 2 Weeks (15-day) blocks. $200 deposit. No hidden fees.",
   alternates: { canonical: "/rates" },
 };
 

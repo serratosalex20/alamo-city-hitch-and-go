@@ -77,7 +77,7 @@ export function Hero() {
           <div className="relative aspect-[21/9] w-full overflow-hidden rounded-sm bg-surface-container">
             <Image
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9F4jtDJSPvB_viF6QVpEt1l9eCCFxSWf49RL3C9aD_SbOLgXimAwCR9I4tQGc80fENxPUXygJwz1Qu5Ssijps0Ii4rMwtXB8VWLKP1bPLhRSTLYqsHmDDj3tIDBv8iKHunWTsAxdiCObm1II7npg7y_HNJ2vu--OuvuhNfu3cDNtaKYejqYyjVN7mzIDCIkNJcWZVCtAUHG97Fl_lk_ez-LOqWZVADNB9t5i1vFF-R96C0MtWn1VtgrMh4ME9KVGlO1wqA2furYs"
-              alt="Professional trailer fleet — modern heavy-duty utility trailer parked on dark asphalt with San Antonio industrial skyline during dramatic dusk lighting"
+              alt="Heavy-duty enclosed trailer parked on dark asphalt with San Antonio industrial skyline during dusk — Alamo City Hitch & Go fleet"
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1100px"
               className="object-cover grayscale brightness-75 hover:grayscale-0 transition-all duration-700"

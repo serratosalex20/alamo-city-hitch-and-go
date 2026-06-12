@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Book a Trailer | Alamo City Hitch & Go Co. — San Antonio TX",
+  title: "Book a Trailer Online",
   description:
-    "Reserve your trailer online in minutes. Choose from utility trailers, car haulers, and enclosed cargo trailers. Same-day pickup available in San Antonio.",
+    "Reserve your San Antonio trailer rental online in minutes. Enclosed cargo trailers and dump trailers. Half Day, Full Day, 1 Week, or 2 Weeks (15 days) blocks. Same-day pickup. Pull & Go.",
 };
 
 export default function BookLayout({ children }: { children: React.ReactNode }) {
