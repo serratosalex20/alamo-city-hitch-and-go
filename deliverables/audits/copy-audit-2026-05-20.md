@@ -857,3 +857,84 @@ Once I have your markup, I open Phase 3 and start shipping commits.
 ---
 
 *End of Phase 1 audit. Generated 2026-05-21 against branch `master` at commit e9d2c17.*
+
+---
+
+## Phase 3 — Implementation Log
+
+**Ship dates:** 2026-05-22 through 2026-07-07 (all folded into Sprint 3.4 per owner direction 2026-05-22).
+
+Audit Phase 3 was scoped to co-execute with Sprint 3.4 (pricing/block restructure + about page + video scaffolding). Launch-blocker findings that didn't require judgment-call owner input shipped implicitly through the pricing rewrites, metadata refresh, and about page build. Judgment-call findings (CO-HERO-02 "top-rated" wording, CO-HERO-05 5-star badge, CV-* conversion candidates, etc.) still await Phase 2 owner markup for a follow-up commit.
+
+### Shipped in Sprint 3.4
+
+| Finding ID | Sub-sprint | Commit | Notes |
+|---|---|---|---|
+| SW-01 (LocalBusiness JSON-LD stale fleet) | 3.4d | `4c886ae` | JSON-LD description now describes enclosed + dump only |
+| SW-02 (page metadata stale fleet) | 3.4d | `4c886ae` | /fleet + /book + /rates + root metadata refreshed |
+| SW-03 + CO-HERO-06 (Hero image alt text) | 3.4d/e | `4c886ae` | "utility trailer" alt text replaced |
+| SW-08 + PG-HOME-02 (title pattern) | 3.4e | `4c886ae` | "%s — Alamo City Hitch & Go" replaces the Co./pipe pattern |
+| SW-09 + PG-ACCT-01 (/account noindex) | 3.4e | `4c886ae` | `robots: { index: false }` added |
+| SW-13 + PG-FLEET-02 (broken /locations CTA) | 3.4e | `4c886ae` | "OUR LOCATIONS" retargeted to "SEE RATES" → /rates |
+| SW-17 (areaServed missing) | 3.4d | `4c886ae` | 9-entry array added to LocalBusiness JSON-LD |
+| PG-ACCT-03 (stale utility trailer mock) | 3.4e | `4c886ae` | Dashboard mock updated to "24' Enclosed Trailer" |
+| PG-HOME-03 (root metadata description) | 3.4d | `4c886ae` | "3-Day" → "1 Week, or 2 Weeks (15-day)" |
+| PG-FLEET-01 (/fleet metadata) | 3.4d | `4c886ae` | Rewritten for real fleet + canonical added |
+| PG-FLEET-07 (long-tail SEO gap) | 3.4f | `cf16f33` | `/fleet/[slug]` detail pages generated for every trailer |
+| PG-RATES-06 (rates FAQ absent) | 3.4c | `6e36249` | 3-paragraph fine-print supplement + 2-week free-day callout |
+| CO-FAQ-04 (FAQ #1 extension language) | 3.4c | `6e36249` | Rewritten for new block-size extension semantics |
+| CO-FAQ-04 (FAQ #4 price floor) | 3.4c | `6e36249` | Full new pricing matrix in the answer |
+| CO-FAQ-04 (FAQ #3 deposit detail) | 3.4c | `6e36249` | Added "$200 refundable ... same across every trailer" |
+
+### Absorbed by pricing/block refactor
+
+These audit findings became moot when the underlying data structure changed. No separate fix needed — they're covered by the Sprint 3.4a data layer + downstream copy propagation:
+
+| Finding | How it was absorbed |
+|---|---|
+| Any finding referencing "3 Days" or "3-Day" blocks | Type rename `threeDays` → `oneWeek` propagates through `DURATION_LABELS` + `DURATION_SHORT` everywhere they're consumed |
+| Any finding referencing $300 deposit | Harmonized $200 in trailers.ts + /rates + /terms + rental-agreement.html + FAQ #3 |
+| Any finding referencing 4-hour extension blocks | Extensions now match block sizes; new language shipped in FAQ #1, /rates fine-print, /terms §6, rental-agreement §7.3 |
+
+### Owner-hand-off documents refreshed as part of Sprint 3.4
+
+| Document | Version | Commit |
+|---|---|---|
+| `deliverables/rental-agreement/rental-agreement.html` | v0.2 → v0.3 | `2f44d9b` |
+| `deliverables/brand-guide/brand-guide.html` | v1.0 → v1.1 | `2f44d9b` |
+
+### New surfaces built during Sprint 3.4
+
+| Surface | Sub-sprint | Commit | Purpose |
+|---|---|---|---|
+| `/about` route | 3.4g | `370be5c` | Owner story + mission + vision + who-we-serve; photo placeholders await real assets |
+| `/fleet/[slug]` dynamic route | 3.4f | `cf16f33` | Per-trailer detail page with video slot, full specs, block-pricing matrix, safety rules |
+| `<TrailerVideoPanel>` component | 3.4f | `cf16f33` | YouTube-embed + graceful "coming soon" placeholder |
+| Navbar `/about` link | 3.4g | `370be5c` | Fleet · Rates · About · Terms ordering |
+| Footer `/about` link | 3.4g | `370be5c` | Same insertion in secondary nav |
+| sitemap.ts dynamic trailer entries | 3.4f | `cf16f33` | Auto-generated per-trailer URLs at priority 0.7 |
+
+### Deferred — awaiting owner Phase 2 markup
+
+Judgment-call findings that still need YES / NO / TWEAK direction before a follow-up Phase 3 commit can ship them:
+
+- **CO-HERO-02** — Hero H1 "TOP-RATED" wording (rewrite vs. wait for real reviews to justify the claim)
+- **CO-HERO-05** — Hero 5-star trust-badge cleanup (drop until real reviews exist)
+- **PG-FLEET-03** — `/fleet` H1 rewrite for SEO
+- **CV-01 … CV-08** — Conversion-copy A/B candidates
+- **AI-02** — speakable / HowTo / Vehicle / Article / llms.txt schema adds
+- **MD-02 + PG-HOME-05** — OG image (`opengraph-image.tsx`) — requires owner visual direction
+- **MD-03** — favicon / apple-icon — derives from `logo.png`, low-risk YES pending
+- **SW-04** — Neighborhood SEO body sentence — needs decision on which surface (TrustBlock vs Footer)
+- **SW-06** — 5-star rendering cleanup (part of the CO-HERO-05 bundle)
+- **CO-FOOT-02** — Footer `<address>` semantic fix (deferred to a footer-touch session)
+- **CO-FOOT-05** — Visible hours line (deferred to a footer-touch session)
+- **PG-SIGNIN-01** — sign-in pages noindex (deferred to a sign-in-surface touch)
+
+### Reminder about this document
+
+The Phase 1 audit above (all 859 original lines) is a **dated snapshot of the site's state at commit `e9d2c17` on 2026-05-21**. Do not modify the findings inline — they represent the audit-in-time. If you need to re-audit against post-Sprint-3.4 state, run a fresh audit and produce a new dated snapshot alongside this one.
+
+---
+
+*End of Phase 3 log. Last updated 2026-07-07.*

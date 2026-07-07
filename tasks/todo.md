@@ -44,11 +44,11 @@ keywords). Phase 1 audit shipped 2026-05-21.
 
 ---
 
-## ACTIVE SPRINT — Sprint 3.4: Pricing Refactor + About + Videos + Audit Phase 3 (2026-05-22)
+## SHIPPED SPRINT — Sprint 3.4: Pricing Refactor + About + Videos + Audit Phase 3 (2026-05-22 → 2026-07-07)
 
 > Goal: ship the owner-approved pricing/block restructure, scaffold per-trailer instructional videos, add the /about page, and fold in the launch-blocker findings from the Phase 1 audit — all in one coherent sprint so the live site lands in a launch-ready state.
 
-**Status:** ⏳ awaiting owner sign-off on this plan. No code starts until approved.
+**Status:** ✅ SHIPPED 2026-07-07. All 9 sub-sprints landed across 7 commits (`f042d9a`, `6e36249`, `4c886ae`, `370be5c`, `cf16f33`, `2f44d9b`, plus the audit reconciliation log commit). Site is launch-ready; instructional video URLs and owner photos slot into the scaffolded placeholders when assets are ready. Full disposition of every audit finding lives in the Phase 3 Implementation Log at the bottom of `deliverables/audits/copy-audit-2026-05-20.md`.
 
 ### Owner-locked decisions (2026-05-22 AskUserQuestion answers)
 
