@@ -85,6 +85,15 @@ export function TrailerCard({ trailer }: TrailerCardProps) {
           RENT THIS TRAILER
           <Icon name="add_shopping_cart" className="text-sm" />
         </Link>
+
+        {/* Secondary — trailer detail page (video, safety rules, full pricing) */}
+        <Link
+          href={`/fleet/${trailer.slug}`}
+          className="mt-3 inline-flex items-center justify-center gap-1.5 text-[10px] font-headline font-bold uppercase tracking-[0.2em] text-on-surface-variant hover:text-primary transition-colors"
+        >
+          See Details &amp; Instructional Video
+          <Icon name="arrow_forward" className="text-xs" />
+        </Link>
       </div>
 
       {/* Badge */}

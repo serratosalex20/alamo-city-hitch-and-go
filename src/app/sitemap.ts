@@ -21,13 +21,26 @@
 
 import type { MetadataRoute } from "next";
 import { appUrl } from "@/lib/env";
+import { trailers } from "@/lib/data/trailers";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
+
+  // Per-trailer detail pages generated dynamically from the static fleet
+  // (Sprint 3.4f). New trailers land in data/trailers.ts and their
+  // /fleet/[slug] entry appears automatically on the next build.
+  const trailerDetailUrls: MetadataRoute.Sitemap = trailers.map((t) => ({
+    url: `${appUrl}/fleet/${t.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
   return [
     { url: `${appUrl}/`,      lastModified: now, changeFrequency: "weekly",  priority: 1.0 },
     { url: `${appUrl}/book`,  lastModified: now, changeFrequency: "weekly",  priority: 0.9 },
     { url: `${appUrl}/fleet`, lastModified: now, changeFrequency: "weekly",  priority: 0.8 },
+    ...trailerDetailUrls,
     { url: `${appUrl}/rates`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${appUrl}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${appUrl}/terms`, lastModified: now, changeFrequency: "yearly",  priority: 0.3 },
