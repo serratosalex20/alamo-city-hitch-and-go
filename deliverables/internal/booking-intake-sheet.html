@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Booking Intake &amp; Document Tracking — INTERNAL — Alamo City Hitch &amp; Go Co LLC</title>
+<meta name="description" content="Internal-only booking intake sheet: document custody tracking (driver's license, insurance proof, card on file), deposit lifecycle, pickup/return checklists." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+<style>
+  @page { size: Letter; margin: 0.55in 0.7in; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { break-after: page; }
+    .page:last-child { break-after: auto; }
+    .doc-block, .notice, .track-table, .field-grid { break-inside: avoid; }
+    h2.section-h { break-after: avoid; }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #fff; color: #141413;
+    font-family: "Inter", Georgia, serif;
+    font-weight: 400; font-size: 9.75pt; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 8.5in;
+    padding: 0 0.2in;
+    margin: 0 auto;
+    background: #fff;
+  }
+
+  /* ───── Masthead ───── */
+  .masthead {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 3px solid #141413;
+    padding-bottom: 0.12in; margin-bottom: 0.12in;
+  }
+  .masthead__brand {
+    font-family: "Teko", sans-serif;
+    font-weight: 700; font-size: 24pt; line-height: 0.9;
+    text-transform: uppercase; color: #141413;
+  }
+  .masthead__brand .accent { color: #9B1C1C; }
+  .masthead__sub {
+    font-family: "Oswald", sans-serif;
+    font-size: 7.5pt; letter-spacing: 0.3em; text-transform: uppercase; color: #555;
+    margin-top: 0.04in;
+  }
+  .masthead__meta { text-align: right; font-family: "Space Grotesk", sans-serif; font-size: 9pt; }
+  .masthead__meta .lbl {
+    font-family: "Oswald", sans-serif; font-size: 7pt; letter-spacing: 0.25em;
+    text-transform: uppercase; color: #9B1C1C; font-weight: 700;
+  }
+
+  .internal-banner {
+    background: #141413; color: #fff;
+    font-family: "Oswald", sans-serif; font-weight: 700;
+    font-size: 9pt; letter-spacing: 0.4em; text-transform: uppercase;
+    text-align: center; padding: 0.08in;
+    margin-bottom: 0.15in;
+  }
+
+  h1.doc-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700; font-size: 14pt;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    text-align: center;
+    margin: 0.05in 0 0.12in;
+  }
+
+  h2.section-h {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700; font-size: 10.5pt;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: #9B1C1C;
+    margin-top: 0.18in; margin-bottom: 0.08in;
+    padding-bottom: 0.04in; border-bottom: 1px solid #9B1C1C;
+  }
+
+  /* ───── Blanks & checkboxes ───── */
+  .blank {
+    display: inline-block;
+    border-bottom: 1.5px solid #141413;
+    min-height: 0.22in;
+    vertical-align: bottom;
+  }
+  .blank--xs { min-width: 0.6in; }
+  .blank--sm { min-width: 1.1in; }
+  .blank--md { min-width: 1.8in; }
+  .blank--lg { min-width: 2.8in; }
+  .blank--xl { min-width: 4.2in; }
+
+  .cb {
+    display: inline-block;
+    width: 0.16in; height: 0.16in;
+    border: 1.75px solid #141413;
+    vertical-align: -0.03in;
+    margin-right: 0.08in;
+  }
+  .cb-inline { white-space: nowrap; margin-right: 0.25in; }
+
+  .field-lbl {
+    font-family: "Oswald", sans-serif;
+    font-weight: 700; font-size: 7.5pt;
+    letter-spacing: 0.22em; text-transform: uppercase; color: #555;
+  }
+
+  .field-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.12in 0.3in;
+    margin: 0.08in 0 0.1in;
+  }
+  .field-grid--3 { grid-template-columns: 1fr 1fr 1fr; }
+  .field { display: flex; flex-direction: column; gap: 0.03in; }
+  .field .blank { width: 100%; }
+
+  /* ───── Document custody blocks ───── */
+  .doc-block {
+    border: 1.5px solid #141413;
+    padding: 0.12in 0.16in;
+    margin-bottom: 0.12in;
+  }
+  .doc-block__head {
+    display: flex; align-items: baseline; gap: 0.12in;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700; font-size: 10pt; text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.08in;
+  }
+  .doc-block__head .cb { vertical-align: -0.02in; }
+  .doc-block p { margin-bottom: 0.06in; font-size: 9.25pt; }
+
+  /* ───── Callout ───── */
+  .notice {
+    border-left: 4px solid #9B1C1C;
+    padding: 0.1in 0.18in;
+    margin: 0.1in 0;
+    background: #FEF2F2;
+    font-size: 9pt;
+  }
+  .notice strong.nt {
+    color: #9B1C1C; font-family: "Oswald", sans-serif; font-size: 8.5pt;
+    letter-spacing: 0.2em; text-transform: uppercase; display: block; margin-bottom: 0.04in;
+  }
+
+  /* ───── Tracking table ───── */
+  .track-table {
+    width: 100%; border-collapse: collapse; margin-top: 0.08in;
+    font-size: 9pt;
+  }
+  .track-table th, .track-table td {
+    padding: 0.06in 0.09in;
+    border: 1px solid #bbb;
+    text-align: left;
+    vertical-align: bottom;
+  }
+  .track-table thead th {
+    background: #141413; color: #fff;
+    font-family: "Oswald", sans-serif;
+    font-weight: 700; font-size: 7.5pt; letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .track-table td .blank { width: 100%; min-height: 0.2in; }
+
+  .footer-note {
+    font-size: 7.5pt; color: #999; margin-top: 0.2in; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ PAGE 1 — Booking summary + document custody ═══ -->
+<section class="page">
+  <div class="masthead">
+    <div>
+      <div class="masthead__brand">Alamo City <span class="accent">Hitch &amp; Go</span> Co</div>
+      <div class="masthead__sub">Operations · Booking File</div>
+    </div>
+    <div class="masthead__meta">
+      <div><span class="lbl">Agreement No.</span>&nbsp; <span class="blank blank--sm"></span></div>
+      <div style="margin-top: 0.06in;"><span class="lbl">Staff</span>&nbsp; <span class="blank blank--sm"></span></div>
+    </div>
+  </div>
+
+  <div class="internal-banner">Internal Use Only — Do Not Give to Customer</div>
+
+  <h1 class="doc-title">Booking Intake &amp; Document Tracking</h1>
+
+  <h2 class="section-h">1. Booking Summary</h2>
+
+  <div class="field-grid">
+    <div class="field">
+      <span class="field-lbl">Customer Name</span>
+      <span class="blank"></span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Phone</span>
+      <span class="blank"></span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Trailer (Make / Model / Plate)</span>
+      <span class="blank"></span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Rental Block &amp; Rate</span>
+      <span class="blank"></span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Pickup Date &amp; Time</span>
+      <span class="blank"></span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Return Date &amp; Time</span>
+      <span class="blank"></span>
+    </div>
+  </div>
+
+  <h2 class="section-h">2. Documents Collected (Custody Log)</h2>
+
+  <div class="doc-block">
+    <div class="doc-block__head"><span class="cb"></span> Driver&apos;s License</div>
+    <p>
+      DL # <span class="blank blank--md"></span> &nbsp; State <span class="blank blank--xs"></span>
+      &nbsp; Expires <span class="blank blank--sm"></span>
+    </p>
+    <p>
+      Copy method: &nbsp;
+      <span class="cb-inline"><span class="cb"></span>Photo on business phone</span>
+      <span class="cb-inline"><span class="cb"></span>Photocopy in file</span>
+    </p>
+    <p>
+      Stored where: <span class="blank blank--lg"></span>
+    </p>
+    <p>
+      <strong>Destroy / delete by:</strong> <span class="blank blank--sm"></span>
+      <span style="color:#777;">(recommend: no later than 30 days after deposit release)</span>
+    </p>
+  </div>
+
+  <div class="doc-block">
+    <div class="doc-block__head"><span class="cb"></span> Proof of Insurance</div>
+    <p>
+      Carrier <span class="blank blank--md"></span> &nbsp; Policy # <span class="blank blank--md"></span>
+    </p>
+    <p>
+      Effective dates <span class="blank blank--md"></span> &nbsp;
+      <span class="cb-inline"><span class="cb"></span>Verified current (not expired)</span>
+    </p>
+    <p>
+      <span class="cb-inline"><span class="cb"></span>Named insured matches driver&apos;s license</span>
+      <span class="cb-inline"><span class="cb"></span>Copy retained</span>
+    </p>
+    <p>
+      Stored where: <span class="blank blank--lg"></span> &nbsp;
+      <strong>Destroy / delete by:</strong> <span class="blank blank--sm"></span>
+    </p>
+  </div>
+
+  <div class="doc-block">
+    <div class="doc-block__head"><span class="cb"></span> Card on File</div>
+    <p>
+      Cardholder name <span class="blank blank--md"></span> &nbsp;
+      Card ending (last 4 ONLY) <span class="blank blank--xs"></span> &nbsp;
+      Expires <span class="blank blank--xs"></span>
+    </p>
+    <p>
+      Held via: &nbsp;
+      <span class="cb-inline"><span class="cb"></span>Stripe customer profile</span>
+      <span class="cb-inline"><span class="cb"></span>Card physically re-entered per charge</span>
+    </p>
+  </div>
+
+  <div class="notice">
+    <strong class="nt">Card Security — Read Before Writing Anything Down</strong>
+    Never write, photograph, or store the <strong>full card number, CVV, or PIN</strong> — on paper or
+    digitally. Card-network rules (PCI) prohibit it and a leaked full number is a breach you are liable
+    for. Record the <strong>last 4 digits only</strong>. To keep a card on file, save it inside Stripe
+    (customer profile) and charge through Stripe — never from a written copy.
+  </div>
+
+  <div class="footer-note">Page 1 of 2 — Internal Use Only</div>
+</section>
+
+<!-- ═══════════════════════════════ PAGE 2 — Deposit lifecycle + pickup/return + retention ═══ -->
+<section class="page">
+  <div class="internal-banner">Internal Use Only — Do Not Give to Customer</div>
+
+  <h2 class="section-h">3. Deposit Lifecycle</h2>
+
+  <div class="field-grid field-grid--3">
+    <div class="field">
+      <span class="field-lbl">Deposit Amount</span>
+      <span class="blank">$&nbsp;</span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Hold Method (Stripe / Cash / Other)</span>
+      <span class="blank"></span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Hold Placed — Date</span>
+      <span class="blank"></span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Promised Return Window (Business Days)</span>
+      <span class="blank"></span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Released / Refunded — Date</span>
+      <span class="blank"></span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Amount Withheld (If Any)</span>
+      <span class="blank">$&nbsp;</span>
+    </div>
+  </div>
+  <div class="field-grid" style="grid-template-columns: 1fr;">
+    <div class="field">
+      <span class="field-lbl">Reason for Withholding + Evidence (Photos / Receipt Sent To Customer)</span>
+      <span class="blank"></span>
+    </div>
+  </div>
+
+  <h2 class="section-h">4. Pickup Checklist</h2>
+
+  <p>
+    <span class="cb-inline"><span class="cb"></span>Agreement signed (all initial lines + signature)</span>
+    <span class="cb-inline"><span class="cb"></span>DL verified in person &amp; copied</span>
+  </p>
+  <p>
+    <span class="cb-inline"><span class="cb"></span>Insurance proof verified &amp; copied</span>
+    <span class="cb-inline"><span class="cb"></span>Card on file confirmed (Stripe)</span>
+  </p>
+  <p>
+    <span class="cb-inline"><span class="cb"></span>Rental fee collected</span>
+    <span class="cb-inline"><span class="cb"></span>Deposit hold placed</span>
+  </p>
+  <p>
+    <span class="cb-inline"><span class="cb"></span>Condition Report completed together</span>
+    <span class="cb-inline"><span class="cb"></span>Photos: 4 sides + interior/bed (timestamped)</span>
+  </p>
+  <p>
+    <span class="cb-inline"><span class="cb"></span>Hookup walkthrough (coupler, chains, lights)</span>
+    <span class="cb-inline"><span class="cb"></span>Lights tested with customer&apos;s vehicle</span>
+  </p>
+
+  <h2 class="section-h">5. Return Checklist</h2>
+
+  <div class="field-grid field-grid--3">
+    <div class="field">
+      <span class="field-lbl">Returned — Date &amp; Time</span>
+      <span class="blank"></span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">On Time?</span>
+      <span style="padding-top: 0.05in;">
+        <span class="cb-inline"><span class="cb"></span>Yes</span>
+        <span class="cb-inline"><span class="cb"></span>Late — fee charged <span class="cb"></span></span>
+      </span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Clean?</span>
+      <span style="padding-top: 0.05in;">
+        <span class="cb-inline"><span class="cb"></span>Yes</span>
+        <span class="cb-inline"><span class="cb"></span>No — $100 fee <span class="cb"></span></span>
+      </span>
+    </div>
+  </div>
+  <p>
+    <span class="cb-inline"><span class="cb"></span>Return inspection completed on Condition Report</span>
+    <span class="cb-inline"><span class="cb"></span>Return photos taken (timestamped)</span>
+  </p>
+  <p>
+    <span class="cb-inline"><span class="cb"></span>Damage found — documented + customer notified in writing</span>
+  </p>
+  <div class="field-grid" style="grid-template-columns: 1fr;">
+    <div class="field">
+      <span class="field-lbl">Damage / Incident Notes</span>
+      <span class="blank"></span>
+    </div>
+  </div>
+
+  <h2 class="section-h">6. Data Retention &amp; Destruction Log</h2>
+
+  <p style="font-size: 9.25pt;">
+    Personal documents are held <strong>only</strong> as long as needed to close out the rental. After the
+    deposit is released and no dispute is open, destroy copies and log it here.
+  </p>
+
+  <table class="track-table">
+    <thead>
+      <tr>
+        <th>Document</th>
+        <th style="width: 1.3in;">Destroyed / Deleted On</th>
+        <th style="width: 1.5in;">Method (Shredded / Deleted)</th>
+        <th style="width: 1.1in;">Staff Initials</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Driver&apos;s license copy</td><td><span class="blank"></span></td><td><span class="blank"></span></td><td><span class="blank"></span></td></tr>
+      <tr><td>Insurance proof copy</td><td><span class="blank"></span></td><td><span class="blank"></span></td><td><span class="blank"></span></td></tr>
+      <tr><td>Phone photos (DL / insurance)</td><td><span class="blank"></span></td><td><span class="blank"></span></td><td><span class="blank"></span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="field-grid" style="margin-top: 0.2in;">
+    <div class="field">
+      <span class="field-lbl">File Closed By (Staff Signature)</span>
+      <span class="blank"></span>
+    </div>
+    <div class="field">
+      <span class="field-lbl">Date Closed</span>
+      <span class="blank"></span>
+    </div>
+  </div>
+
+  <div class="footer-note">Page 2 of 2 — Internal Use Only · Staple behind the signed agreement in the booking file</div>
+</section>
+
+</body>
+</html>
