@@ -402,6 +402,27 @@ export default async function TrailerDetailPage({ params }: PageProps) {
               </dd>
             </div>
           </dl>
+
+          {/* Spec accuracy + load-safety notice. Published figures are a
+              planning guide; the unit's VIN data plate is authoritative and
+              governs the actual rating. Mirrors the rental agreement's
+              tow-vehicle certification and no-overload clauses. */}
+          <div className="mt-6 flex gap-3 border-l-2 border-primary/40 bg-surface-container-low/60 p-4">
+            <Icon
+              name="info"
+              className="text-primary text-lg flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
+            <p className="text-on-surface-variant text-xs md:text-sm font-light leading-relaxed">
+              <span className="font-bold text-on-surface">Verify before you load.</span>{" "}
+              Specifications and photos are provided as a planning guide and may
+              vary by unit. The rating stamped on the trailer&apos;s VIN data
+              plate is authoritative &mdash; confirm it at pickup and never
+              exceed the posted GVWR. You are responsible for ensuring your tow
+              vehicle, hitch, and ball are rated for the trailer at its loaded
+              weight. Ask us at pickup and we&apos;ll walk it with you.
+            </p>
+          </div>
         </section>
 
         {/* ─── Pricing Block Matrix ───────────────────────── */}

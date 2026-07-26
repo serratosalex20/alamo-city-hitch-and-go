@@ -30,6 +30,10 @@ const specRows = (trailer: Trailer) => [
 ];
 
 export function TrailerCard({ trailer }: TrailerCardProps) {
+  // Mirrors the `bookableTrailers` filter in src/lib/data/trailers.ts —
+  // "coming_soon" units are shown on the fleet grid but cannot be booked.
+  const isBookable = trailer.status === "available" || trailer.status === "rented";
+
   return (
     <div className="group relative flex flex-col bg-surface-container-low border border-white/5 transition-all duration-500 hover:border-primary/30">
       {/* Image */}
@@ -76,15 +80,27 @@ export function TrailerCard({ trailer }: TrailerCardProps) {
           ))}
         </div>
 
-        {/* CTA */}
-        <Link
-          href={`/book?trailer=${trailer.slug}`}
-          aria-label={`Rent the ${trailer.name} — $${trailer.pricing.fullDay} per day`}
-          className="w-full min-h-[44px] bg-white/5 group-hover:bg-primary-action group-hover:text-white text-white py-4 font-headline font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/5"
-        >
-          RENT THIS TRAILER
-          <Icon name="add_shopping_cart" className="text-sm" />
-        </Link>
+        {/* CTA — only trailers actually in the yard are bookable. Anything
+            else renders as an inert, visibly-disabled control so nobody
+            clicks through to book a trailer we can't hand over. */}
+        {isBookable ? (
+          <Link
+            href={`/book?trailer=${trailer.slug}`}
+            aria-label={`Rent the ${trailer.name} — $${trailer.pricing.fullDay} per day`}
+            className="w-full min-h-[44px] bg-white/5 group-hover:bg-primary-action group-hover:text-white text-white py-4 font-headline font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/5"
+          >
+            RENT THIS TRAILER
+            <Icon name="add_shopping_cart" className="text-sm" />
+          </Link>
+        ) : (
+          <div
+            aria-disabled="true"
+            className="w-full min-h-[44px] bg-white/[0.02] text-on-surface-variant/50 py-4 font-headline font-bold uppercase tracking-widest flex items-center justify-center gap-2 border border-white/5 cursor-not-allowed select-none"
+          >
+            AVAILABLE SOON
+            <Icon name="schedule" className="text-sm" />
+          </div>
+        )}
 
         {/* Secondary — trailer detail page (video, safety rules, full pricing) */}
         <Link
