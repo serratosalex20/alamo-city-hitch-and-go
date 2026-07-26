@@ -37,10 +37,10 @@ import type { Trailer } from "@/types/models";
  *
  * Photos: local files under public/fleet/ (owner-supplied, ChatGPT-
  * cleaned). Expected filenames:
- *   /fleet/20-enclosed-side.jpg   (charcoal side profile)
- *   /fleet/20-enclosed-ramp.jpg   (rear ramp door open)
- *   /fleet/12-utility-front.jpg   (Big Tex front quarter)
- *   /fleet/12-utility-rear.jpg    (Big Tex rear quarter, ramp up)
+ *   /fleet/20-enclosed-side.png   (charcoal side profile)
+ *   /fleet/20-enclosed-ramp.png   (rear ramp door open)
+ *   /fleet/12-utility-front.png   (Big Tex front quarter)
+ *   /fleet/12-utility-rear.png    (Big Tex rear quarter, ramp up)
  *
  * TODO(owner) — verify from the data plates next time at the yard:
  *   - GUUM GVWR: 7,000 (2×3.5K axles) vs 9,990 (2×5.2K). 7,000 is the
@@ -60,8 +60,8 @@ export const trailers: Trailer[] = [
     slug: "20-enclosed",
     description:
       "2026 Giddy Up 8.5×20 enclosed cargo trailer in charcoal blackout. Full weather protection for household moves, motorcycles, tools, and equipment — rear ramp door with spring assist, side entry door, interior LED lighting, and plywood-lined walls ready for tie-downs.",
-    imageUrl: "/fleet/20-enclosed-side.jpg",
-    images: ["/fleet/20-enclosed-ramp.jpg"],
+    imageUrl: "/fleet/20-enclosed-side.png",
+    images: ["/fleet/20-enclosed-ramp.png"],
     // TODO(owner): confirm GVWR + interior height from the data plate by
     // the side door. 7,000 (2×3,500 axles) is the conservative base
     // config for this model; if the plate says 9,990 (2×5,200), update
@@ -97,8 +97,8 @@ export const trailers: Trailer[] = [
     slug: "12-utility",
     description:
       "Big Tex pipe-top tandem-axle utility trailer. Open deck with treated pine floor, 4-foot spring-assisted mesh ramp gate, and self-adjusting brakes — built for mulch and gravel runs, appliance pickups, ATV hauls, and dump-site trips.",
-    imageUrl: "/fleet/12-utility-front.jpg",
-    images: ["/fleet/12-utility-rear.jpg"],
+    imageUrl: "/fleet/12-utility-front.png",
+    images: ["/fleet/12-utility-rear.png"],
     // Specs verified against Big Tex 60PI-12 dealer listings 2026-07-25.
     // TODO(owner): confirm the model plate (60PI vs 70PI) — if 70PI,
     // gvwr is 7,000 and payload ~5,545.
