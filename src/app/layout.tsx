@@ -70,15 +70,24 @@ export const metadata: Metadata = {
     title: "Alamo City Hitch & Go — San Antonio Trailer Rentals",
     description:
       "Enclosed, utility, and dump trailer rentals in San Antonio, TX. Every rate published up front. Same-day pickup, $200 refundable deposit. Pull & Go.",
+    // Explicit og:url. Facebook's Sharing Debugger flags this as missing
+    // when absent; it falls back to inferring one from the canonical, but
+    // declaring it removes the ambiguity and pins every share — from any
+    // entry URL — to the one canonical address. Resolves via metadataBase.
+    url: "/",
     locale: "en_US",
     type: "website",
-    siteName: "Alamo City Hitch & Go Co.",
+    siteName: "Alamo City Hitch & Go",
   },
   twitter: {
+    // Mirrors openGraph above. These had drifted: the card was still
+    // serving the pre-SW-08 "Co." name and a description written before
+    // the current fleet existed — caught in the Facebook debugger's
+    // raw-tag dump, which surfaces twitter:* alongside og:*.
     card: "summary_large_image",
-    title: "Alamo City Hitch & Go Co.",
+    title: "Alamo City Hitch & Go — San Antonio Trailer Rentals",
     description:
-      "Heavy-duty trailer rentals in San Antonio. Same-day pickup. Pull & Go.",
+      "Enclosed, utility, and dump trailer rentals in San Antonio, TX. Every rate published up front. Same-day pickup, $200 refundable deposit. Pull & Go.",
   },
   robots: {
     index: true,
