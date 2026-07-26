@@ -23,7 +23,7 @@ import type { Trailer } from "@/types/models";
  * Block pricing:
  *
  *   |                 | Half Day | Full Day | 1 Week | 2 Weeks (15 days) |
- *   | 8.5×20 Enclosed | $90      | $140     | $850   | $1,680            |
+ *   | 8.5×20 Enclosed | $90      | $150     | $850   | $1,680            |
  *   | 6.5×12 Utility  | $50*     | $75*     | $450*  | $900*             |
  *   | 14' Dump        | $100     | $150     | $900   | $1,800            |
  *
@@ -76,7 +76,12 @@ export const trailers: Trailer[] = [
     },
     pricing: {
       halfDay: 90,
-      fullDay: 140,
+      // Raised 140 -> 150 per owner 2026-07-26. Restores the premium-tier
+      // daily rate the owner originally specified for the big enclosed
+      // trailer on 2026-05-22 ("$150/per day"); it had been mapped to the
+      // discount tier when the "24 foot" reference turned out to be this
+      // same 8.5x20 GUUM measured bumper-to-coupler.
+      fullDay: 150,
       oneWeek: 850,
       twoWeeks: 1680,
     },
