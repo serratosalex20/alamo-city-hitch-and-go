@@ -51,7 +51,7 @@ const faqs: FAQ[] = [
   {
     question: "How much does a trailer rental cost in San Antonio?",
     answer:
-      "Block rates start at $90 for a Half Day (12 hours) on our 20' enclosed trailer. The 24' enclosed and 14' dump start at $100 for a Half Day, $150 for a Full Day. 1-Week blocks are $850 (20') or $900 (24' and dump); 2-Week blocks are $1,680 or $1,800 and ship with one free day baked in (15 calendar days, not 14). See the full price matrix on our rates page — every block of every trailer is priced openly, no quote forms or hidden fees. Texas sales tax (Bexar County combined, 8.25%) applies to the rental fee.",
+      "Block rates start at $50 for a Half Day (12 hours) on our 6.5'×12' utility trailer. The 8.5'×20' enclosed runs $90 for a Half Day, $140 for a Full Day, $850 for 1 Week, and $1,680 for 2 Weeks — and every 2-Week block ships with one free day baked in (15 calendar days, not 14). See the full price matrix on our rates page — every block of every trailer is priced openly, no quote forms or hidden fees. Texas sales tax (Bexar County combined, 8.25%) applies to the rental fee.",
   },
   {
     question: "What if I'm late returning the trailer?",

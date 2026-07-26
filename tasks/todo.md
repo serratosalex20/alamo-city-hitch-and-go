@@ -44,6 +44,31 @@ keywords). Phase 1 audit shipped 2026-05-21.
 
 ---
 
+## ACTIVE SPRINT — Sprint 3.5: Fleet Reality Sync (2026-07-25)
+
+> Owner supplied real fleet data + photos ("images fixed with ChatGPT").
+> Real fleet: 2026 Giddy Up (GUUM) 8.5×20 enclosed — VIN 7TKBE2021TN016423,
+> NHTSA-decoded (20 ft, tandem, ball-pull, Giddy Up USA Mfg LLC, Nicholls GA)
+> — and a Big Tex 6.5×12 utility (60PI-12 spec match: 6,000 GVWR / 4,735 lb
+> payload / 4' spring-assist ramp / 2" ball). 14' dump not owned yet.
+> Owner directives (2026-07-25): keep previously-set pricing; defer utility
+> pricing; remove the 24' ("remove the 24' that we do not own"); dump =
+> Coming Soon + unbookable.
+
+- [ ] `trailers.ts`: DELETE 24' Enclosed entry (not owned, was bookable — risk)
+- [ ] `trailers.ts`: 20' entry becomes "8.5' × 20' Enclosed Trailer" (GUUM),
+      real specs, keeps owner-set $90/$140/$850/$1,680, slug `20-enclosed`
+- [ ] `trailers.ts`: ADD "6.5' × 12' Utility Trailer" (Big Tex 60PI-12),
+      slug `12-utility`, bookable, PLACEHOLDER $50/$75/$450/$900 TODO(owner)
+- [ ] `trailers.ts`: 14' Dump — status coming_soon (unbookable) ✓ verify
+- [ ] imageUrl → local /fleet/*.jpg (owner saves 4 photos to public/fleet/)
+- [ ] Copy sweep: FAQ Q4, /fleet + root metadata, homepage JSON-LD, /account mock
+- [ ] tsc + commit; push once photos are in public/fleet/
+- [ ] OWNER: read GVWR off GUUM data plate (7,000 vs 9,990) + Big Tex plate
+      (60PI vs 70PI — the ChatGPT stock photo shows a 70PI badge)
+
+---
+
 ## SHIPPED SPRINT — Sprint 3.4: Pricing Refactor + About + Videos + Audit Phase 3 (2026-05-22 → 2026-07-07)
 
 > Goal: ship the owner-approved pricing/block restructure, scaffold per-trailer instructional videos, add the /about page, and fold in the launch-blocker findings from the Phase 1 audit — all in one coherent sprint so the live site lands in a launch-ready state.

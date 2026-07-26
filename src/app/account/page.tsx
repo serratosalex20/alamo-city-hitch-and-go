@@ -67,8 +67,8 @@ export default async function AccountPage() {
 
         {/* Active Rental */}
         <ActiveRental
-          trailerName="24' Enclosed Trailer"
-          unitId="#TX-24E-001"
+          trailerName="8.5' × 20' Enclosed Trailer"
+          unitId="#TX-20E-001"
           hoursRemaining={18}
           totalHours={24}
         />

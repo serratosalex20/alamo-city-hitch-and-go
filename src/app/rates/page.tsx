@@ -197,7 +197,7 @@ export default function RatesPage() {
           </p>
           <p>
             <strong className="text-on-surface">2-Week block ships with a free day.</strong> The published
-            $1,680 / $1,800 sticker price holds the trailer for 15 calendar days, not 14 — the 15th day is
+            2-Weeks sticker price holds the trailer for 15 calendar days, not 14 — the 15th day is
             on us.
           </p>
           <p>

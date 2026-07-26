@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     template: "%s — Alamo City Hitch & Go",
   },
   description:
-    "Heavy-duty trailer rentals in San Antonio, TX. Industrial-grade enclosed and dump trailers in Half Day, Full Day, 1 Week, or 2 Weeks (15-day) blocks. Same-day pickup. Pull & Go.",
+    "Heavy-duty trailer rentals in San Antonio, TX. Industrial-grade enclosed, utility, and dump trailers in Half Day, Full Day, 1 Week, or 2 Weeks (15-day) blocks. Same-day pickup. Pull & Go.",
   // Sprint 3.3 fleet realignment: dropped utility + car-hauler keywords
   // (no longer in fleet), added enclosed + dump + moving + construction.
   // Meta-keywords is deprecated by Google for ranking but harmless;

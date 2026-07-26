@@ -9,7 +9,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Fleet — Enclosed & Dump Trailers in San Antonio",
   description:
-    "Browse our San Antonio trailer fleet — enclosed cargo trailers (20' and 24') and dump trailers. Transparent block pricing. Same-day pickup. Pull & Go.",
+    "Browse our San Antonio trailer fleet — 8.5'×20' enclosed cargo trailer, 6.5'×12' utility trailer, and dump trailer. Transparent block pricing. Same-day pickup. Pull & Go.",
   alternates: { canonical: "/fleet" },
 };
 

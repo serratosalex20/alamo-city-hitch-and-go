@@ -26,7 +26,7 @@ const jsonLd = {
   "@type": "LocalBusiness",
   name: "Alamo City Hitch & Go Co.",
   description:
-    "San Antonio trailer rentals. Industrial-grade enclosed cargo trailers and dump trailers, available in Half Day, Full Day, 1 Week, or 2 Weeks (15-day) blocks.",
+    "San Antonio trailer rentals. Industrial-grade enclosed cargo, utility, and dump trailers, available in Half Day, Full Day, 1 Week, or 2 Weeks (15-day) blocks.",
   url: appUrl,
   address: {
     "@type": "PostalAddress",
