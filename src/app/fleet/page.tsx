@@ -27,8 +27,8 @@ export default function FleetPage() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent z-10" />
           <Image
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDASxFGFJ2br1S88eOFnq2Er0FNnukarTF11nSa18Wvbm94srS-Or5mE9HmsSkqGnbUrjWFv35Cei78Rs--PfYrvRawKm8mGb1c0UxYivyhaVGPFzr5uh9u8pjRCd8BpDNOu1px6JILHEUNP2t07vmc_U9o_2VufiGQXKMiNntgc9OO2_-l4XoWtf1vxkCpuo4aqt7RoEa7pprI7gtgJZOtp74yqRqdLrQ9lY7soBkBuHSXnoTTxXvKHc4kLetkjoYgKuFfZnHEAc"
-            alt="Industrial heavy-duty trailer on dark asphalt with dramatic sunset lighting"
+            src="/fleet/12-utility-front.png"
+            alt="Big Tex 6.5' x 12' utility trailer with spring-assisted mesh ramp gate — Alamo City Hitch &amp; Go rental fleet, San Antonio"
             fill
             sizes="100vw"
             className="object-cover grayscale opacity-30"

@@ -76,11 +76,11 @@ export function Hero() {
         <div className="col-span-12 lg:col-span-10 lg:col-start-3 mt-12 relative">
           <div className="relative aspect-[21/9] w-full overflow-hidden rounded-sm bg-surface-container">
             <Image
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9F4jtDJSPvB_viF6QVpEt1l9eCCFxSWf49RL3C9aD_SbOLgXimAwCR9I4tQGc80fENxPUXygJwz1Qu5Ssijps0Ii4rMwtXB8VWLKP1bPLhRSTLYqsHmDDj3tIDBv8iKHunWTsAxdiCObm1II7npg7y_HNJ2vu--OuvuhNfu3cDNtaKYejqYyjVN7mzIDCIkNJcWZVCtAUHG97Fl_lk_ez-LOqWZVADNB9t5i1vFF-R96C0MtWn1VtgrMh4ME9KVGlO1wqA2furYs"
-              alt="Heavy-duty enclosed trailer parked on dark asphalt with San Antonio industrial skyline during dusk — Alamo City Hitch & Go fleet"
+              src="/fleet/20-enclosed-side.png"
+              alt="Charcoal 8.5' x 20' enclosed cargo trailer available to rent in San Antonio — Alamo City Hitch &amp; Go"
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1100px"
-              className="object-cover grayscale brightness-75 hover:grayscale-0 transition-all duration-700"
+              className="object-cover grayscale brightness-90 hover:grayscale-0 transition-all duration-700"
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
