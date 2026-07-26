@@ -11,7 +11,9 @@
  */
 
 import type { MetadataRoute } from "next";
-import { appUrl } from "@/lib/env";
+// Canonical branded origin — the sitemap URL and host directive must name
+// the real domain, not whatever host built this deploy. See lib/env.ts.
+import { siteUrl as appUrl } from "@/lib/env";
 
 export default function robots(): MetadataRoute.Robots {
   return {

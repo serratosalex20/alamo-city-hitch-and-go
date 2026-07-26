@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, Teko, Oswald } from "next/font/google";
-import { appUrl } from "@/lib/env";
+// metadataBase drives canonical tags AND the absolute og:image/twitter:image
+// URLs on every route — it must be the branded domain, not the deployment
+// host. See the siteUrl doc comment in lib/env.ts.
+import { siteUrl as appUrl } from "@/lib/env";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -61,9 +64,12 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Alamo City Hitch & Go Co. | Heavy-Duty Trailer Rentals",
+    // Kept in step with the title/description above. Drops the "Co. |"
+    // construction (SW-08) and the unsubstantiated "top-rated" claim
+    // (audit CO-HERO-02) — no reviews exist yet to back it.
+    title: "Alamo City Hitch & Go — San Antonio Trailer Rentals",
     description:
-      "San Antonio's top-rated trailer rentals. Industrial-grade equipment, same-day pickup, transparent pricing.",
+      "Enclosed, utility, and dump trailer rentals in San Antonio, TX. Every rate published up front. Same-day pickup, $200 refundable deposit. Pull & Go.",
     locale: "en_US",
     type: "website",
     siteName: "Alamo City Hitch & Go Co.",

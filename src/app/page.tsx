@@ -6,7 +6,8 @@ import { Comparison } from "@/components/marketing/Comparison";
 import { TrustBlock } from "@/components/marketing/TrustBlock";
 import { FAQ } from "@/components/marketing/FAQ";
 import { Footer } from "@/components/marketing/Footer";
-import { appUrl } from "@/lib/env";
+// LocalBusiness JSON-LD must advertise the branded domain. See lib/env.ts.
+import { siteUrl as appUrl } from "@/lib/env";
 
 /**
  * LocalBusiness schema for organic search rich results.

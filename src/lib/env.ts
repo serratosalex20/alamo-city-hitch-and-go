@@ -39,7 +39,32 @@ export const stripePublishableKey = read("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY");
 export const stripeWebhookSecret = read("STRIPE_WEBHOOK_SECRET");
 
 // ─── App ─────────────────────────────────────────────────
+/**
+ * Runtime origin of THIS deployment. Env-driven on purpose: auth
+ * redirects and magic-link callbacks must resolve against whatever
+ * host actually served the request, so preview deployments work.
+ */
 export const appUrl = read("NEXT_PUBLIC_APP_URL") ?? "http://localhost:3000";
+
+/**
+ * Canonical public origin of the business. Deliberately NOT env-driven.
+ *
+ * Every SEO surface — canonical tags, sitemap URLs, robots host, OG /
+ * Twitter image URLs, LocalBusiness JSON-LD — must point at the one
+ * branded domain, identically, from every deployment. Wiring these to
+ * an env var is a footgun with two failure modes, one of which we hit:
+ *
+ *   1. Preview deployments emit canonicals pointing at themselves,
+ *      inviting Google to index throwaway preview URLs.
+ *   2. A stale NEXT_PUBLIC_APP_URL silently de-brands the whole site.
+ *      Found 2026-07-26: production was serving
+ *      <link rel="canonical" href="https://alamo-city-hitch-and-go.vercel.app">
+ *      on every page, telling Google the vercel.app host was the real
+ *      site and suppressing alamocityhitchandgo.com in search results.
+ *
+ * If the business ever changes domains, change it here — one line.
+ */
+export const siteUrl = "https://www.alamocityhitchandgo.com";
 
 // ─── Auth ────────────────────────────────────────────────
 /**

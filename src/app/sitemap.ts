@@ -20,7 +20,9 @@
  */
 
 import type { MetadataRoute } from "next";
-import { appUrl } from "@/lib/env";
+// Canonical branded origin — never the per-deployment appUrl, or preview
+// builds would publish sitemaps full of vercel.app URLs. See lib/env.ts.
+import { siteUrl as appUrl } from "@/lib/env";
 import { trailers } from "@/lib/data/trailers";
 
 export default function sitemap(): MetadataRoute.Sitemap {
