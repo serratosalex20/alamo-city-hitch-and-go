@@ -24,6 +24,7 @@ import { Footer } from "@/components/marketing/Footer";
 import { TrailerVideoPanel } from "@/components/marketing/TrailerVideoPanel";
 import { Icon } from "@/components/ui/Icon";
 import { trailers } from "@/lib/data/trailers";
+import { siteUrl } from "@/lib/env";
 import {
   ALL_DURATIONS,
   DURATION_LABELS,
@@ -207,8 +208,38 @@ export default async function TrailerDetailPage({ params }: PageProps) {
     : `${trailer.specs.widthInches}" W × ${trailer.specs.lengthFeet}' L`;
   const isBookable = trailer.status === "available";
 
+  // BreadcrumbList structured data. Google requires the markup to match
+  // the trail actually rendered on the page, so this mirrors the <nav>
+  // below exactly: Fleet > [this trailer]. Per Google's spec the final
+  // crumb omits `item` because it is the current page. Earns the
+  // "site.com › Fleet › 8.5' × 20' Enclosed Trailer" path in search
+  // results in place of a bare URL.
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Fleet",
+        item: `${siteUrl}/fleet`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: trailer.name,
+      },
+    ],
+  };
+
   return (
     <>
+      {/* Breadcrumb structured data — static, derived from the fleet
+          data file; no user input reaches this string. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Navbar />
       <main
         id="main-content"
