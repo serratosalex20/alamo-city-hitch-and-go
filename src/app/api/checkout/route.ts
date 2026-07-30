@@ -21,6 +21,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { calculatePrice, formatUsd } from "@/lib/booking/pricing";
+import { trailers } from "@/lib/data/trailers";
 import { getStripe, hasStripe } from "@/lib/stripe/server";
 // Sprint 3.3 — RentalDuration is no longer imported; Zod enum carries the type.
 // Sprint 3.4 — "threeDays" retired in favor of "oneWeek" per the pricing
@@ -56,6 +57,19 @@ export async function POST(request: Request) {
     const message =
       err instanceof z.ZodError ? err.issues[0]?.message : "Invalid request body.";
     return NextResponse.json({ ok: false, error: message }, { status: 400 });
+  }
+
+  // ─── Refuse non-bookable trailers (server-side enforcement) ───
+  // The UI already hides/disables booking CTAs for "coming_soon" units
+  // (fleet cards, /rates, detail pages), but the API must enforce it
+  // too — a stale link, browser history, or direct POST could otherwise
+  // start a paid booking for a trailer that isn't in the yard.
+  const requested = trailers.find((t) => t.id === body.trailerId);
+  if (!requested || (requested.status !== "available" && requested.status !== "rented")) {
+    return NextResponse.json(
+      { ok: false, error: "This trailer isn't available for booking yet." },
+      { status: 400 },
+    );
   }
 
   // ─── Compute prices server-side (never trust the client) ───

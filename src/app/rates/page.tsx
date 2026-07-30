@@ -64,8 +64,15 @@ export default function RatesPage() {
               <div className="p-6 md:p-8 border-b border-outline-variant/15">
                 <div className="flex items-start justify-between gap-6 flex-wrap">
                   <div>
-                    <div className="font-headline uppercase tracking-widest text-xs font-bold text-primary mb-2">
-                      {trailer.type.replace(/_/g, " ")}
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="font-headline uppercase tracking-widest text-xs font-bold text-primary">
+                        {trailer.type.replace(/_/g, " ")}
+                      </span>
+                      {trailer.status === "coming_soon" && (
+                        <span className="bg-primary-action/80 text-white border border-primary/30 px-3 py-1 text-[10px] font-bold uppercase tracking-tighter">
+                          Coming Soon
+                        </span>
+                      )}
                     </div>
                     <h3 className="font-teko text-4xl md:text-5xl font-bold uppercase tracking-tighter leading-none mb-2">
                       {trailer.name}
@@ -131,13 +138,26 @@ export default function RatesPage() {
                 <p className="text-on-surface-variant text-xs uppercase tracking-widest font-headline font-bold">
                   All blocks include the deposit hold • Released after return inspection
                 </p>
-                <Link
-                  href={`/book?trailer=${trailer.slug}`}
-                  className="inline-flex items-center gap-2 bg-primary-action text-white px-6 py-3 min-h-[44px] font-headline font-bold uppercase tracking-widest text-sm hover:brightness-110 transition-all"
-                >
-                  Book This Trailer
-                  <Icon name="arrow_forward" className="text-sm" />
-                </Link>
+                {trailer.status === "available" || trailer.status === "rented" ? (
+                  <Link
+                    href={`/book?trailer=${trailer.slug}`}
+                    className="inline-flex items-center gap-2 bg-primary-action text-white px-6 py-3 min-h-[44px] font-headline font-bold uppercase tracking-widest text-sm hover:brightness-110 transition-all"
+                  >
+                    Book This Trailer
+                    <Icon name="arrow_forward" className="text-sm" />
+                  </Link>
+                ) : (
+                  // Mirrors TrailerCard + the detail page: coming-soon units
+                  // render an inert, visibly-disabled control so nobody
+                  // starts booking a trailer that is not in the yard.
+                  <div
+                    aria-disabled="true"
+                    className="inline-flex items-center gap-2 bg-white/[0.02] text-on-surface-variant/50 px-6 py-3 min-h-[44px] font-headline font-bold uppercase tracking-widest text-sm border border-white/5 cursor-not-allowed select-none"
+                  >
+                    Available Soon
+                    <Icon name="schedule" className="text-sm" />
+                  </div>
+                )}
               </div>
             </article>
           ))}
