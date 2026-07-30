@@ -23,14 +23,16 @@ import type { Trailer } from "@/types/models";
  * Block pricing:
  *
  *   |                 | Half Day | Full Day | 1 Week | 2 Weeks (15 days) |
- *   | 8.5×20 Enclosed | $90      | $150     | $850   | $1,680            |
- *   | 6.5×12 Utility  | $50*     | $75*     | $450*  | $900*             |
+ *   | 8.5×20 Enclosed | $90      | $150     | $900   | $1,680            |
+ *   | 6.5×12 Utility  | $75      | $100     | $600   | $900*             |
  *   | 14' Dump        | $100     | $150     | $900   | $1,800            |
  *
- *   *TODO(owner): utility pricing is a market-fair PLACEHOLDER (San
- *    Antonio utility class runs $50–$100/day). Owner deferred the
- *    decision 2026-07-25 ("we can worry about pricing later") — edit
- *    the four numbers on the utility entry below when decided.
+ *   Founder-set 2026-07-27: enclosed 1-week $900; utility $75 half /
+ *   $100 day / $600 week ("one day price $100, half day $75.00, one
+ *   week $600.00").
+ *   *TODO(owner): utility 2-WEEK price was not specified in that
+ *    message — $900 remains a placeholder (1.5× the new weekly rate;
+ *    the enclosed runs ~1.87×). Confirm or adjust the one number.
  *
  * Refundable deposit: $200 across the fleet. 2-week block is calendar-
  * extended to 15 days via DURATION_HOURS.twoWeeks = 360 in pricing.ts.
@@ -82,7 +84,9 @@ export const trailers: Trailer[] = [
       // discount tier when the "24 foot" reference turned out to be this
       // same 8.5x20 GUUM measured bumper-to-coupler.
       fullDay: 150,
-      oneWeek: 850,
+      // Raised 850 -> 900 per founders 2026-07-27 ("please fix the 1 week
+      // price to $900.00").
+      oneWeek: 900,
       twoWeeks: 1680,
     },
     deposit: 200,
@@ -114,13 +118,14 @@ export const trailers: Trailer[] = [
       widthInches: 77,
       lengthFeet: 12,
     },
-    // TODO(owner): PLACEHOLDER pricing — owner deferred 2026-07-25
-    // ("we can worry about pricing later"). Market-fair for the class
-    // (SA utility runs $50–$100/day). Edit these four numbers when set.
+    // Founder-set 2026-07-27: "one day price $100, half day $75.00,
+    // one week $600.00". Only twoWeeks is still unconfirmed —
+    // TODO(owner): the founders' message named no 2-week price, so
+    // $900 (1.5× weekly) carries over as a placeholder.
     pricing: {
-      halfDay: 50,
-      fullDay: 75,
-      oneWeek: 450,
+      halfDay: 75,
+      fullDay: 100,
+      oneWeek: 600,
       twoWeeks: 900,
     },
     deposit: 200,

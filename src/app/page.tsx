@@ -40,6 +40,14 @@ const jsonLd = {
     latitude: 29.4241,
     longitude: -98.4936,
   },
+  // Founders (2026-07-27, names supplied by the founders themselves).
+  // Person entities on the LocalBusiness tie the /about page's named
+  // founders to the business entity — an E-E-A-T signal Google and AI
+  // answer engines both read.
+  founder: [
+    { "@type": "Person", name: "John Brandon Martinez" },
+    { "@type": "Person", name: "Kelby Pape" },
+  ],
   // Sprint 3.4 — areaServed (audit SW-17) adds neighborhood-level local-SEO
   // signal. Names communities customers actually search for inside the
   // San Antonio metro plus the realistic tow radius (Bexar + surrounding).

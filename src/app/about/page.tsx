@@ -6,12 +6,12 @@
  * NOT broken <img> refs) and tasteful copy that owner can tighten
  * with real values without fighting the page structure.
  *
- * Photo + bio swap-in (when assets land):
- *   - Drop JPGs into public/about/owner-1.jpg, public/about/owner-2.jpg
- *   - Replace the <OwnerPlaceholder> blocks with <Image src="/about/owner-N.jpg"
- *     alt="..." width={...} height={...} className="..." /> in the same grid
- *   - Replace [Founder Name] placeholders + "Bio coming soon..." text with
- *     real values
+ * Founder names are LIVE (John Brandon Martinez, Kelby Pape — supplied
+ * 2026-07-27). Only the group photo is still pending:
+ *   - Save it as public/about/founders.png (single photo, both founders;
+ *     John is on the left, Kelby on the right)
+ *   - In <FoundersBlock>, swap the pending-state frame contents for the
+ *     <Image> shown in that component's doc comment
  *
  * JSON-LD note: Organization schema is intentionally not duplicated here.
  * The homepage already publishes a LocalBusiness JSON-LD describing the
@@ -66,21 +66,35 @@ const audiences: ServedAudience[] = [
   },
 ];
 
-interface OwnerPlaceholderProps {
-  position: string;
-}
+/**
+ * Founders — John Brandon Martinez and Kelby Pape (names supplied by the
+ * founders 2026-07-27, ordered to match their group photo: John on the
+ * left, Kelby on the right).
+ *
+ * The photo itself hasn't been delivered as a file yet, so the frame
+ * renders a graceful pending state. When it lands, save it as
+ * public/about/founders.png and replace the frame's contents with:
+ *
+ *   <Image src="/about/founders.png"
+ *     alt="Founders John Brandon Martinez and Kelby Pape at the Alamo City Hitch & Go yard in San Antonio"
+ *     fill sizes="(max-width: 768px) 100vw, 896px" className="object-cover" />
+ */
+const founders = [
+  { name: "John Brandon Martinez", role: "Co-Founder" },
+  { name: "Kelby Pape", role: "Co-Founder" },
+];
 
-function OwnerPlaceholder({ position }: OwnerPlaceholderProps) {
+function FoundersBlock() {
   return (
     <div className="flex flex-col">
-      {/* Photo frame — graceful empty state */}
+      {/* Group photo frame — pending state until founders.png lands */}
       <div
-        className="relative aspect-square bg-surface-container border border-outline-variant/15 flex items-center justify-center overflow-hidden"
+        className="relative aspect-[16/10] bg-surface-container border border-outline-variant/15 flex items-center justify-center overflow-hidden"
         role="img"
-        aria-label="Owner portrait — photo pending"
+        aria-label="Founders John Brandon Martinez and Kelby Pape — photo pending"
       >
         <Icon
-          name="person"
+          name="group"
           className="text-[8rem] text-on-surface-variant/20"
           aria-hidden="true"
         />
@@ -92,19 +106,18 @@ function OwnerPlaceholder({ position }: OwnerPlaceholderProps) {
         </div>
       </div>
 
-      {/* Bio frame */}
-      <div className="pt-5 space-y-2">
-        <h3 className="font-headline uppercase tracking-tight text-xl font-bold text-on-surface">
-          [Founder Name]
-        </h3>
-        <p className="font-headline uppercase tracking-[0.25em] text-[10px] text-primary font-bold">
-          {position}
-        </p>
-        <p className="text-on-surface-variant/80 text-sm font-light leading-relaxed italic pt-1">
-          Bio coming soon — short personal note from this founder about why
-          they built Alamo City Hitch &amp; Go and what they want every renter
-          to walk away with.
-        </p>
+      {/* Names — order mirrors the photo (left to right) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6">
+        {founders.map((f) => (
+          <div key={f.name} className="space-y-1">
+            <h3 className="font-headline uppercase tracking-tight text-xl font-bold text-on-surface">
+              {f.name}
+            </h3>
+            <p className="font-headline uppercase tracking-[0.25em] text-[10px] text-primary font-bold">
+              {f.role}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -151,10 +164,7 @@ export default function AboutPage() {
               The Owners
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
-            <OwnerPlaceholder position="Co-Founder" />
-            <OwnerPlaceholder position="Co-Founder" />
-          </div>
+          <FoundersBlock />
         </section>
 
         {/* ─── Our Story ─────────────────────────────────── */}
