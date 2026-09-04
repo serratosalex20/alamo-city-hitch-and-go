@@ -19,6 +19,7 @@ import { markRentalPaymentSucceeded } from "../src/lib/booking/workflow";
 import { depositMethodForDuration } from "../src/lib/stripe/deposits";
 import { performAdminBookingAction } from "../src/lib/booking/admin-actions";
 import type { Booking } from "../src/types/models";
+import { resolveAppUrl } from "../src/lib/env";
 
 function bookingFixture(id: string): Booking {
   const now = new Date("2026-09-04T12:00:00.000Z");
@@ -94,6 +95,18 @@ test("pickup choices use customer-friendly 30-minute operating-hour slots", () =
     () => localPickupToUtc("2026-09-05", "15:01"),
     /every 30 minutes/,
   );
+});
+
+test("deployment callbacks use the current Vercel preview origin", () => {
+  assert.equal(
+    resolveAppUrl(undefined, "booking-preview.example.vercel.app"),
+    "https://booking-preview.example.vercel.app",
+  );
+  assert.equal(
+    resolveAppUrl("https://www.alamocityhitchandgo.com/ignored-path", "preview.vercel.app"),
+    "https://www.alamocityhitchandgo.com",
+  );
+  assert.throws(() => resolveAppUrl("not-a-url", undefined), /valid absolute URL/);
 });
 
 test("one-week schedules are exactly 168 elapsed hours", () => {

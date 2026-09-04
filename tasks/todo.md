@@ -81,7 +81,7 @@
       until both the safe test flow and a controlled live-mode flow pass.
 - [x] Isolate preview Firestore records and uploaded documents with environment-scoped
       collection/storage prefixes before reusing Firebase credentials in Vercel Preview.
-- [ ] Make payment, signing, identity, email, and auth callbacks use the actual Vercel
+- [x] Make payment, signing, identity, email, and auth callbacks use the actual Vercel
       preview origin when `NEXT_PUBLIC_APP_URL` is not explicitly configured.
 - [x] Replace the inconsistent native mobile time wheel with explicit 30-minute pickup
       options during operating hours; enforce the same choices server-side and add tests.

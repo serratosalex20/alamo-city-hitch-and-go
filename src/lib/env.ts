@@ -94,7 +94,23 @@ export const adminEmails = new Set(
  * redirects and magic-link callbacks must resolve against whatever
  * host actually served the request, so preview deployments work.
  */
-export const appUrl = read("NEXT_PUBLIC_APP_URL") ?? "http://localhost:3000";
+export function resolveAppUrl(
+  configuredUrl: string | undefined,
+  vercelDeploymentHost: string | undefined,
+): string {
+  const candidate = configuredUrl ??
+    (vercelDeploymentHost ? `https://${vercelDeploymentHost}` : "http://localhost:3000");
+  try {
+    return new URL(candidate).origin;
+  } catch {
+    throw new Error("NEXT_PUBLIC_APP_URL must be a valid absolute URL.");
+  }
+}
+
+export const appUrl = resolveAppUrl(
+  read("NEXT_PUBLIC_APP_URL"),
+  read("VERCEL_URL"),
+);
 
 /**
  * Canonical public origin of the business. Deliberately NOT env-driven.
