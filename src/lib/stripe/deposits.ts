@@ -4,8 +4,8 @@ import { isDemoEnvironment } from "@/lib/env";
 import { getBooking, updateBooking } from "@/lib/booking/repository";
 import type { Booking, DepositMethod } from "@/types/models";
 
-function usesRefundableCharge(booking: Booking): boolean {
-  return booking.duration === "oneWeek" || booking.duration === "twoWeeks";
+export function depositMethodForDuration(duration: Booking["duration"]): DepositMethod {
+  return duration === "oneWeek" || duration === "twoWeeks" ? "refundable_charge" : "authorization";
 }
 
 function captureDeadline(paymentIntent: Stripe.PaymentIntent) {
@@ -89,7 +89,7 @@ export async function requestDeposit(bookingId: string, actor: string) {
   }
   if (!hasStripe) {
     if (!isDemoEnvironment) throw new Error("Stripe is unavailable.");
-    const method: DepositMethod = usesRefundableCharge(booking) ? "refundable_charge" : "authorization";
+    const method = depositMethodForDuration(booking.duration);
     return updateBooking(
       bookingId,
       {
@@ -113,7 +113,7 @@ export async function requestDeposit(bookingId: string, actor: string) {
     retryOf = existing.id;
   }
 
-  const method: DepositMethod = usesRefundableCharge(booking) ? "refundable_charge" : "authorization";
+  const method = depositMethodForDuration(booking.duration);
   const paymentIntent = await stripe.paymentIntents.create(
     {
       amount: booking.depositAmount,

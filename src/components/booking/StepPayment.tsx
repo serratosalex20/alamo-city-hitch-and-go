@@ -175,7 +175,7 @@ export function StepPayment({ formData, checkoutKey, onBack, onSuccess }: Props)
       checkout?.mode === "real" && checkout.publishableKey
         ? loadStripe(checkout.publishableKey)
         : null,
-    [checkout?.mode, checkout?.publishableKey],
+    [checkout],
   );
 
   return (

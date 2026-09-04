@@ -81,7 +81,7 @@ export function DepositConfirmation({ bookingId }: { bookingId: string }) {
 
   const stripePromise = useMemo(
     () => details?.publishableKey ? loadStripe(details.publishableKey) : null,
-    [details?.publishableKey],
+    [details],
   );
 
   if (!details) return <p className="text-sm text-on-surface-variant">Loading secure deposit confirmation…</p>;

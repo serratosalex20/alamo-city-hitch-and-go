@@ -76,7 +76,7 @@ export async function GET(
   const { id } = await params;
   const authorized = await getCustomerBooking(id);
   if (!authorized) return NextResponse.json({ ok: false, error: "Not authorized." }, { status: 403 });
-  const { booking, session } = authorized;
+  const { booking } = authorized;
   if (!booking.stripeIdentitySessionId || !hasStripe) {
     return NextResponse.json({ ok: true, status: booking.identityStatus });
   }

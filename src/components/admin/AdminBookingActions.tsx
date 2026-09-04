@@ -9,7 +9,6 @@ interface Props {
   status: BookingStatus;
   depositStatus: DepositStatus;
   depositAmount: number;
-  startTimeMs: number;
   prePhotoCount: number;
   postPhotoCount: number;
 }
@@ -68,7 +67,6 @@ export function AdminBookingActions(props: Props) {
   const secondaryClass = "min-h-[44px] px-5 py-3 bg-surface-container-high text-white font-headline font-bold uppercase tracking-widest text-xs disabled:opacity-40";
   const needsPrePhotos = ["confirmed", "deposit_action_required", "ready_for_pickup"].includes(props.status);
   const needsPostPhotos = props.status === "return_inspection";
-  const depositTooEarly = props.startTimeMs - Date.now() > 48 * 60 * 60 * 1000;
 
   return (
     <section className="space-y-5 bg-surface-container-low p-6 ghost-border" aria-labelledby="owner-actions">
@@ -77,7 +75,7 @@ export function AdminBookingActions(props: Props) {
         <div><label htmlFor="owner-note" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Inspection / Decision Note</label><textarea id="owner-note" value={note} onChange={(event) => setNote(event.target.value)} rows={3} className="w-full bg-surface-container-high p-3 outline-none focus:ring-2 focus:ring-primary" /></div>
       )}
       {props.status === "under_review" && <div className="flex flex-wrap gap-3"><button disabled={busy !== null} onClick={() => act("approve")} className={actionClass}>Approve Booking</button><button disabled={busy !== null} onClick={() => act("request_insurance_resubmission")} className={secondaryClass}>Request New Insurance</button><button disabled={busy !== null} onClick={() => act("reject")} className={secondaryClass}>Reject</button></div>}
-      {props.status === "confirmed" && <div><button disabled={busy !== null || depositTooEarly} onClick={() => act("request_deposit")} className={actionClass}>Request $200 Deposit</button>{depositTooEarly && <p className="text-xs text-on-surface-variant mt-2">Available 48 hours before pickup to protect the authorization window.</p>}</div>}
+      {props.status === "confirmed" && <div><button disabled={busy !== null} onClick={() => act("request_deposit")} className={actionClass}>Request $200 Deposit</button><p className="text-xs text-on-surface-variant mt-2">The server allows this within 48 hours of pickup to protect the authorization window.</p></div>}
       {props.status === "deposit_action_required" && <p className="text-sm text-primary">Awaiting customer confirmation of the security deposit.</p>}
       {needsPrePhotos && <form onSubmit={uploadPhotos} className="space-y-3 border-t border-white/10 pt-5"><input type="hidden" name="phase" value="pre" /><label htmlFor="pre-files" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Pre-rental Inspection Photos ({props.prePhotoCount})</label><input id="pre-files" name="files" type="file" accept="image/jpeg,image/png,image/webp" multiple required className="block w-full text-sm" /><button disabled={busy !== null} className={secondaryClass}>{busy === "photos" ? "Uploading…" : "Upload Pre-rental Photos"}</button></form>}
       {props.status === "ready_for_pickup" && <button disabled={busy !== null || props.prePhotoCount === 0} onClick={() => act("mark_picked_up")} className={actionClass}>Mark Picked Up</button>}

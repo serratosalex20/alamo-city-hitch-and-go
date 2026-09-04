@@ -45,11 +45,13 @@ export function PostPaymentChecklist(props: Props) {
 
   useEffect(() => {
     const search = new URLSearchParams(window.location.search);
-    if (search.has("agreement")) void syncStatus("agreement");
-    if (search.has("identity")) void syncStatus("identity");
-    // Return-status synchronization only runs once when the hosted service redirects back.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const kinds = (["agreement", "identity"] as const).filter((kind) => search.has(kind));
+    if (kinds.length > 0) {
+      void Promise.all(kinds.map((kind) => fetch(`/api/bookings/${props.bookingId}/${kind}`)))
+        .then(() => router.refresh())
+        .catch(() => setError("Could not refresh document status."));
+    }
+  }, [props.bookingId, router]);
 
   async function startAgreement() {
     setBusy("agreement");
