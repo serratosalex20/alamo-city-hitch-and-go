@@ -64,7 +64,7 @@ export async function performAdminBookingAction({
   const now = new Date();
 
   switch (action) {
-    case "approve": { 
+    case "approve": {
       assertState(booking, ["under_review"], "Approval");
       if (
         booking.paymentStatus !== "succeeded" ||
