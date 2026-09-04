@@ -1,240 +1,238 @@
 "use client";
 
-/**
- * StepPayment — booking wizard step that collects card details and
- * confirms the rental PaymentIntent.
- *
- * Two render modes:
- *
- *   STUB  — when /api/checkout returns mode="stub", we don't render
- *           real Stripe Elements. The submit button just confirms the
- *           stub and advances the wizard. A banner makes the mode
- *           explicit so nobody mistakes it for a real charge.
- *
- *   REAL  — when mode="real", we'd mount Stripe Elements via
- *           @stripe/react-stripe-js's <Elements> provider and a
- *           <CardElement>. This branch is wired up but kept guarded
- *           so the stub flow remains buildable without env keys.
- *
- * Either way, on successful "payment":
- *   1. POST /api/auth/send-link with the booking email so the customer
- *      gets magic-link access to their dashboard.
- *   2. Advance the wizard to the confirmation step.
- */
-
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Elements,
+  PaymentElement,
+  useElements,
+  useStripe,
+} from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import { Icon } from "@/components/ui/Icon";
-import { trailers } from "@/lib/data/trailers";
 import { DURATION_LABELS } from "@/lib/booking/pricing";
 import type { BookingFormData } from "@/app/book/page";
 
 interface Props {
   formData: BookingFormData;
+  checkoutKey: string;
   onBack: () => void;
-  onSuccess: (result: { rentalIntentId: string; depositIntentId: string }) => void;
+  onSuccess: (nextUrl: string) => void;
 }
 
 interface CheckoutOk {
   ok: true;
-  mode: "stub" | "real";
+  mode: "demo" | "real";
+  bookingId: string;
+  publishableKey?: string;
   rental: { paymentIntentId: string; clientSecret: string; amountCents: number };
-  deposit: { paymentIntentId: string; clientSecret: string; amountCents: number };
   display: { rental: string; deposit: string; tax: string; total: string };
+  checkoutExpiresAt: string;
 }
-type CheckoutErr = { ok: false; error: string };
-type CheckoutResponse = CheckoutOk | CheckoutErr;
 
-export function StepPayment({ formData, onBack, onSuccess }: Props) {
-  const trailer = trailers.find((t) => t.id === formData.trailerId);
-  const [checkout, setCheckout] = useState<CheckoutOk | null>(null);
-  const [error, setError] = useState<string | null>(null);
+type CheckoutResponse = CheckoutOk | { ok: false; error: string };
+
+async function finalizePayment(bookingId: string): Promise<string> {
+  const response = await fetch(`/api/bookings/${bookingId}/payment`, { method: "POST" });
+  const result = (await response.json()) as { ok: boolean; nextUrl?: string; error?: string };
+  if (!response.ok || !result.ok || !result.nextUrl) {
+    throw new Error(result.error ?? "Payment completed, but the booking could not be updated.");
+  }
+  return result.nextUrl;
+}
+
+function RealPaymentForm({ checkout, onBack, onSuccess }: {
+  checkout: CheckoutOk;
+  onBack: () => void;
+  onSuccess: (nextUrl: string) => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Create the PaymentIntents up front so the displayed total reflects
-  // the server-computed prices (never trust client-side math at this step).
-  useEffect(() => {
-    if (!trailer) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            trailerId: formData.trailerId,
-            duration: formData.duration,
-            email: formData.email,
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-          }),
-        });
-        const data = (await res.json()) as CheckoutResponse;
-        if (cancelled) return;
-        if (!data.ok) {
-          setError(data.error);
-          return;
-        }
-        setCheckout(data);
-      } catch (err) {
-        console.error(err);
-        if (!cancelled) setError("Could not initialize checkout. Try again.");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [trailer, formData.trailerId, formData.duration, formData.email, formData.firstName, formData.lastName]);
-
-  if (!trailer) return null;
-
-  async function handleSubmit(event: React.FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!checkout) return;
+    if (!stripe || !elements || submitting) return;
     setSubmitting(true);
     setError(null);
-
     try {
-      if (checkout.mode === "real") {
-        // TODO(Sprint 2.1): mount @stripe/react-stripe-js <CardElement>
-        // and call stripe.confirmCardPayment(checkout.rental.clientSecret).
-        // Until card UI is mounted, real mode short-circuits with a clear error.
-        setError(
-          "Real Stripe mode requires the card form (not yet mounted). " +
-            "Unset STRIPE_SECRET_KEY to use stub mode for testing.",
-        );
-        return;
-      }
-
-      // STUB: pretend the payment confirmed instantly.
-      // Send the magic-link email so the customer can reach their dashboard.
-      await fetch("/api/auth/send-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email }),
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/api/bookings/${checkout.bookingId}/payment/return`,
+        },
+        redirect: "if_required",
       });
-
-      onSuccess({
-        rentalIntentId: checkout.rental.paymentIntentId,
-        depositIntentId: checkout.deposit.paymentIntentId,
-      });
-    } catch (err) {
-      console.error(err);
-      setError("Payment failed. Try again, or contact support.");
+      if (result.error) throw new Error(result.error.message ?? "Payment was not completed.");
+      onSuccess(await finalizePayment(checkout.bookingId));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Payment failed. Please try again.");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
+    <form onSubmit={submit}>
+      <div className="bg-surface-container p-6 mb-8 ghost-border">
+        <div className="flex items-center gap-2 mb-5">
+          <Icon name="credit_card" className="text-primary text-xl" />
+          <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+            Secure Card Payment
+          </span>
+        </div>
+        <PaymentElement options={{ layout: "tabs" }} />
+      </div>
+      {error && <p role="alert" className="text-error text-sm font-medium mb-6">{error}</p>}
+      <div className="flex gap-4">
+        <button type="button" onClick={onBack} disabled={submitting} className="flex-1 min-h-[44px] bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest hover:bg-surface-bright transition-all disabled:opacity-50">
+          Back
+        </button>
+        <button type="submit" disabled={!stripe || !elements || submitting} className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] flex items-center justify-center gap-3">
+          <Icon name="lock" className="text-sm" />
+          {submitting ? "Processing…" : `Pay ${checkout.display.total}`}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function DemoPaymentForm({ checkout, onBack, onSuccess }: {
+  checkout: CheckoutOk;
+  onBack: () => void;
+  onSuccess: (nextUrl: string) => void;
+}) {
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    setSubmitting(true);
+    setError(null);
+    try {
+      onSuccess(await finalizePayment(checkout.bookingId));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Demo payment failed.");
+      setSubmitting(false);
+    }
+  }
+
+  return (
     <div>
-      <h2 className="text-3xl font-headline font-bold tracking-tighter uppercase mb-2">
-        Payment
-      </h2>
+      <div role="status" className="mb-8 border-l-4 border-primary bg-surface-container-low px-5 py-4">
+        <div className="font-headline uppercase tracking-widest text-xs font-bold text-primary mb-1">
+          Development Demo — No Charge
+        </div>
+        <p className="text-on-surface-variant text-sm leading-relaxed">
+          This local test does not collect a card or create a real reservation. Production disables this mode automatically.
+        </p>
+      </div>
+      {error && <p role="alert" className="text-error text-sm font-medium mb-6">{error}</p>}
+      <div className="flex gap-4">
+        <button type="button" onClick={onBack} disabled={submitting} className="flex-1 min-h-[44px] bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-50">
+          Back
+        </button>
+        <button type="button" onClick={submit} disabled={submitting} className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-3">
+          <Icon name="science" className="text-sm" />
+          {submitting ? "Processing…" : "Complete Demo Payment"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function StepPayment({ formData, checkoutKey, onBack, onSuccess }: Props) {
+  const [checkout, setCheckout] = useState<CheckoutOk | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function initialize() {
+      try {
+        const response = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...formData, checkoutKey }),
+        });
+        const result = (await response.json()) as CheckoutResponse;
+        if (cancelled) return;
+        if (!response.ok || !result.ok) {
+          setError(result.ok ? "Checkout failed." : result.error);
+          return;
+        }
+        setCheckout(result);
+      } catch {
+        if (!cancelled) setError("Could not initialize checkout. Please try again.");
+      }
+    }
+    initialize();
+    return () => {
+      cancelled = true;
+    };
+  }, [checkoutKey, formData]);
+
+  const stripePromise = useMemo(
+    () =>
+      checkout?.mode === "real" && checkout.publishableKey
+        ? loadStripe(checkout.publishableKey)
+        : null,
+    [checkout?.mode, checkout?.publishableKey],
+  );
+
+  return (
+    <div>
+      <h2 className="text-3xl font-headline font-bold tracking-tighter uppercase mb-2">Payment</h2>
       <p className="text-on-surface-variant mb-10">
-        Card is charged for the rental fee; deposit is a refundable hold.
+        Pay the rental and tax today. Your $200 security deposit is handled near pickup.
       </p>
 
-      {checkout?.mode === "stub" && (
-        <div
-          role="status"
-          className="mb-8 border-l-4 border-primary bg-surface-container-low px-5 py-4"
-        >
-          <div className="font-headline uppercase tracking-widest text-xs font-bold text-primary mb-1">
-            Stub Mode
+      <div className="bg-surface-container-high p-6 mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Icon name="receipt_long" className="text-primary text-xl" />
+          <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Payment Summary</span>
+        </div>
+        {checkout ? (
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between"><span className="text-on-surface-variant">Rental ({DURATION_LABELS[formData.duration]})</span><span className="font-bold">{checkout.display.rental}</span></div>
+            <div className="flex justify-between"><span className="text-on-surface-variant">Texas Sales Tax</span><span className="font-bold">{checkout.display.tax}</span></div>
+            <div className="flex justify-between"><span className="text-on-surface-variant">Security Deposit <span className="text-[10px]">(not charged today)</span></span><span className="font-bold">{checkout.display.deposit}</span></div>
+            <div className="h-px bg-white/10 my-2" />
+            <div className="flex justify-between text-lg"><span className="font-headline font-bold uppercase">Total Today</span><span className="text-primary font-headline font-bold">{checkout.display.total}</span></div>
           </div>
-          <p className="text-on-surface-variant text-sm font-light leading-relaxed">
-            Stripe is not configured. Clicking <strong>Complete Booking</strong> below
-            will simulate a successful payment so you can walk the rest of the flow.
-            Set <code>STRIPE_SECRET_KEY</code> in <code>.env.local</code> to enable
-            real card collection.
-          </p>
+        ) : (
+          <p className="text-on-surface-variant text-sm">Securing your time and calculating the final total…</p>
+        )}
+      </div>
+
+      {error && (
+        <div>
+          <p role="alert" className="text-error text-sm font-medium mb-6">{error}</p>
+          <button type="button" onClick={onBack} className="w-full min-h-[44px] bg-surface-container-highest py-4 font-headline font-bold uppercase tracking-widest">Back to Review</button>
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="bg-surface-container-high p-6 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Icon name="receipt_long" className="text-primary text-xl" />
-            <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-              Payment Summary
-            </span>
-          </div>
-          {checkout ? (
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-on-surface-variant">
-                  Rental Fee ({DURATION_LABELS[formData.duration]})
-                </span>
-                <span className="font-bold">{checkout.display.rental}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-on-surface-variant">Sales Tax (Bexar Co.)</span>
-                <span className="font-bold">{checkout.display.tax}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-on-surface-variant">
-                  Security Deposit{" "}
-                  <span className="text-[10px]">(hold only — not charged)</span>
-                </span>
-                <span className="font-bold">{checkout.display.deposit}</span>
-              </div>
-              <div className="h-px bg-white/10 my-2" />
-              <div className="flex justify-between text-lg">
-                <span className="font-headline font-bold uppercase">
-                  Total Charged Today
-                </span>
-                <span className="text-primary font-headline font-bold">
-                  {checkout.display.total}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <p className="text-on-surface-variant text-sm">Calculating total…</p>
-          )}
-        </div>
-
-        {/* Card form placeholder — Sprint 2 stub. Real Stripe Elements lands
-            when stub mode is dropped and STRIPE_SECRET_KEY is set in env. */}
-        <div className="bg-surface-container p-6 mb-8 ghost-border">
-          <div className="flex items-center gap-2 mb-3">
-            <Icon name="credit_card" className="text-primary text-xl" />
-            <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-              Card Details
-            </span>
-          </div>
-          <p className="text-on-surface-variant text-sm font-light">
-            {checkout?.mode === "stub"
-              ? "Card collection is disabled in stub mode."
-              : "Card field renders here in real mode (Stripe Elements)."}
-          </p>
-        </div>
-
-        {error && (
-          <p role="alert" className="text-error text-sm font-medium mb-6">
-            {error}
-          </p>
-        )}
-
-        <div className="flex gap-4">
-          <button
-            type="button"
-            onClick={onBack}
-            disabled={submitting}
-            className="flex-1 min-h-[44px] bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest hover:bg-surface-bright transition-all disabled:opacity-50"
-          >
-            Back
-          </button>
-          <button
-            type="submit"
-            disabled={!checkout || submitting}
-            aria-label="Complete booking — confirm payment"
-            className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] flex items-center justify-center gap-3"
-          >
-            <Icon name="lock" className="text-sm" />
-            {submitting ? "Processing…" : "Complete Booking"}
-          </button>
-        </div>
-      </form>
+      {checkout?.mode === "demo" && (
+        <DemoPaymentForm checkout={checkout} onBack={onBack} onSuccess={onSuccess} />
+      )}
+      {checkout?.mode === "real" && stripePromise && checkout.rental.clientSecret && (
+        <Elements
+          stripe={stripePromise}
+          options={{
+            clientSecret: checkout.rental.clientSecret,
+            appearance: {
+              theme: "night",
+              variables: {
+                colorPrimary: "#f97316",
+                colorBackground: "#1d1d1d",
+                colorText: "#ffffff",
+                colorDanger: "#ef4444",
+                borderRadius: "0px",
+              },
+            },
+          }}
+        >
+          <RealPaymentForm checkout={checkout} onBack={onBack} onSuccess={onSuccess} />
+        </Elements>
+      )}
     </div>
   );
 }

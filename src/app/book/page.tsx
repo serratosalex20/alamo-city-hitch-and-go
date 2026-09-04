@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/marketing/Navbar";
 import { Footer } from "@/components/marketing/Footer";
 import { StepTrailer } from "@/components/booking/StepTrailer";
@@ -30,6 +30,13 @@ export interface BookingFormData {
   };
   referralSource: ReferralSource;
   referralDetail: string;
+  towVehicle: {
+    year: string;
+    make: string;
+    model: string;
+    plate: string;
+  };
+  policiesAccepted: boolean;
 }
 
 const initialFormData: BookingFormData = {
@@ -46,6 +53,8 @@ const initialFormData: BookingFormData = {
   address: { street: "", city: "", state: "TX", zip: "" },
   referralSource: "website",
   referralDetail: "",
+  towVehicle: { year: "", make: "", model: "", plate: "" },
+  policiesAccepted: false,
 };
 
 const steps = [
@@ -56,19 +65,11 @@ const steps = [
   { label: "Payment", icon: "credit_card" },
 ];
 
-// Step 5 is the post-payment confirmation view; it intentionally lives
-// outside the step indicator (no "back" once paid — match retail UX).
-const CONFIRMATION_STEP = steps.length;
-
-interface BookingResult {
-  rentalIntentId: string;
-  depositIntentId: string;
-}
-
 export default function BookPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<BookingFormData>(initialFormData);
-  const [bookingResult, setBookingResult] = useState<BookingResult | null>(null);
+  const [checkoutKey] = useState(() => crypto.randomUUID());
 
   const updateForm = (updates: Partial<BookingFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -77,17 +78,16 @@ export default function BookPage() {
   const next = () => setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
   const back = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
-  const handlePaymentSuccess = (result: BookingResult) => {
-    setBookingResult(result);
-    setCurrentStep(CONFIRMATION_STEP);
+  const handlePaymentSuccess = (nextUrl: string) => {
+    router.push(nextUrl);
   };
 
   return (
     <>
       <Navbar />
       <main id="main-content" className="min-h-screen pt-28 pb-24 px-4 md:px-8 max-w-4xl mx-auto">
-        {/* Step Indicator — hidden on the post-payment confirmation view */}
-        {currentStep < CONFIRMATION_STEP && (
+        {/* Step Indicator */}
+        {(
           <nav aria-label="Booking progress" className="flex items-center justify-center gap-2 mb-16">
             <ol className="flex items-center gap-2 list-none p-0 m-0">
               {steps.map((step, i) => (
@@ -136,44 +136,15 @@ export default function BookPage() {
             <StepCustomer formData={formData} updateForm={updateForm} onNext={next} onBack={back} />
           )}
           {currentStep === 3 && (
-            <StepReview formData={formData} onBack={back} onContinue={next} />
+            <StepReview formData={formData} updateForm={updateForm} onBack={back} onContinue={next} />
           )}
           {currentStep === 4 && (
-            <StepPayment formData={formData} onBack={back} onSuccess={handlePaymentSuccess} />
-          )}
-          {currentStep === CONFIRMATION_STEP && bookingResult && (
-            <section aria-labelledby="confirm-heading" className="text-center pt-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-action/10 border border-primary-action mb-6">
-                <Icon name="check_circle" className="text-primary text-4xl" />
-              </div>
-              <h2
-                id="confirm-heading"
-                className="text-4xl md:text-5xl font-headline font-bold tracking-tighter uppercase mb-3"
-              >
-                Booking Confirmed
-              </h2>
-              <p className="text-on-surface-variant text-lg font-light mb-8 max-w-md mx-auto leading-relaxed">
-                Your trailer is reserved. We sent a sign-in link to{" "}
-                <strong className="text-on-surface">{formData.email}</strong>
-                {" "}so you can access your dashboard, sign the rental agreement, and
-                upload your documents.
-              </p>
-              <div className="bg-surface-container p-6 max-w-md mx-auto text-left mb-10">
-                <div className="text-xs uppercase tracking-widest text-on-surface-variant mb-2">
-                  Confirmation
-                </div>
-                <div className="font-mono text-sm break-all">
-                  {bookingResult.rentalIntentId}
-                </div>
-              </div>
-              <Link
-                href="/sign-in"
-                className="inline-flex items-center gap-3 bg-primary-action text-white px-10 py-4 font-headline font-bold uppercase tracking-widest hover:brightness-110 transition-all min-h-[44px]"
-              >
-                Open Sign-In Page
-                <Icon name="arrow_forward" className="text-sm" />
-              </Link>
-            </section>
+            <StepPayment
+              formData={formData}
+              checkoutKey={checkoutKey}
+              onBack={back}
+              onSuccess={handlePaymentSuccess}
+            />
           )}
         </div>
       </main>

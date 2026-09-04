@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { BookingFormData } from "@/app/book/page";
 import type { RentalDuration } from "@/types/models";
 import { ALL_DURATIONS, DURATION_LABELS } from "@/lib/booking/pricing";
@@ -23,6 +24,36 @@ const durationDescriptions: Record<RentalDuration, string> = {
 
 export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
   const today = new Date().toISOString().split("T")[0];
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function checkAvailability() {
+    if (!formData.date || !formData.time || checking) return;
+    setChecking(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          trailerId: formData.trailerId,
+          date: formData.date,
+          time: formData.time,
+          duration: formData.duration,
+        }),
+      });
+      const result = (await response.json()) as { ok: boolean; available?: boolean; error?: string };
+      if (!result.ok || !result.available) {
+        setError(result.error ?? "That trailer is not available for the selected time.");
+        return;
+      }
+      onNext();
+    } catch {
+      setError("We could not check availability. Please try again.");
+    } finally {
+      setChecking(false);
+    }
+  }
 
   return (
     <div>
@@ -102,6 +133,12 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
         </fieldset>
       </div>
 
+      {error && (
+        <p role="alert" className="mt-8 border-l-4 border-error bg-error/10 px-4 py-3 text-sm text-error">
+          {error}
+        </p>
+      )}
+
       {/* Nav */}
       <div className="flex gap-4 mt-12">
         <button
@@ -111,11 +148,11 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           Back
         </button>
         <button
-          onClick={onNext}
-          disabled={!formData.date || !formData.time}
+          onClick={checkAvailability}
+          disabled={!formData.date || !formData.time || checking}
           className="flex-1 min-h-[44px] bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 transition-all active:scale-[0.98]"
         >
-          Continue
+          {checking ? "Checking…" : "Check Availability"}
         </button>
       </div>
     </div>
