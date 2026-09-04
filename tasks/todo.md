@@ -78,6 +78,13 @@
       → insurance upload → owner approval → deposit authorization → pre-inspection
       → pickup → return → post-inspection → manual release. Customer and owner protected
       pages both returned HTTP 200.
+- [x] Final payment review corrected the checkout from 8.25% sales tax to the Texas
+      Comptroller's 10% motor vehicle rental tax for 1–30 day contracts; all current
+      rental blocks are 15 days or shorter.
+- [x] Checkout holds now reject edited/reused checkout keys, expose a 15-minute timer,
+      release safely when the renter returns to review, and atomically re-check inventory
+      before converting a successful payment into a reservation. A late/conflicting real
+      payment is refunded automatically instead of creating a double booking.
 - [x] `npm test`, `npm run lint`, `npx tsc --noEmit`, and `npm run build` pass.
 - [ ] Visual browser pass requires an external preview URL; local-only browser access was
       blocked by the test environment. Preview deployment awaits explicit owner approval.

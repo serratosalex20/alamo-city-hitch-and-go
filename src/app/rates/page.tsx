@@ -45,7 +45,7 @@ export default function RatesPage() {
           <p className="text-xl text-on-surface-variant font-light leading-relaxed max-w-2xl">
             Pick a trailer, pick a block, see the total. No quote forms. No
             mileage surprises. The price you see is the price you pay, plus
-            Texas sales tax on the rental fee and a refundable deposit hold.
+            Texas motor vehicle rental tax on the rental fee and a refundable deposit hold.
           </p>
         </header>
 
@@ -205,7 +205,7 @@ export default function RatesPage() {
         {/* Fine print */}
         <section className="mt-12 text-xs text-on-surface-variant font-light leading-relaxed space-y-2">
           <p>
-            <strong className="text-on-surface">Texas sales tax (Bexar County combined, 8.25%)</strong> applies
+            <strong className="text-on-surface">Texas motor vehicle rental tax (10% for contracts of 1–30 days)</strong> applies
             to the rental fee only. Refundable $200 deposit is a pre-authorization hold on your card, not a
             charge — the same amount across every trailer in the fleet.
           </p>

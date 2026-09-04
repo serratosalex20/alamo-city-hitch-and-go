@@ -10,6 +10,7 @@ import {
   BookingConflictError,
   BookingPersistenceError,
   createBookingHold,
+  getBooking,
   updateBooking,
 } from "@/lib/booking/repository";
 import { checkoutSchema } from "@/lib/booking/validation";
@@ -213,6 +214,73 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : "Checkout failed." },
       { status },
+    );
+  }
+}
+
+const releaseCheckoutSchema = z.object({
+  checkoutKey: z.string().uuid("Invalid checkout."),
+});
+
+export async function DELETE(request: Request) {
+  let checkoutKey: string;
+  try {
+    checkoutKey = releaseCheckoutSchema.parse(await request.json()).checkoutKey;
+  } catch (error) {
+    const message = error instanceof z.ZodError ? error.issues[0]?.message : "Invalid checkout.";
+    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+  }
+
+  try {
+    const booking = await getBooking(checkoutKey);
+    if (!booking) return NextResponse.json({ ok: true });
+    if (
+      booking.checkoutKey !== checkoutKey ||
+      booking.status !== "pending_payment" ||
+      booking.paymentStatus !== "pending"
+    ) {
+      return NextResponse.json(
+        { ok: false, error: "This checkout can no longer be changed." },
+        { status: 409 },
+      );
+    }
+
+    if (hasStripe && booking.rentalPaymentIntentId) {
+      const stripe = getStripe();
+      if (!stripe) throw new Error("Stripe failed to initialize.");
+      const paymentIntent = await stripe.paymentIntents.retrieve(booking.rentalPaymentIntentId);
+      if (paymentIntent.status === "succeeded" || paymentIntent.status === "processing") {
+        return NextResponse.json(
+          { ok: false, error: "Payment is already processing and the checkout cannot be edited." },
+          { status: 409 },
+        );
+      }
+      if (paymentIntent.status !== "canceled") {
+        await stripe.paymentIntents.cancel(
+          booking.rentalPaymentIntentId,
+          {},
+          { idempotencyKey: `checkout-release-${booking.id}` },
+        );
+      }
+    }
+
+    const now = new Date();
+    await updateBooking(
+      booking.id,
+      {
+        status: "cancelled",
+        paymentStatus: "failed",
+        checkoutExpiresAt: now.toISOString(),
+        checkoutExpiresAtMs: now.getTime(),
+      },
+      { action: "checkout_hold_released", actor: booking.customerEmail },
+    );
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("[checkout-release]", error);
+    return NextResponse.json(
+      { ok: false, error: "We could not release this checkout. Please try again." },
+      { status: 502 },
     );
   }
 }

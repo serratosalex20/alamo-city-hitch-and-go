@@ -3,7 +3,9 @@ import { getBooking } from "@/lib/booking/repository";
 import {
   markDemoRentalPaymentSucceeded,
   markRentalPaymentSucceeded,
+  RentalPaymentRefundedError,
 } from "@/lib/booking/workflow";
+import { BookingConflictError } from "@/lib/booking/repository";
 import { appUrl, isDemoEnvironment } from "@/lib/env";
 import { getStripe, hasStripe } from "@/lib/stripe/server";
 import { createToken, setSessionCookie } from "@/lib/auth/session";
@@ -61,9 +63,16 @@ export async function POST(
     });
   } catch (error) {
     console.error("[payment-confirmation]", error);
+    const checkoutUnavailable =
+      error instanceof BookingConflictError || error instanceof RentalPaymentRefundedError;
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Payment confirmation failed." },
-      { status: 502 },
+      {
+        ok: false,
+        error: checkoutUnavailable
+          ? error.message
+          : "Payment confirmation failed. Please contact us before trying another payment.",
+      },
+      { status: checkoutUnavailable ? 409 : 502 },
     );
   }
 }

@@ -41,7 +41,7 @@ const sections: Section[] = [
   {
     heading: "Payment",
     body:
-      "The rental fee is charged at booking. Texas sales tax (Bexar County combined, 8.25%) applies to the rental fee only. Your card on file must be in your legal name as shown on the driver's license you present at pickup.",
+      "The rental fee is charged at booking. Texas motor vehicle rental tax (10% for contracts of 1–30 days) applies to the rental fee. Your card on file must be in your legal name as shown on the driver's license you present at pickup.",
   },
   {
     heading: "Refundable Deposit",

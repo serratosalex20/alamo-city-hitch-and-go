@@ -59,7 +59,7 @@ export function PricingCallout() {
             No quote forms, no &quot;call for a price&quot; runaround, no mileage
             surprises. Pick a trailer, pick a Half Day, Full Day, 1 Week, or
             2 Weeks block (2-Week ships with a free day — 15 calendar days),
-            see the total before you book. Texas sales tax called out.
+            see the total before you book. Texas motor vehicle rental tax called out.
             Refundable $200 deposit is a hold, not a charge.
           </p>
         </div>

@@ -5,7 +5,12 @@ import { hasConflict } from "../src/lib/booking/availability";
 import { calculatePrice } from "../src/lib/booking/pricing";
 import { buildRentalSchedule, localPickupToUtc } from "../src/lib/booking/schedule";
 import { checkoutSchema } from "../src/lib/booking/validation";
-import { BookingConflictError, createBookingHold, getBooking } from "../src/lib/booking/repository";
+import {
+  BookingConflictError,
+  completeRentalPaymentRecord,
+  createBookingHold,
+  getBooking,
+} from "../src/lib/booking/repository";
 import { markRentalPaymentSucceeded } from "../src/lib/booking/workflow";
 import { depositMethodForDuration } from "../src/lib/stripe/deposits";
 import { performAdminBookingAction } from "../src/lib/booking/admin-actions";
@@ -36,13 +41,13 @@ function bookingFixture(id: string): Booking {
     endTime: "2026-09-07T15:00:00.000Z",
     startTimeMs: Date.parse("2026-09-06T15:00:00.000Z"),
     endTimeMs: Date.parse("2026-09-07T15:00:00.000Z"),
-    checkoutExpiresAt: "2026-09-04T12:15:00.000Z",
-    checkoutExpiresAtMs: Date.parse("2026-09-04T12:15:00.000Z"),
+    checkoutExpiresAt: "2099-09-04T12:15:00.000Z",
+    checkoutExpiresAtMs: Date.parse("2099-09-04T12:15:00.000Z"),
     policiesAcceptedAt: now.toISOString(),
     extensions: [],
     rentalSubtotal: 15000,
-    taxAmount: 1238,
-    rentalTotal: 16238,
+    taxAmount: 1500,
+    rentalTotal: 16500,
     depositAmount: 20000,
     paymentStatus: "pending",
     depositStatus: "not_requested",
@@ -66,8 +71,8 @@ test("pricing is calculated in cents and excludes the deposit from rental total"
     duration: "fullDay",
     rentalCents: 15000,
     depositCents: 20000,
-    taxCents: 1238,
-    totalCents: 16238,
+    taxCents: 1500,
+    totalCents: 16500,
   });
 });
 
@@ -118,6 +123,7 @@ test("deposit method uses a hold for short rentals and refundable charge for lon
 
 test("rental payment webhook fulfillment is idempotent", async () => {
   const fixture = bookingFixture("24c2a311-62af-4fe1-83a2-01096c39eea5");
+  fixture.trailerId = "trailer-002";
   fixture.rentalPaymentIntentId = "pi_test_rental";
   await createBookingHold(fixture, 1);
   const paymentIntent = {
@@ -141,6 +147,31 @@ test("booking holds reject overlapping inventory", async () => {
   second.trailerId = "conflict-test-trailer";
   await createBookingHold(first, 1);
   await assert.rejects(() => createBookingHold(second, 1), BookingConflictError);
+});
+
+test("a checkout key cannot be reused with different customer or schedule details", async () => {
+  const original = bookingFixture("24c2a311-62af-4fe1-83a2-01096c39eea9");
+  await createBookingHold(original, 1);
+  const changed = structuredClone(original);
+  changed.customerEmail = "different@example.com";
+  await assert.rejects(() => createBookingHold(changed, 1), BookingConflictError);
+});
+
+test("an expired checkout cannot be promoted to a paid reservation", async () => {
+  const expired = bookingFixture("24c2a311-62af-4fe1-83a2-01096c39eeaa");
+  expired.rentalPaymentIntentId = "pi_expired_checkout";
+  expired.checkoutExpiresAt = new Date(Date.now() - 1_000).toISOString();
+  expired.checkoutExpiresAtMs = Date.now() - 1_000;
+  await createBookingHold(expired, 1);
+  await assert.rejects(
+    () => completeRentalPaymentRecord({
+      bookingId: expired.id,
+      paymentIntentId: "pi_expired_checkout",
+      capacity: 1,
+      updates: { paymentStatus: "succeeded", status: "pending_signature" },
+    }),
+    /15-minute checkout hold expired/,
+  );
 });
 
 test("owner approval requires the review state and complete documents", async () => {

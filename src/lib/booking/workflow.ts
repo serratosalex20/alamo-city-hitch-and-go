@@ -1,6 +1,22 @@
 import type Stripe from "stripe";
 import { DOCUMENT_DEADLINE_HOURS } from "@/lib/booking/schedule";
-import { findBookingByPaymentIntent, getBooking, updateBooking } from "@/lib/booking/repository";
+import {
+  BookingConflictError,
+  completeRentalPaymentRecord,
+  findBookingByPaymentIntent,
+  getBooking,
+  updateBooking,
+} from "@/lib/booking/repository";
+import { trailers } from "@/lib/data/trailers";
+import { getStripe } from "@/lib/stripe/server";
+
+export class RentalPaymentRefundedError extends Error {}
+
+function bookingCapacity(trailerId: string): number {
+  const trailer = trailers.find((item) => item.id === trailerId);
+  if (!trailer) throw new Error("Booking trailer is unavailable.");
+  return trailer.inventoryCount + trailer.virtualBoost;
+}
 
 export async function markRentalPaymentSucceeded(paymentIntent: Stripe.PaymentIntent) {
   const bookingId = paymentIntent.metadata.bookingId;
@@ -9,6 +25,11 @@ export async function markRentalPaymentSucceeded(paymentIntent: Stripe.PaymentIn
   const booking = await getBooking(bookingId);
   if (!booking) return null;
   if (booking.paymentStatus === "succeeded") return booking;
+  if (booking.paymentStatus === "refunded") {
+    throw new RentalPaymentRefundedError(
+      "This payment was refunded because the checkout hold was no longer valid.",
+    );
+  }
 
   const now = new Date();
   const documentsDue = new Date(
@@ -19,21 +40,47 @@ export async function markRentalPaymentSucceeded(paymentIntent: Stripe.PaymentIn
       ? paymentIntent.payment_method
       : paymentIntent.payment_method?.id;
 
-  return updateBooking(
-    bookingId,
-    {
-      status: "pending_signature",
-      paymentStatus: "succeeded",
-      stripeCustomerId:
-        typeof paymentIntent.customer === "string"
-          ? paymentIntent.customer
-          : paymentIntent.customer?.id,
-      stripePaymentMethodId: paymentMethodId,
-      documentsDueAt: documentsDue.toISOString(),
-      documentsDueAtMs: documentsDue.getTime(),
-    },
-    { action: "rental_payment_succeeded", actor: "stripe" },
-  );
+  try {
+    return await completeRentalPaymentRecord({
+      bookingId,
+      paymentIntentId: paymentIntent.id,
+      capacity: bookingCapacity(booking.trailerId),
+      updates: {
+        status: "pending_signature",
+        paymentStatus: "succeeded",
+        stripeCustomerId:
+          typeof paymentIntent.customer === "string"
+            ? paymentIntent.customer
+            : paymentIntent.customer?.id,
+        stripePaymentMethodId: paymentMethodId,
+        documentsDueAt: documentsDue.toISOString(),
+        documentsDueAtMs: documentsDue.getTime(),
+      },
+    });
+  } catch (error) {
+    if (!(error instanceof BookingConflictError)) throw error;
+    const stripe = getStripe();
+    if (!stripe) throw error;
+    await stripe.refunds.create(
+      { payment_intent: paymentIntent.id, reason: "requested_by_customer" },
+      { idempotencyKey: `checkout-hold-refund-${bookingId}` },
+    );
+    const latest = await getBooking(bookingId);
+    if (latest && latest.paymentStatus !== "refunded") {
+      await updateBooking(
+        bookingId,
+        { status: "cancelled", paymentStatus: "refunded" },
+        {
+          action: "rental_payment_refunded_after_hold_expired",
+          actor: "stripe",
+          note: error.message,
+        },
+      );
+    }
+    throw new RentalPaymentRefundedError(
+      "The checkout hold expired or the time became unavailable. Your payment was refunded automatically.",
+    );
+  }
 }
 
 export async function markDemoRentalPaymentSucceeded(bookingId: string) {
@@ -42,9 +89,11 @@ export async function markDemoRentalPaymentSucceeded(bookingId: string) {
   if (booking.paymentStatus === "succeeded") return booking;
   const now = new Date();
   const due = new Date(now.getTime() + DOCUMENT_DEADLINE_HOURS * 60 * 60 * 1000);
-  return updateBooking(
+  return completeRentalPaymentRecord({
     bookingId,
-    {
+    paymentIntentId: booking.rentalPaymentIntentId ?? `pi_demo_${bookingId}`,
+    capacity: bookingCapacity(booking.trailerId),
+    updates: {
       status: "pending_signature",
       paymentStatus: "succeeded",
       stripeCustomerId: `cus_demo_${bookingId}`,
@@ -52,8 +101,7 @@ export async function markDemoRentalPaymentSucceeded(bookingId: string) {
       documentsDueAt: due.toISOString(),
       documentsDueAtMs: due.getTime(),
     },
-    { action: "demo_rental_payment_succeeded", actor: "development-demo" },
-  );
+  });
 }
 
 export async function markPaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {

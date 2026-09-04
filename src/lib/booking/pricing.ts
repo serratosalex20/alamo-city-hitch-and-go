@@ -6,10 +6,12 @@
  * integer cents on the PaymentIntent — this module converts at the
  * boundary so the rest of the app never touches floats.
  *
- * Texas state sales tax is computed at TAX_RATE on the rental fee only
- * (deposits are refundable holds, not taxable revenue). The 8.25% rate
- * is Bexar County's combined state + local sales tax — owner should
- * verify with their tax accountant before going live.
+ * Texas motor vehicle rental tax is computed on the rental fee only
+ * (deposits are refundable holds, not rental receipts). The Texas
+ * Comptroller publishes a 10% rate for rental contracts of 1–30 days;
+ * every rental duration currently sold by this site falls in that range.
+ * The owner should confirm registration, exemptions, and reporting with
+ * their tax professional before accepting live bookings.
  *
  * Sprint 3.4 — Pricing & Block Restructure (replaces Sprint 3.3):
  *   - 3-day block retired; replaced by a 1-week block per owner direction.
@@ -27,8 +29,7 @@
 import type { RentalDuration, Trailer } from "@/types/models";
 import { trailers } from "@/lib/data/trailers";
 
-// TODO(owner): confirm with tax accountant — Bexar County combined rate.
-const TAX_RATE = 0.0825;
+export const MOTOR_VEHICLE_RENTAL_TAX_RATE = 0.1;
 
 /**
  * Hours per rental-duration key. Used to compute
@@ -110,7 +111,7 @@ export function calculatePrice(
   const rentalDollars = trailer.pricing[duration];
   const rentalCents = Math.round(rentalDollars * 100);
   const depositCents = Math.round(trailer.deposit * 100);
-  const taxCents = Math.round(rentalCents * TAX_RATE);
+  const taxCents = Math.round(rentalCents * MOTOR_VEHICLE_RENTAL_TAX_RATE);
   const totalCents = rentalCents + taxCents;
 
   return {

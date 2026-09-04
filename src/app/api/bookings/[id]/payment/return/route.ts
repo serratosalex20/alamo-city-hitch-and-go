@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getBooking } from "@/lib/booking/repository";
-import { markRentalPaymentSucceeded } from "@/lib/booking/workflow";
+import { markRentalPaymentSucceeded, RentalPaymentRefundedError } from "@/lib/booking/workflow";
 import { getStripe } from "@/lib/stripe/server";
 import { createToken, setSessionCookie } from "@/lib/auth/session";
 import { sendAccessLinkEmail } from "@/lib/email/server";
@@ -42,6 +42,13 @@ export async function GET(
     return NextResponse.redirect(new URL(nextUrl, appUrl));
   } catch (error) {
     console.error("[payment-return]", error, new URL(request.url).searchParams.get("redirect_status"));
-    return NextResponse.redirect(new URL("/book?payment=error", appUrl));
+    return NextResponse.redirect(
+      new URL(
+        error instanceof RentalPaymentRefundedError
+          ? "/book?payment=availability-refund"
+          : "/book?payment=error",
+        appUrl,
+      ),
+    );
   }
 }

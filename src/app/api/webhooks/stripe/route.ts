@@ -7,6 +7,7 @@ import {
   markPaymentIntentCanceled,
   markPaymentIntentFailed,
   markRentalPaymentSucceeded,
+  RentalPaymentRefundedError,
   syncIdentityVerificationSession,
 } from "@/lib/booking/workflow";
 import { syncDepositPayment } from "@/lib/stripe/deposits";
@@ -65,6 +66,9 @@ export async function POST(request: Request) {
         break;
     }
   } catch (error) {
+    if (error instanceof RentalPaymentRefundedError) {
+      return NextResponse.json({ received: true, paymentRefunded: true });
+    }
     console.error(`[stripe-webhook:${event.id}]`, error);
     return NextResponse.json({ ok: false, error: "Webhook processing failed." }, { status: 500 });
   }

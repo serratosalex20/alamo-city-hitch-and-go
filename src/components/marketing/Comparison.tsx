@@ -47,7 +47,7 @@ const rows: Row[] = [
     counter:
       "Daily rate, plus mileage, plus environmental fee, plus insurance up-sell at the counter, plus a fuel-fill surcharge if you don't top it off perfectly.",
     yard:
-      "Block price + Texas sales tax. Refundable deposit hold, not a charge. That's it.",
+      "Block price + Texas motor vehicle rental tax. Refundable deposit hold, not a charge. That's it.",
   },
   {
     topic: "Support While You're Out",

@@ -30,6 +30,31 @@ function demoBookings(): Map<string, Booking> {
 export class BookingConflictError extends Error {}
 export class BookingPersistenceError extends Error {}
 
+function sameCheckoutDetails(left: Booking, right: Booking): boolean {
+  return (
+    left.checkoutKey === right.checkoutKey &&
+    left.customerEmail === right.customerEmail &&
+    JSON.stringify(left.customer) === JSON.stringify(right.customer) &&
+    JSON.stringify(left.towVehicle) === JSON.stringify(right.towVehicle) &&
+    left.trailerId === right.trailerId &&
+    left.duration === right.duration &&
+    left.startTimeMs === right.startTimeMs &&
+    left.endTimeMs === right.endTimeMs &&
+    left.rentalSubtotal === right.rentalSubtotal &&
+    left.taxAmount === right.taxAmount &&
+    left.rentalTotal === right.rentalTotal &&
+    left.depositAmount === right.depositAmount
+  );
+}
+
+function assertIdempotentCheckout(existing: Booking, candidate: Booking) {
+  if (!sameCheckoutDetails(existing, candidate)) {
+    throw new BookingConflictError(
+      "Checkout details changed after the time was secured. Return to review and restart payment.",
+    );
+  }
+}
+
 export function isPersistenceReady(): boolean {
   return hasFirebase || isDemoEnvironment;
 }
@@ -93,7 +118,15 @@ export async function createBookingHold(
     }
     const store = demoBookings();
     const existing = store.get(booking.id);
-    if (existing) return existing;
+    if (existing) {
+      if (existing.status === "cancelled" && existing.paymentStatus !== "succeeded") {
+        assertNoConflict(booking, Array.from(store.values()), capacity);
+        store.set(booking.id, structuredClone(booking));
+        return booking;
+      }
+      assertIdempotentCheckout(existing, booking);
+      return existing;
+    }
     assertNoConflict(booking, Array.from(store.values()), capacity);
     store.set(booking.id, structuredClone(booking));
     return booking;
@@ -104,8 +137,25 @@ export async function createBookingHold(
   const ref = db.collection(COLLECTION).doc(booking.id);
 
   return db.runTransaction(async (transaction) => {
-    const existing = await transaction.get(ref);
-    if (existing.exists) return existing.data() as Booking;
+    const existingSnapshot = await transaction.get(ref);
+    if (existingSnapshot.exists) {
+      const existing = existingSnapshot.data() as Booking;
+      if (existing.status !== "cancelled" || existing.paymentStatus === "succeeded") {
+        assertIdempotentCheckout(existing, booking);
+        return existing;
+      }
+
+      const sameTrailer = await transaction.get(
+        db.collection(COLLECTION).where("trailerId", "==", booking.trailerId),
+      );
+      assertNoConflict(
+        booking,
+        sameTrailer.docs.map((doc) => doc.data() as Booking),
+        capacity,
+      );
+      transaction.set(ref, booking);
+      return booking;
+    }
 
     const sameTrailer = await transaction.get(
       db.collection(COLLECTION).where("trailerId", "==", booking.trailerId),
@@ -117,6 +167,78 @@ export async function createBookingHold(
     );
     transaction.create(ref, booking);
     return booking;
+  });
+}
+
+export async function completeRentalPaymentRecord({
+  bookingId,
+  paymentIntentId,
+  capacity,
+  updates,
+}: {
+  bookingId: string;
+  paymentIntentId: string;
+  capacity: number;
+  updates: Partial<Booking>;
+}): Promise<Booking> {
+  const now = new Date();
+
+  const complete = (current: Booking, allBookings: Booking[]) => {
+    if (current.rentalPaymentIntentId !== paymentIntentId) {
+      throw new Error("Payment does not match this booking.");
+    }
+    if (current.paymentStatus === "succeeded") return current;
+    if (current.paymentStatus === "refunded" || current.status === "cancelled") {
+      throw new BookingConflictError("This checkout is no longer active.");
+    }
+    if (current.checkoutExpiresAtMs <= now.getTime()) {
+      throw new BookingConflictError(
+        "The 15-minute checkout hold expired before payment completed.",
+      );
+    }
+    assertNoConflict(current, allBookings, capacity);
+    const auditEvent: BookingAuditEvent = {
+      action: "rental_payment_succeeded",
+      actor: "stripe",
+      createdAt: now.toISOString(),
+      createdAtMs: now.getTime(),
+    };
+    return {
+      ...current,
+      ...updates,
+      auditTrail: [...current.auditTrail, auditEvent],
+      updatedAt: now.toISOString(),
+      updatedAtMs: now.getTime(),
+    };
+  };
+
+  if (!hasFirebase) {
+    if (!isDemoEnvironment) throw new BookingPersistenceError("Booking storage is not configured.");
+    const store = demoBookings();
+    const current = store.get(bookingId);
+    if (!current) throw new Error("Booking not found.");
+    const next = complete(current, Array.from(store.values()));
+    store.set(bookingId, structuredClone(next));
+    return structuredClone(next);
+  }
+
+  const db = getFirestoreAdmin();
+  if (!db) throw new BookingPersistenceError("Booking storage failed to initialize.");
+  const ref = db.collection(COLLECTION).doc(bookingId);
+  return db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists) throw new Error("Booking not found.");
+    const current = snapshot.data() as Booking;
+    if (current.paymentStatus === "succeeded") return current;
+    const sameTrailer = await transaction.get(
+      db.collection(COLLECTION).where("trailerId", "==", current.trailerId),
+    );
+    const next = complete(
+      current,
+      sameTrailer.docs.map((doc) => doc.data() as Booking),
+    );
+    transaction.set(ref, next);
+    return next;
   });
 }
 

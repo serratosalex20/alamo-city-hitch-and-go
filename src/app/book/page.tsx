@@ -69,7 +69,7 @@ export default function BookPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<BookingFormData>(initialFormData);
-  const [checkoutKey] = useState(() => crypto.randomUUID());
+  const [checkoutKey, setCheckoutKey] = useState(() => crypto.randomUUID());
 
   const updateForm = (updates: Partial<BookingFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -80,6 +80,11 @@ export default function BookPage() {
 
   const handlePaymentSuccess = (nextUrl: string) => {
     router.push(nextUrl);
+  };
+
+  const handlePaymentBack = () => {
+    setCheckoutKey(crypto.randomUUID());
+    back();
   };
 
   return (
@@ -93,8 +98,8 @@ export default function BookPage() {
               {steps.map((step, i) => (
                 <li key={step.label} className="flex items-center">
                   <button
-                    onClick={() => i < currentStep && setCurrentStep(i)}
-                    disabled={i > currentStep}
+                    onClick={() => i < currentStep && currentStep !== 4 && setCurrentStep(i)}
+                    disabled={i > currentStep || currentStep === 4}
                     aria-current={i === currentStep ? "step" : undefined}
                     aria-label={`Step ${i + 1}: ${step.label}${i === currentStep ? " (current)" : i < currentStep ? " (completed)" : ""}`}
                     className={`flex items-center gap-2 px-4 py-3 min-h-[44px] min-w-[44px] transition-all ${
@@ -142,7 +147,7 @@ export default function BookPage() {
             <StepPayment
               formData={formData}
               checkoutKey={checkoutKey}
-              onBack={back}
+              onBack={handlePaymentBack}
               onSuccess={handlePaymentSuccess}
             />
           )}

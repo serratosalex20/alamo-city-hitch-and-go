@@ -500,7 +500,7 @@ export default async function TrailerDetailPage({ params }: PageProps) {
             })}
           </div>
           <p className="text-on-surface-variant text-sm font-light leading-relaxed mt-6 max-w-3xl">
-            All rates in USD. Texas sales tax (Bexar County, 8.25%) applies to
+            All rates in USD. Texas motor vehicle rental tax (10% for contracts of 1–30 days) applies to
             the rental fee. Refundable ${trailer.deposit} deposit is a
             pre-authorization hold on your card, not a charge.
           </p>

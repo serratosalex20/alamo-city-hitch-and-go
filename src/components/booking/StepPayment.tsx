@@ -40,10 +40,11 @@ async function finalizePayment(bookingId: string): Promise<string> {
   return result.nextUrl;
 }
 
-function RealPaymentForm({ checkout, onBack, onSuccess }: {
+function RealPaymentForm({ checkout, onBack, onSuccess, expired = false }: {
   checkout: CheckoutOk;
   onBack: () => void;
   onSuccess: (nextUrl: string) => void;
+  expired?: boolean;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -53,6 +54,10 @@ function RealPaymentForm({ checkout, onBack, onSuccess }: {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!stripe || !elements || submitting) return;
+    if (expired) {
+      setError("This checkout hold expired. Go back to review and start payment again.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -88,7 +93,7 @@ function RealPaymentForm({ checkout, onBack, onSuccess }: {
         <button type="button" onClick={onBack} disabled={submitting} className="flex-1 min-h-[44px] bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest hover:bg-surface-bright transition-all disabled:opacity-50">
           Back
         </button>
-        <button type="submit" disabled={!stripe || !elements || submitting} className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] flex items-center justify-center gap-3">
+        <button type="submit" disabled={!stripe || !elements || submitting || expired} className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] flex items-center justify-center gap-3">
           <Icon name="lock" className="text-sm" />
           {submitting ? "Processing…" : `Pay ${checkout.display.total}`}
         </button>
@@ -97,15 +102,20 @@ function RealPaymentForm({ checkout, onBack, onSuccess }: {
   );
 }
 
-function DemoPaymentForm({ checkout, onBack, onSuccess }: {
+function DemoPaymentForm({ checkout, onBack, onSuccess, expired = false }: {
   checkout: CheckoutOk;
   onBack: () => void;
   onSuccess: (nextUrl: string) => void;
+  expired?: boolean;
 }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function submit() {
+    if (expired) {
+      setError("This checkout hold expired. Go back to review and start payment again.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -131,7 +141,7 @@ function DemoPaymentForm({ checkout, onBack, onSuccess }: {
         <button type="button" onClick={onBack} disabled={submitting} className="flex-1 min-h-[44px] bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-50">
           Back
         </button>
-        <button type="button" onClick={submit} disabled={submitting} className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-3">
+        <button type="button" onClick={submit} disabled={submitting || expired} className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-3">
           <Icon name="science" className="text-sm" />
           {submitting ? "Processing…" : "Complete Demo Payment"}
         </button>
@@ -143,6 +153,8 @@ function DemoPaymentForm({ checkout, onBack, onSuccess }: {
 export function StepPayment({ formData, checkoutKey, onBack, onSuccess }: Props) {
   const [checkout, setCheckout] = useState<CheckoutOk | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -170,6 +182,41 @@ export function StepPayment({ formData, checkoutKey, onBack, onSuccess }: Props)
     };
   }, [checkoutKey, formData]);
 
+  useEffect(() => {
+    if (!checkout) return;
+    const timer = window.setInterval(() => setNowMs(Date.now()), 1_000);
+    return () => window.clearInterval(timer);
+  }, [checkout]);
+
+  const expiresAtMs = checkout ? Date.parse(checkout.checkoutExpiresAt) : 0;
+  const expired = Boolean(checkout && expiresAtMs <= nowMs);
+  const secondsRemaining = checkout
+    ? Math.max(0, Math.ceil((expiresAtMs - nowMs) / 1_000))
+    : 0;
+  const holdClock = `${String(Math.floor(secondsRemaining / 60)).padStart(2, "0")}:${String(secondsRemaining % 60).padStart(2, "0")}`;
+
+  async function releaseAndGoBack() {
+    if (leaving) return;
+    setLeaving(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ checkoutKey }),
+      });
+      const result = (await response.json()) as { ok: boolean; error?: string };
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error ?? "Could not update this checkout.");
+      }
+      onBack();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Could not update this checkout.");
+    } finally {
+      setLeaving(false);
+    }
+  }
+
   const stripePromise = useMemo(
     () =>
       checkout?.mode === "real" && checkout.publishableKey
@@ -193,7 +240,7 @@ export function StepPayment({ formData, checkoutKey, onBack, onSuccess }: Props)
         {checkout ? (
           <div className="space-y-3 text-sm">
             <div className="flex justify-between"><span className="text-on-surface-variant">Rental ({DURATION_LABELS[formData.duration]})</span><span className="font-bold">{checkout.display.rental}</span></div>
-            <div className="flex justify-between"><span className="text-on-surface-variant">Texas Sales Tax</span><span className="font-bold">{checkout.display.tax}</span></div>
+            <div className="flex justify-between"><span className="text-on-surface-variant">Texas Motor Vehicle Rental Tax</span><span className="font-bold">{checkout.display.tax}</span></div>
             <div className="flex justify-between"><span className="text-on-surface-variant">Security Deposit <span className="text-[10px]">(not charged today)</span></span><span className="font-bold">{checkout.display.deposit}</span></div>
             <div className="h-px bg-white/10 my-2" />
             <div className="flex justify-between text-lg"><span className="font-headline font-bold uppercase">Total Today</span><span className="text-primary font-headline font-bold">{checkout.display.total}</span></div>
@@ -203,15 +250,23 @@ export function StepPayment({ formData, checkoutKey, onBack, onSuccess }: Props)
         )}
       </div>
 
+      {checkout && (
+        <p role="status" className={`mb-6 text-sm font-medium ${expired ? "text-error" : "text-on-surface-variant"}`}>
+          {expired
+            ? "This 15-minute checkout hold expired. Go back to review and start payment again."
+            : `Your selected time is held for ${holdClock}.`}
+        </p>
+      )}
+
       {error && (
         <div>
           <p role="alert" className="text-error text-sm font-medium mb-6">{error}</p>
-          <button type="button" onClick={onBack} className="w-full min-h-[44px] bg-surface-container-highest py-4 font-headline font-bold uppercase tracking-widest">Back to Review</button>
+          <button type="button" onClick={releaseAndGoBack} disabled={leaving} className="w-full min-h-[44px] bg-surface-container-highest py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-50">Back to Review</button>
         </div>
       )}
 
       {checkout?.mode === "demo" && (
-        <DemoPaymentForm checkout={checkout} onBack={onBack} onSuccess={onSuccess} />
+        <DemoPaymentForm checkout={checkout} onBack={releaseAndGoBack} onSuccess={onSuccess} expired={expired} />
       )}
       {checkout?.mode === "real" && stripePromise && checkout.rental.clientSecret && (
         <Elements
@@ -230,7 +285,7 @@ export function StepPayment({ formData, checkoutKey, onBack, onSuccess }: Props)
             },
           }}
         >
-          <RealPaymentForm checkout={checkout} onBack={onBack} onSuccess={onSuccess} />
+          <RealPaymentForm checkout={checkout} onBack={releaseAndGoBack} onSuccess={onSuccess} expired={expired} />
         </Elements>
       )}
     </div>

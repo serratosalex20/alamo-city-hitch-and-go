@@ -134,7 +134,7 @@ export function StepReview({ formData, updateForm, onBack, onContinue }: Props) 
               <span className="font-bold">{formatUsd(quote.rentalCents)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-on-surface-variant">Texas Sales Tax</span>
+              <span className="text-on-surface-variant">Texas Motor Vehicle Rental Tax</span>
               <span className="font-bold">{formatUsd(quote.taxCents)}</span>
             </div>
             <div className="flex justify-between">
