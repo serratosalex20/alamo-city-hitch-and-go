@@ -46,7 +46,7 @@ const sections: Section[] = [
   {
     heading: "Refundable Deposit",
     body:
-      "Every rental requires a $200 refundable deposit hold — the same amount across every trailer in the fleet. It is a pre-authorization on your card, not a charge. The hold releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning ($100 flat), or unpaid overtime is owed, we capture only the amount due and release the remainder.",
+      "Every rental requires a $200 security deposit. For shorter rentals, this is normally a card authorization placed near pickup. Longer rentals may require an eligible extended authorization or a refundable deposit charge because card-network holds expire. After return and inspection, we initiate the release or refund within 24 hours when nothing is owed; your bank may take additional time to update your available balance. If documented damage, cleaning ($100 flat), or unpaid overtime is owed, we retain only the supported amount and release or refund the remainder.",
   },
   {
     heading: "Insurance",
@@ -76,7 +76,7 @@ const sections: Section[] = [
   {
     heading: "Damage, Loss & Inspection",
     body:
-      "We inspect with you at pickup and document the trailer's condition on a joint inspection report. We re-inspect within two business days of return. Damage, loss, missing accessories, or excessive soiling that wasn't there at pickup is documented with photographs and billed at commercially reasonable rates.",
+      "We inspect with you at pickup and document the trailer's condition on a joint inspection report. We complete the return review within 24 hours. Damage, loss, missing accessories, or excessive soiling that wasn't there at pickup is documented with photographs and billed at commercially reasonable rates.",
   },
   {
     heading: "Governing Law & Venue",
