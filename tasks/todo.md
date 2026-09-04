@@ -79,6 +79,8 @@
       storage is not configured for the Preview environment. Configure sandbox/test
       integrations in Preview, production integrations in Production, and do not launch
       until both the safe test flow and a controlled live-mode flow pass.
+- [ ] Isolate preview Firestore records and uploaded documents with environment-scoped
+      collection/storage prefixes before reusing Firebase credentials in Vercel Preview.
 - [x] Replace the inconsistent native mobile time wheel with explicit 30-minute pickup
       options during operating hours; enforce the same choices server-side and add tests.
 - [x] Local API/UI-route smoke: booking → demo payment → demo agreement → demo identity
