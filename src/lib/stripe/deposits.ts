@@ -23,6 +23,9 @@ export async function syncDepositPayment(booking: Booking, paymentIntent: Stripe
   }
   const method = paymentIntent.metadata.depositMethod as DepositMethod;
   if (paymentIntent.status === "requires_capture") {
+    if (booking.depositStatus === "authorized" && booking.status === "ready_for_pickup") {
+      return booking;
+    }
     return updateBooking(
       booking.id,
       {
@@ -35,6 +38,9 @@ export async function syncDepositPayment(booking: Booking, paymentIntent: Stripe
     );
   }
   if (paymentIntent.status === "succeeded") {
+    if (booking.depositStatus === "charged" && booking.status === "ready_for_pickup") {
+      return booking;
+    }
     return updateBooking(
       booking.id,
       {
@@ -45,7 +51,15 @@ export async function syncDepositPayment(booking: Booking, paymentIntent: Stripe
       { action: "refundable_deposit_charged", actor: "stripe" },
     );
   }
-  if (paymentIntent.status === "requires_action" || paymentIntent.status === "requires_confirmation") {
+  if (
+    paymentIntent.status === "requires_action" ||
+    paymentIntent.status === "requires_confirmation" ||
+    paymentIntent.status === "requires_payment_method" ||
+    paymentIntent.status === "processing"
+  ) {
+    if (booking.depositStatus === "requires_action" && booking.status === "deposit_action_required") {
+      return booking;
+    }
     return updateBooking(
       booking.id,
       { depositMethod: method, depositStatus: "requires_action", status: "deposit_action_required" },

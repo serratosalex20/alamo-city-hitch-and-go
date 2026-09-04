@@ -31,6 +31,7 @@ export async function GET(
     clientSecret: paymentIntent.client_secret,
     publishableKey: stripePublishableKey,
     method: booking.depositMethod,
+    status: booking.depositStatus,
   });
 }
 
