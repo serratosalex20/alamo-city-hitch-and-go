@@ -74,6 +74,13 @@
 
 ### Verification log — 2026-09-04
 
+- [ ] **Smoke Test 1 launch blocker:** the Vercel preview reaches trailer and schedule
+      selection, but `/api/availability` returns HTTP 503 because Firebase Admin booking
+      storage is not configured for the Preview environment. Configure sandbox/test
+      integrations in Preview, production integrations in Production, and do not launch
+      until both the safe test flow and a controlled live-mode flow pass.
+- [ ] Replace the inconsistent native mobile time wheel with explicit 30-minute pickup
+      options during operating hours; enforce the same choices server-side and add tests.
 - [x] Local API/UI-route smoke: booking → demo payment → demo agreement → demo identity
       → insurance upload → owner approval → deposit authorization → pre-inspection
       → pickup → return → post-inspection → manual release. Customer and owner protected
