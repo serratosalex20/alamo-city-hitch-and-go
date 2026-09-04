@@ -12,6 +12,66 @@
 - **Stub-mode policy (Sprint 2):** Build Phase 5 + Phase 6 in **stub mode by default**. If `STRIPE_SECRET_KEY` is unset, `/api/checkout` returns a fake `PaymentIntent` so the booking flow works end-to-end. If Firebase Admin env vars are unset, magic-link "sending" logs to console and the email link is exposed in the dev-mode response for testing.
 - **Brand assets:** v1.0 brand guide + DRAFT rental agreement live in `deliverables/` (committed 2026-05-14).
 
+---
+
+## ACTIVE SPRINT — Production Booking, Documents & Pickup Flow (2026-09-04)
+
+> Owner-approved launch flow: pickup only; Stripe rental payment; DocuSign
+> embedded agreement; Stripe Identity verification; private insurance upload;
+> owner review; $200 security deposit authorization near pickup; owner-only
+> release after return inspection, initiated within 24 hours. One- and two-week
+> rentals use an eligible extended authorization or a refundable-charge fallback.
+
+### B0 — Baseline and launch safeguards
+- [ ] Preserve the existing brand, trailer catalog, pricing, and pickup-only scope.
+- [ ] Add strict server validation for customer, schedule, pricing, and bookability.
+- [ ] Replace confirmation-before-payment and permissive stub behavior with explicit
+      development/demo states that cannot masquerade as a live booking.
+- [ ] Document every required environment variable without committing secrets.
+
+### B1 — Booking records and availability
+- [ ] Expand booking statuses for payment, documents, review, deposit, pickup,
+      return inspection, release/capture, cancellation, and completion.
+- [ ] Persist provisional bookings in Firestore and calculate authoritative start/end
+      timestamps on the server.
+- [ ] Reject conflicts against active/pending bookings with the 30-minute buffer.
+- [ ] Add a 15-minute checkout expiration and a 24-hour document-completion deadline.
+
+### B2 — Rental payment and saved card
+- [ ] Create/reuse a Stripe Customer and create the rental PaymentIntent from the
+      server-calculated quote; save the card for the later deposit authorization.
+- [ ] Mount Stripe Payment Element and require successful payment before advancing.
+- [ ] Verify Stripe webhook signatures and make fulfillment idempotent.
+- [ ] Show "Payment received — documents required" until the post-payment steps pass.
+
+### B3 — Agreement, identity, and insurance
+- [ ] Create an embedded DocuSign envelope from the approved rental agreement, with a
+      clearly labeled development fallback when DocuSign credentials are absent.
+- [ ] Create a Stripe Identity document-verification session and store only the
+      verification reference/status in the booking record.
+- [ ] Accept private insurance JPG/PNG/PDF uploads with type/size validation and
+      staff-only retrieval; collect carrier, policyholder, and expiration date.
+- [ ] Provide a single post-payment checklist with signed/verified/uploaded states.
+
+### B4 — Customer and owner operations
+- [ ] Replace the mock customer dashboard with the renter's real booking and next steps.
+- [ ] Add owner-only booking review, approve/resubmit/reject actions, pickup readiness,
+      checkout/return timestamps, inspection notes/photos, and an audit trail.
+- [ ] Add owner-only deposit authorize/release/capture actions. No automatic release;
+      show reminders and the Stripe authorization expiration deadline.
+- [ ] Initiate clean-return release within 24 hours; document and capture only the
+      supported amount when cleaning/damage is found.
+
+### B5 — Verification and launch
+- [ ] Add focused tests for pricing, schedule validation, conflicts, booking state
+      transitions, webhook idempotency, and deposit decisions.
+- [ ] Run TypeScript/build checks and review the complete diff.
+- [ ] Walk the browser flow end-to-end in safe test mode: booking → payment → agreement
+      → identity → insurance → owner approval → deposit → pickup → return → release.
+- [ ] Deploy only after the full flow passes and required production credentials are
+      confirmed; perform a separate low-dollar/live-mode smoke test before accepting
+      real customers.
+
 ## Open decisions (still owed by owner)
 
 1. **Pricing algebra** — 4h / 12h / 24h / 36h block relationship. Placeholder values land in `src/lib/booking/pricing.ts` with `// TODO(owner)` markers; owner edits one file when prices set.
