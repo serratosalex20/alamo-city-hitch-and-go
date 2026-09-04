@@ -44,6 +44,8 @@ export const stripeWebhookSecret = read("STRIPE_WEBHOOK_SECRET");
 export const docusignIntegrationKey = read("DOCUSIGN_INTEGRATION_KEY");
 export const docusignUserId = read("DOCUSIGN_USER_ID");
 export const docusignAccountId = read("DOCUSIGN_ACCOUNT_ID");
+export const docusignTemplateId = read("DOCUSIGN_TEMPLATE_ID");
+export const docusignSignerRole = read("DOCUSIGN_SIGNER_ROLE") ?? "Renter";
 export const docusignRsaPrivateKey = read("DOCUSIGN_RSA_PRIVATE_KEY")?.replace(
   /\\n/g,
   "\n",
@@ -135,6 +137,7 @@ export const hasDocuSign = Boolean(
   docusignIntegrationKey &&
     docusignUserId &&
     docusignAccountId &&
+    docusignTemplateId &&
     docusignRsaPrivateKey,
 );
 
