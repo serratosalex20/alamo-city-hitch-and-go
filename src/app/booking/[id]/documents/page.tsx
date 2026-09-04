@@ -5,6 +5,7 @@ import { Footer } from "@/components/marketing/Footer";
 import { PostPaymentChecklist } from "@/components/booking/PostPaymentChecklist";
 import { getCustomerBooking } from "@/lib/auth/authorization";
 import { DURATION_LABELS, formatUsd } from "@/lib/booking/pricing";
+import { pickupAddress, pickupInstructions } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Complete Your Booking",
@@ -48,7 +49,8 @@ export default async function BookingDocumentsPage({ params }: { params: Promise
         {confirmed && (
           <section className="mb-8 border-l-4 border-green-500 bg-green-500/10 p-6">
             <h2 className="font-headline text-xl font-bold uppercase mb-2">Pickup Instructions</h2>
-            <p className="text-sm text-on-surface-variant">Arrive at your confirmed time with the approved tow vehicle, your physical driver&apos;s license, and current insurance. We&apos;ll verify the hitch, document trailer condition, and complete the security deposit authorization before release. Exact pickup details are provided directly after approval.</p>
+            <p className="text-sm text-on-surface-variant">Arrive at your confirmed time with the approved tow vehicle, your physical driver&apos;s license, and current insurance. We&apos;ll verify the hitch, document trailer condition, and complete the security deposit authorization before release.</p>
+            <div className="mt-4 space-y-1 text-sm"><p><strong>Pickup:</strong> {pickupAddress ?? "Contact the owner for the exact handoff location."}</p><p><strong>Instructions:</strong> {pickupInstructions ?? "Your owner confirmation will include final handoff details."}</p></div>
           </section>
         )}
 

@@ -17,7 +17,6 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "date-fns": "^4.1.0",
-    "docusign-esign": "^8.7.0",
     "firebase": "^12.13.0",
     "firebase-admin": "^13.10.0",
     "lucide-react": "^1.8.0",
@@ -31,7 +30,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/docusign-esign": "^5.19.9",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.4",
     "tsx": "^4.23.13"

@@ -60,6 +60,11 @@ export const resendApiKey = read("RESEND_API_KEY");
 export const emailFrom =
   read("EMAIL_FROM") ?? "Alamo City Hitch & Go <bookings@alamocityhitchandgo.com>";
 
+// ─── Pickup operations ──────────────────────────────────
+// Kept server-side so the exact handoff location is disclosed only after approval.
+export const pickupAddress = read("PICKUP_ADDRESS");
+export const pickupInstructions = read("PICKUP_INSTRUCTIONS");
+
 // ─── Owner access ───────────────────────────────────────
 export const adminEmails = new Set(
   (read("ADMIN_EMAILS") ?? "")
@@ -142,6 +147,21 @@ export const hasDocuSign = Boolean(
 );
 
 export const hasEmail = Boolean(resendApiKey);
+
+/** Every dependency required before the site is allowed to accept a live payment. */
+export const isProductionBookingReady = Boolean(
+  hasFirebase &&
+    firebaseStorageBucket &&
+    hasStripe &&
+    stripePublishableKey &&
+    stripeWebhookSecret &&
+    hasDocuSign &&
+    hasEmail &&
+    hasProductionAuthSecret &&
+    adminEmails.size > 0 &&
+    pickupAddress &&
+    pickupInstructions,
+);
 
 /** Development-only adapters are never allowed to create a production booking. */
 export const isDemoEnvironment = process.env.NODE_ENV !== "production";

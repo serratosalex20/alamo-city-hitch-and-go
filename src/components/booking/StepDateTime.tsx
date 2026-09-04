@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { BookingFormData } from "@/app/book/page";
 import type { RentalDuration } from "@/types/models";
 import { ALL_DURATIONS, DURATION_LABELS } from "@/lib/booking/pricing";
+import { formatBusinessDate } from "@/lib/booking/schedule";
 
 interface Props {
   formData: BookingFormData;
@@ -23,7 +24,7 @@ const durationDescriptions: Record<RentalDuration, string> = {
 };
 
 export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
-  const today = new Date().toISOString().split("T")[0];
+  const [today] = useState(() => formatBusinessDate(Date.now()));
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

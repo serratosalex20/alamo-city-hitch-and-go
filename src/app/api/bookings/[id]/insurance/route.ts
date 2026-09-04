@@ -5,43 +5,12 @@ import { updateBooking } from "@/lib/booking/repository";
 import { formatBusinessDate } from "@/lib/booking/schedule";
 import { getStorageBucket } from "@/lib/firebase/admin";
 import { isDemoEnvironment } from "@/lib/env";
-import { getAdminSession } from "@/lib/auth/authorization";
-import { getBooking } from "@/lib/booking/repository";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "application/pdf"]);
 
 function cleanFileName(name: string) {
   return name.replace(/[^A-Za-z0-9._-]/g, "_").slice(-120) || "insurance-document";
-}
-
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ ok: false, error: "Not authorized." }, { status: 403 });
-  const { id } = await params;
-  const booking = await getBooking(id);
-  if (!booking?.insuranceStoragePath || !booking.insuranceFileName) {
-    return NextResponse.json({ ok: false, error: "Insurance document not found." }, { status: 404 });
-  }
-  const bucket = getStorageBucket();
-  if (!bucket) {
-    return NextResponse.json({ ok: false, error: "Secure document storage is unavailable." }, { status: 503 });
-  }
-  try {
-    const [bytes] = await bucket.file(booking.insuranceStoragePath).download();
-    return new Response(new Uint8Array(bytes), {
-      headers: {
-        "Content-Type": booking.insuranceMimeType ?? "application/octet-stream",
-        "Content-Disposition": `attachment; filename="${cleanFileName(booking.insuranceFileName)}"`,
-        "Cache-Control": "private, no-store",
-      },
-    });
-  } catch {
-    return NextResponse.json({ ok: false, error: "Insurance document could not be read." }, { status: 404 });
-  }
 }
 
 export async function POST(
