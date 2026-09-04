@@ -28,6 +28,7 @@ export type TokenKind = "session" | "link";
 export interface TokenPayload {
   email: string;
   kind: TokenKind;
+  next?: string;
   iat: number; // seconds since epoch
   exp: number;
 }
@@ -47,12 +48,18 @@ function sign(payload: string): string {
 }
 
 /** Mint a token. Email is normalized (lower-case, trimmed). */
-export function createToken(email: string, kind: TokenKind): string {
+export function safeNextPath(next: string | undefined): string | undefined {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return undefined;
+  return next;
+}
+
+export function createToken(email: string, kind: TokenKind, next?: string): string {
   const now = Math.floor(Date.now() / 1000);
   const ttl = kind === "session" ? SESSION_TTL_SECONDS : LINK_TTL_SECONDS;
   const payload: TokenPayload = {
     email: email.trim().toLowerCase(),
     kind,
+    ...(safeNextPath(next) ? { next: safeNextPath(next) } : {}),
     iat: now,
     exp: now + ttl,
   };
@@ -88,6 +95,7 @@ export function verifyToken(token: string, expectedKind: TokenKind): TokenPayloa
     return null;
   }
   if (typeof payload.email !== "string" || payload.email.length === 0) return null;
+  if (payload.next && !safeNextPath(payload.next)) return null;
 
   return payload;
 }

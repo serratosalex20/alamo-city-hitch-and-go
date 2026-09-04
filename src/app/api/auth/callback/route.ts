@@ -28,5 +28,5 @@ export async function GET(request: Request) {
   }
 
   await setSessionCookie(payload.email);
-  return NextResponse.redirect(new URL("/account", appUrl));
+  return NextResponse.redirect(new URL(payload.next ?? "/account", appUrl));
 }

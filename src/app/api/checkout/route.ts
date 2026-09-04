@@ -14,6 +14,7 @@ import {
 } from "@/lib/booking/repository";
 import { checkoutSchema } from "@/lib/booking/validation";
 import { trailers } from "@/lib/data/trailers";
+import { hasEmail } from "@/lib/email/server";
 import { hasFirebase, isDemoEnvironment, stripePublishableKey } from "@/lib/env";
 import { getStripe, hasStripe } from "@/lib/stripe/server";
 import type { Booking } from "@/types/models";
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }
 
-  if (!isDemoEnvironment && (!hasFirebase || !hasStripe || !stripePublishableKey)) {
+  if (!isDemoEnvironment && (!hasFirebase || !hasStripe || !stripePublishableKey || !hasEmail)) {
     return NextResponse.json(
       { ok: false, error: "Online checkout is temporarily unavailable. Please call us to book." },
       { status: 503 },
