@@ -3,6 +3,7 @@ import { getCustomerBooking } from "@/lib/auth/authorization";
 import { updateBooking } from "@/lib/booking/repository";
 import { appUrl, isDemoEnvironment, stripePublishableKey } from "@/lib/env";
 import { getStripe, hasStripe } from "@/lib/stripe/server";
+import { syncIdentityVerificationSession } from "@/lib/booking/workflow";
 
 export async function POST(
   _request: Request,
@@ -86,15 +87,7 @@ export async function GET(
       booking.stripeIdentitySessionId,
     );
     const status = verification.status;
-    if (status === "verified") {
-      await updateBooking(
-        id,
-        { identityStatus: "verified", identityVerifiedAt: new Date().toISOString(), status: "pending_insurance" },
-        { action: "identity_verified", actor: session.email },
-      );
-    } else if (status === "requires_input" || status === "canceled") {
-      await updateBooking(id, { identityStatus: status }, { action: `identity_${status}`, actor: session.email });
-    }
+    await syncIdentityVerificationSession(verification);
     return NextResponse.json({ ok: true, status });
   } catch (error) {
     console.error("[identity-status]", error);

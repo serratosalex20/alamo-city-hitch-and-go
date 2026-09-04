@@ -51,6 +51,14 @@ export async function syncDepositPayment(booking: Booking, paymentIntent: Stripe
       { action: "refundable_deposit_charged", actor: "stripe" },
     );
   }
+  if (paymentIntent.status === "canceled") {
+    if (booking.depositStatus === "released") return booking;
+    return updateBooking(
+      booking.id,
+      { depositMethod: method, depositStatus: "failed", status: "confirmed" },
+      { action: "deposit_authorization_expired_or_canceled", actor: "stripe" },
+    );
+  }
   if (
     paymentIntent.status === "requires_action" ||
     paymentIntent.status === "requires_confirmation" ||
@@ -96,11 +104,13 @@ export async function requestDeposit(bookingId: string, actor: string) {
 
   const stripe = getStripe();
   if (!stripe) throw new Error("Stripe is unavailable.");
+  let retryOf: string | undefined;
   if (booking.depositPaymentIntentId) {
     const existing = await stripe.paymentIntents.retrieve(booking.depositPaymentIntentId, {
       expand: ["latest_charge"],
     });
-    return syncDepositPayment(booking, existing);
+    if (existing.status !== "canceled") return syncDepositPayment(booking, existing);
+    retryOf = existing.id;
   }
 
   const method: DepositMethod = usesRefundableCharge(booking) ? "refundable_charge" : "authorization";
@@ -122,7 +132,7 @@ export async function requestDeposit(bookingId: string, actor: string) {
       metadata: { bookingId, kind: "deposit", depositMethod: method },
       expand: ["latest_charge"],
     },
-    { idempotencyKey: `deposit-${bookingId}` },
+    { idempotencyKey: retryOf ? `deposit-retry-${bookingId}-${retryOf}` : `deposit-${bookingId}` },
   );
   const withIntent = await updateBooking(
     bookingId,
