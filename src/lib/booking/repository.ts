@@ -34,12 +34,33 @@ export function isPersistenceReady(): boolean {
   return hasFirebase || isDemoEnvironment;
 }
 
-function currentlyBlocksInventory(booking: Booking, nowMs: number): boolean {
+export function currentlyBlocksInventory(booking: Booking, nowMs: number): boolean {
   if (!ACTIVE_CONFLICT_STATUSES.has(booking.status)) return false;
   if (booking.status === "pending_payment" && booking.checkoutExpiresAtMs <= nowMs) {
     return false;
   }
   return true;
+}
+
+export async function checkBookingAvailability(
+  trailerId: string,
+  startTimeMs: number,
+  endTimeMs: number,
+  capacity: number,
+): Promise<boolean> {
+  const bookings = await listAllBookings();
+  const nowMs = Date.now();
+  const overlapping = bookings.filter(
+    (booking) =>
+      booking.trailerId === trailerId &&
+      currentlyBlocksInventory(booking, nowMs) &&
+      hasConflict(
+        { startMs: startTimeMs, endMs: endTimeMs },
+        [{ startMs: booking.startTimeMs, endMs: booking.endTimeMs }],
+        MIN_BUFFER_MIN,
+      ),
+  );
+  return overlapping.length < capacity;
 }
 
 function assertNoConflict(candidate: Booking, existing: Booking[], capacity: number) {
