@@ -23,54 +23,66 @@
 > rentals use an eligible extended authorization or a refundable-charge fallback.
 
 ### B0 — Baseline and launch safeguards
-- [ ] Preserve the existing brand, trailer catalog, pricing, and pickup-only scope.
-- [ ] Add strict server validation for customer, schedule, pricing, and bookability.
-- [ ] Replace confirmation-before-payment and permissive stub behavior with explicit
+- [x] Preserve the existing brand, trailer catalog, pricing, and pickup-only scope.
+- [x] Add strict server validation for customer, schedule, pricing, and bookability.
+- [x] Replace confirmation-before-payment and permissive stub behavior with explicit
       development/demo states that cannot masquerade as a live booking.
-- [ ] Document every required environment variable without committing secrets.
+- [x] Document every required environment variable without committing secrets.
 
 ### B1 — Booking records and availability
-- [ ] Expand booking statuses for payment, documents, review, deposit, pickup,
+- [x] Expand booking statuses for payment, documents, review, deposit, pickup,
       return inspection, release/capture, cancellation, and completion.
-- [ ] Persist provisional bookings in Firestore and calculate authoritative start/end
+- [x] Persist provisional bookings in Firestore and calculate authoritative start/end
       timestamps on the server.
-- [ ] Reject conflicts against active/pending bookings with the 30-minute buffer.
-- [ ] Add a 15-minute checkout expiration and a 24-hour document-completion deadline.
+- [x] Reject conflicts against active/pending bookings with the 30-minute buffer.
+- [x] Add a 15-minute checkout expiration and a 24-hour document-completion deadline.
 
 ### B2 — Rental payment and saved card
-- [ ] Create/reuse a Stripe Customer and create the rental PaymentIntent from the
+- [x] Create/reuse a Stripe Customer and create the rental PaymentIntent from the
       server-calculated quote; save the card for the later deposit authorization.
-- [ ] Mount Stripe Payment Element and require successful payment before advancing.
-- [ ] Verify Stripe webhook signatures and make fulfillment idempotent.
-- [ ] Show "Payment received — documents required" until the post-payment steps pass.
+- [x] Mount Stripe Payment Element and require successful payment before advancing.
+- [x] Verify Stripe webhook signatures and make fulfillment idempotent.
+- [x] Show "Payment received — documents required" until the post-payment steps pass.
 
 ### B3 — Agreement, identity, and insurance
-- [ ] Create an embedded DocuSign envelope from the approved rental agreement, with a
+- [x] Create an embedded DocuSign envelope from the approved rental agreement, with a
       clearly labeled development fallback when DocuSign credentials are absent.
-- [ ] Create a Stripe Identity document-verification session and store only the
+- [x] Create a Stripe Identity document-verification session and store only the
       verification reference/status in the booking record.
-- [ ] Accept private insurance JPG/PNG/PDF uploads with type/size validation and
+- [x] Accept private insurance JPG/PNG/PDF uploads with type/size validation and
       staff-only retrieval; collect carrier, policyholder, and expiration date.
-- [ ] Provide a single post-payment checklist with signed/verified/uploaded states.
+- [x] Provide a single post-payment checklist with signed/verified/uploaded states.
 
 ### B4 — Customer and owner operations
-- [ ] Replace the mock customer dashboard with the renter's real booking and next steps.
-- [ ] Add owner-only booking review, approve/resubmit/reject actions, pickup readiness,
+- [x] Replace the mock customer dashboard with the renter's real booking and next steps.
+- [x] Add owner-only booking review, approve/resubmit/reject actions, pickup readiness,
       checkout/return timestamps, inspection notes/photos, and an audit trail.
-- [ ] Add owner-only deposit authorize/release/capture actions. No automatic release;
+- [x] Add owner-only deposit authorize/release/capture actions. No automatic release;
       show reminders and the Stripe authorization expiration deadline.
-- [ ] Initiate clean-return release within 24 hours; document and capture only the
+- [x] Initiate clean-return release within 24 hours; document and capture only the
       supported amount when cleaning/damage is found.
 
 ### B5 — Verification and launch
-- [ ] Add focused tests for pricing, schedule validation, conflicts, booking state
+- [x] Add focused tests for pricing, schedule validation, conflicts, booking state
       transitions, webhook idempotency, and deposit decisions.
-- [ ] Run TypeScript/build checks and review the complete diff.
+- [x] Run TypeScript/build checks and review the complete diff.
 - [ ] Walk the browser flow end-to-end in safe test mode: booking → payment → agreement
       → identity → insurance → owner approval → deposit → pickup → return → release.
 - [ ] Deploy only after the full flow passes and required production credentials are
       confirmed; perform a separate low-dollar/live-mode smoke test before accepting
       real customers.
+
+### Verification log — 2026-09-04
+
+- [x] Local API/UI-route smoke: booking → demo payment → demo agreement → demo identity
+      → insurance upload → owner approval → deposit authorization → pre-inspection
+      → pickup → return → post-inspection → manual release. Customer and owner protected
+      pages both returned HTTP 200.
+- [x] `npm test`, `npm run lint`, `npx tsc --noEmit`, and `npm run build` pass.
+- [ ] Visual browser pass requires an external preview URL; local-only browser access was
+      blocked by the test environment. Preview deployment awaits explicit owner approval.
+- [ ] Live providers and low-dollar card test remain blocked until production credentials,
+      approved DocuSign template, owner email, and pickup instructions are configured.
 
 ## Open decisions (still owed by owner)
 

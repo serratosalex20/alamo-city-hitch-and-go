@@ -5,9 +5,10 @@ import { hasConflict } from "../src/lib/booking/availability";
 import { calculatePrice } from "../src/lib/booking/pricing";
 import { buildRentalSchedule, localPickupToUtc } from "../src/lib/booking/schedule";
 import { checkoutSchema } from "../src/lib/booking/validation";
-import { createBookingHold, getBooking } from "../src/lib/booking/repository";
+import { BookingConflictError, createBookingHold, getBooking } from "../src/lib/booking/repository";
 import { markRentalPaymentSucceeded } from "../src/lib/booking/workflow";
 import { depositMethodForDuration } from "../src/lib/stripe/deposits";
+import { performAdminBookingAction } from "../src/lib/booking/admin-actions";
 import type { Booking } from "../src/types/models";
 
 function bookingFixture(id: string): Booking {
@@ -131,4 +132,34 @@ test("rental payment webhook fulfillment is idempotent", async () => {
   assert.equal(updated?.paymentStatus, "succeeded");
   assert.equal(updated?.status, "pending_signature");
   assert.equal(updated?.auditTrail.filter((event) => event.action === "rental_payment_succeeded").length, 1);
+});
+
+test("booking holds reject overlapping inventory", async () => {
+  const first = bookingFixture("24c2a311-62af-4fe1-83a2-01096c39eea6");
+  const second = bookingFixture("24c2a311-62af-4fe1-83a2-01096c39eea7");
+  first.trailerId = "conflict-test-trailer";
+  second.trailerId = "conflict-test-trailer";
+  await createBookingHold(first, 1);
+  await assert.rejects(() => createBookingHold(second, 1), BookingConflictError);
+});
+
+test("owner approval requires the review state and complete documents", async () => {
+  const fixture = bookingFixture("24c2a311-62af-4fe1-83a2-01096c39eea8");
+  fixture.status = "under_review";
+  fixture.paymentStatus = "succeeded";
+  fixture.agreementStatus = "signed";
+  fixture.identityStatus = "verified";
+  fixture.insuranceStatus = "uploaded";
+  await createBookingHold(fixture, 1);
+  const approved = await performAdminBookingAction({
+    bookingId: fixture.id,
+    action: "approve",
+    actor: "owner@example.com",
+  });
+  assert.equal(approved.status, "confirmed");
+  assert.equal(approved.insuranceStatus, "approved");
+  await assert.rejects(
+    () => performAdminBookingAction({ bookingId: fixture.id, action: "approve", actor: "owner@example.com" }),
+    /not available/,
+  );
 });
