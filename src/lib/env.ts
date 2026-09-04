@@ -25,6 +25,21 @@ export const firebaseAdminPrivateKey = read("FIREBASE_ADMIN_PRIVATE_KEY")?.repla
 export const firebaseStorageBucket =
   read("FIREBASE_STORAGE_BUCKET") ?? read("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
 
+function resourceNamespace(name: string, fallback: string): string {
+  const value = read(name) ?? fallback;
+  if (!/^[A-Za-z0-9_-]+$/.test(value)) {
+    throw new Error(`${name} may contain only letters, numbers, underscores, and hyphens.`);
+  }
+  return value;
+}
+
+// Preview deployments can share a Firebase project without sharing customer data.
+export const bookingCollection = resourceNamespace("BOOKING_COLLECTION", "bookings");
+export const bookingStoragePrefix = resourceNamespace(
+  "BOOKING_STORAGE_PREFIX",
+  "bookings",
+);
+
 // ─── Firebase (client-side SDK) ──────────────────────────
 export const firebasePublicConfig = {
   apiKey: read("NEXT_PUBLIC_FIREBASE_API_KEY"),

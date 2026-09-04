@@ -1,9 +1,8 @@
 import { getFirestoreAdmin } from "@/lib/firebase/admin";
-import { hasFirebase, isDemoEnvironment } from "@/lib/env";
+import { bookingCollection, hasFirebase, isDemoEnvironment } from "@/lib/env";
 import { hasConflict, MIN_BUFFER_MIN } from "@/lib/booking/availability";
 import type { Booking, BookingAuditEvent } from "@/types/models";
 
-const COLLECTION = "bookings";
 const ACTIVE_CONFLICT_STATUSES = new Set<Booking["status"]>([
   "pending_payment",
   "pending_signature",
@@ -134,7 +133,7 @@ export async function createBookingHold(
 
   const db = getFirestoreAdmin();
   if (!db) throw new BookingPersistenceError("Booking storage failed to initialize.");
-  const ref = db.collection(COLLECTION).doc(booking.id);
+  const ref = db.collection(bookingCollection).doc(booking.id);
 
   return db.runTransaction(async (transaction) => {
     const existingSnapshot = await transaction.get(ref);
@@ -146,7 +145,7 @@ export async function createBookingHold(
       }
 
       const sameTrailer = await transaction.get(
-        db.collection(COLLECTION).where("trailerId", "==", booking.trailerId),
+        db.collection(bookingCollection).where("trailerId", "==", booking.trailerId),
       );
       assertNoConflict(
         booking,
@@ -158,7 +157,7 @@ export async function createBookingHold(
     }
 
     const sameTrailer = await transaction.get(
-      db.collection(COLLECTION).where("trailerId", "==", booking.trailerId),
+      db.collection(bookingCollection).where("trailerId", "==", booking.trailerId),
     );
     assertNoConflict(
       booking,
@@ -224,14 +223,14 @@ export async function completeRentalPaymentRecord({
 
   const db = getFirestoreAdmin();
   if (!db) throw new BookingPersistenceError("Booking storage failed to initialize.");
-  const ref = db.collection(COLLECTION).doc(bookingId);
+  const ref = db.collection(bookingCollection).doc(bookingId);
   return db.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(ref);
     if (!snapshot.exists) throw new Error("Booking not found.");
     const current = snapshot.data() as Booking;
     if (current.paymentStatus === "succeeded") return current;
     const sameTrailer = await transaction.get(
-      db.collection(COLLECTION).where("trailerId", "==", current.trailerId),
+      db.collection(bookingCollection).where("trailerId", "==", current.trailerId),
     );
     const next = complete(
       current,
@@ -248,7 +247,7 @@ export async function getBooking(id: string): Promise<Booking | null> {
   }
   const db = getFirestoreAdmin();
   if (!db) return null;
-  const snapshot = await db.collection(COLLECTION).doc(id).get();
+  const snapshot = await db.collection(bookingCollection).doc(id).get();
   return snapshot.exists ? (snapshot.data() as Booking) : null;
 }
 
@@ -260,7 +259,7 @@ export async function listBookingsForEmail(email: string): Promise<Booking[]> {
   } else {
     const db = getFirestoreAdmin();
     if (!db) return [];
-    const snapshot = await db.collection(COLLECTION).where("customerEmail", "==", normalized).get();
+    const snapshot = await db.collection(bookingCollection).where("customerEmail", "==", normalized).get();
     bookings = snapshot.docs.map((doc) => doc.data() as Booking);
   }
   return bookings
@@ -276,7 +275,7 @@ export async function listAllBookings(): Promise<Booking[]> {
   } else {
     const db = getFirestoreAdmin();
     if (!db) return [];
-    const snapshot = await db.collection(COLLECTION).get();
+    const snapshot = await db.collection(bookingCollection).get();
     bookings = snapshot.docs.map((doc) => doc.data() as Booking);
   }
   return bookings
@@ -312,7 +311,7 @@ export async function updateBooking(
 
   const db = getFirestoreAdmin();
   if (!db) throw new BookingPersistenceError("Booking storage failed to initialize.");
-  const ref = db.collection(COLLECTION).doc(id);
+  const ref = db.collection(bookingCollection).doc(id);
   return db.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(ref);
     if (!snapshot.exists) throw new Error("Booking not found.");
@@ -343,7 +342,7 @@ export async function findBookingByPaymentIntent(paymentIntentId: string): Promi
   const db = getFirestoreAdmin();
   if (!db) return null;
   for (const field of ["rentalPaymentIntentId", "depositPaymentIntentId"] as const) {
-    const snapshot = await db.collection(COLLECTION).where(field, "==", paymentIntentId).limit(1).get();
+    const snapshot = await db.collection(bookingCollection).where(field, "==", paymentIntentId).limit(1).get();
     if (!snapshot.empty) return snapshot.docs[0].data() as Booking;
   }
   return null;

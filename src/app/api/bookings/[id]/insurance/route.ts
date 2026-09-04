@@ -4,7 +4,7 @@ import { getCustomerBooking } from "@/lib/auth/authorization";
 import { updateBooking } from "@/lib/booking/repository";
 import { formatBusinessDate } from "@/lib/booking/schedule";
 import { getStorageBucket } from "@/lib/firebase/admin";
-import { isDemoEnvironment } from "@/lib/env";
+import { bookingStoragePrefix, isDemoEnvironment } from "@/lib/env";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "application/pdf"]);
@@ -46,7 +46,7 @@ export async function POST(
     }
 
     const safeName = cleanFileName(file.name);
-    const storagePath = `bookings/${booking.id}/insurance/${randomUUID()}-${safeName}`;
+    const storagePath = `${bookingStoragePrefix}/${booking.id}/insurance/${randomUUID()}-${safeName}`;
     const bucket = getStorageBucket();
     if (!bucket) {
       if (!isDemoEnvironment) throw new Error("Secure document storage is unavailable.");

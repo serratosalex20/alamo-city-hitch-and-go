@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth/authorization";
 import { getBooking, updateBooking } from "@/lib/booking/repository";
 import { getStorageBucket } from "@/lib/firebase/admin";
-import { isDemoEnvironment } from "@/lib/env";
+import { bookingStoragePrefix, isDemoEnvironment } from "@/lib/env";
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 const MAX_PHOTOS = 8;
@@ -41,7 +41,7 @@ export async function POST(
     const paths: string[] = [];
     for (const file of files) {
       const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-      const path = `bookings/${id}/inspections/${phase}/${randomUUID()}.${extension}`;
+      const path = `${bookingStoragePrefix}/${id}/inspections/${phase}/${randomUUID()}.${extension}`;
       if (bucket) {
         await bucket.file(path).save(Buffer.from(await file.arrayBuffer()), {
           resumable: false,
