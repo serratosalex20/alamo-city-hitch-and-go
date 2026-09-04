@@ -59,6 +59,10 @@ export default async function BookingDocumentsPage({ params }: { params: Promise
           identityStatus={booking.identityStatus}
           insuranceStatus={booking.insuranceStatus}
           defaultPolicyholder={customerName}
+          bookingStatus={booking.status}
+          depositStatus={booking.depositStatus}
+          depositMethod={booking.depositMethod}
+          depositAmount={booking.depositAmount}
         />
       </main>
       <Footer />

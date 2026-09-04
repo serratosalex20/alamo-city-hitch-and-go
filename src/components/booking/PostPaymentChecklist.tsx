@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { Icon } from "@/components/ui/Icon";
-import type { AgreementStatus, IdentityStatus, InsuranceStatus } from "@/types/models";
+import { DepositConfirmation } from "@/components/booking/DepositConfirmation";
+import { formatUsd } from "@/lib/booking/pricing";
+import type { AgreementStatus, BookingStatus, DepositMethod, DepositStatus, IdentityStatus, InsuranceStatus } from "@/types/models";
 
 interface Props {
   bookingId: string;
@@ -13,6 +15,10 @@ interface Props {
   identityStatus: IdentityStatus;
   insuranceStatus: InsuranceStatus;
   defaultPolicyholder: string;
+  bookingStatus: BookingStatus;
+  depositStatus: DepositStatus;
+  depositMethod?: DepositMethod;
+  depositAmount: number;
 }
 
 function StatusBadge({ complete, label }: { complete: boolean; label: string }) {
@@ -111,6 +117,8 @@ export function PostPaymentChecklist(props: Props) {
   const agreementComplete = props.agreementStatus === "signed";
   const identityComplete = props.identityStatus === "verified";
   const insuranceComplete = props.insuranceStatus === "uploaded" || props.insuranceStatus === "approved";
+  const reviewComplete = ["confirmed", "deposit_action_required", "ready_for_pickup", "active", "return_inspection", "completed"].includes(props.bookingStatus);
+  const depositComplete = ["authorized", "charged", "partially_captured", "captured", "released"].includes(props.depositStatus);
   const inputClass = "w-full bg-surface-container-high px-4 py-3 text-on-surface ghost-border outline-none focus:border-b-2 focus:border-primary-action";
 
   return (
@@ -171,6 +179,26 @@ export function PostPaymentChecklist(props: Props) {
           <Icon name="schedule" className="text-primary" />
           <p className="text-sm text-on-surface-variant">Everything has been submitted. Your reservation is under owner review; it is not ready for pickup until you receive confirmation.</p>
         </div>
+      )}
+
+      {reviewComplete && (
+        <section className="bg-surface-container-low p-6 ghost-border" aria-labelledby="deposit-step">
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <h2 id="deposit-step" className="font-headline text-xl font-bold uppercase">4. Security Deposit</h2>
+            <StatusBadge complete={depositComplete} label={props.bookingStatus === "deposit_action_required" ? "Action Required" : "Pending Owner"} />
+          </div>
+          {props.bookingStatus === "deposit_action_required" ? (
+            <DepositConfirmation bookingId={props.bookingId} />
+          ) : depositComplete ? (
+            <p className="text-sm text-on-surface-variant">
+              {props.depositStatus === "released"
+                ? `${formatUsd(props.depositAmount)} deposit release initiated after return inspection.`
+                : `${formatUsd(props.depositAmount)} ${props.depositMethod === "refundable_charge" ? "refundable deposit charge" : "authorization"} is in place.`}
+            </p>
+          ) : (
+            <p className="text-sm text-on-surface-variant">No action is needed yet. The owner will request the {formatUsd(props.depositAmount)} deposit within 48 hours of pickup to avoid an early authorization expiration.</p>
+          )}
+        </section>
       )}
     </div>
   );
