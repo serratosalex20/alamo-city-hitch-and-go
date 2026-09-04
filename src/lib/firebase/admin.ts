@@ -12,10 +12,13 @@
 
 import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getAuth, type Auth } from "firebase-admin/auth";
+import { getFirestore, type Firestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import {
   firebaseAdminProjectId,
   firebaseAdminClientEmail,
   firebaseAdminPrivateKey,
+  firebaseStorageBucket,
   hasFirebase,
 } from "@/lib/env";
 
@@ -35,6 +38,7 @@ function getApp(): App | null {
         clientEmail: firebaseAdminClientEmail,
         privateKey: firebaseAdminPrivateKey,
       }),
+      storageBucket: firebaseStorageBucket,
     });
   return cachedApp;
 }
@@ -46,6 +50,19 @@ function getApp(): App | null {
 export function getFirebaseAdmin(): Auth | null {
   const app = getApp();
   return app ? getAuth(app) : null;
+}
+
+/** Returns Firestore for server-side booking persistence. */
+export function getFirestoreAdmin(): Firestore | null {
+  const app = getApp();
+  return app ? getFirestore(app) : null;
+}
+
+/** Returns the private Firebase Storage bucket used for customer documents. */
+export function getStorageBucket() {
+  const app = getApp();
+  if (!app || !firebaseStorageBucket) return null;
+  return getStorage(app).bucket(firebaseStorageBucket);
 }
 
 export { hasFirebase };

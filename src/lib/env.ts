@@ -22,6 +22,8 @@ export const firebaseAdminPrivateKey = read("FIREBASE_ADMIN_PRIVATE_KEY")?.repla
   /\\n/g,
   "\n",
 );
+export const firebaseStorageBucket =
+  read("FIREBASE_STORAGE_BUCKET") ?? read("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
 
 // ─── Firebase (client-side SDK) ──────────────────────────
 export const firebasePublicConfig = {
@@ -37,6 +39,32 @@ export const firebasePublicConfig = {
 export const stripeSecretKey = read("STRIPE_SECRET_KEY");
 export const stripePublishableKey = read("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY");
 export const stripeWebhookSecret = read("STRIPE_WEBHOOK_SECRET");
+
+// ─── DocuSign ───────────────────────────────────────────
+export const docusignIntegrationKey = read("DOCUSIGN_INTEGRATION_KEY");
+export const docusignUserId = read("DOCUSIGN_USER_ID");
+export const docusignAccountId = read("DOCUSIGN_ACCOUNT_ID");
+export const docusignRsaPrivateKey = read("DOCUSIGN_RSA_PRIVATE_KEY")?.replace(
+  /\\n/g,
+  "\n",
+);
+export const docusignOauthBaseUrl =
+  read("DOCUSIGN_OAUTH_BASE_URL") ?? "https://account-d.docusign.com";
+export const docusignBaseUrl =
+  read("DOCUSIGN_BASE_URL") ?? "https://demo.docusign.net/restapi";
+
+// ─── Email ──────────────────────────────────────────────
+export const resendApiKey = read("RESEND_API_KEY");
+export const emailFrom =
+  read("EMAIL_FROM") ?? "Alamo City Hitch & Go <bookings@alamocityhitchandgo.com>";
+
+// ─── Owner access ───────────────────────────────────────
+export const adminEmails = new Set(
+  (read("ADMIN_EMAILS") ?? "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean),
+);
 
 // ─── App ─────────────────────────────────────────────────
 /**
@@ -102,3 +130,15 @@ export const hasFirebaseClient = Boolean(
  * the /api/webhooks/stripe route).
  */
 export const hasStripe = Boolean(stripeSecretKey);
+
+export const hasDocuSign = Boolean(
+  docusignIntegrationKey &&
+    docusignUserId &&
+    docusignAccountId &&
+    docusignRsaPrivateKey,
+);
+
+export const hasEmail = Boolean(resendApiKey);
+
+/** Development-only adapters are never allowed to create a production booking. */
+export const isDemoEnvironment = process.env.NODE_ENV !== "production";
