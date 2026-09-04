@@ -3,7 +3,11 @@ import test from "node:test";
 import type Stripe from "stripe";
 import { hasConflict } from "../src/lib/booking/availability";
 import { calculatePrice } from "../src/lib/booking/pricing";
-import { buildRentalSchedule, localPickupToUtc } from "../src/lib/booking/schedule";
+import {
+  buildRentalSchedule,
+  localPickupToUtc,
+  PICKUP_TIME_OPTIONS,
+} from "../src/lib/booking/schedule";
 import { checkoutSchema } from "../src/lib/booking/validation";
 import {
   BookingConflictError,
@@ -80,6 +84,16 @@ test("San Antonio pickup time converts through daylight saving time", () => {
   assert.equal(localPickupToUtc("2026-09-05", "10:00").toISOString(), "2026-09-05T15:00:00.000Z");
   assert.equal(localPickupToUtc("2026-12-05", "10:00").toISOString(), "2026-12-05T16:00:00.000Z");
   assert.throws(() => localPickupToUtc("2026-03-08", "02:30"), /6:00 AM/);
+});
+
+test("pickup choices use customer-friendly 30-minute operating-hour slots", () => {
+  assert.equal(PICKUP_TIME_OPTIONS.length, 32);
+  assert.deepEqual(PICKUP_TIME_OPTIONS[0], { value: "06:00", label: "6:00 AM" });
+  assert.deepEqual(PICKUP_TIME_OPTIONS.at(-1), { value: "21:30", label: "9:30 PM" });
+  assert.throws(
+    () => localPickupToUtc("2026-09-05", "15:01"),
+    /every 30 minutes/,
+  );
 });
 
 test("one-week schedules are exactly 168 elapsed hours", () => {

@@ -4,6 +4,7 @@ import type { RentalDuration } from "@/types/models";
 export const BUSINESS_TIME_ZONE = "America/Chicago";
 export const PICKUP_OPEN_HOUR = 6;
 export const PICKUP_CLOSE_HOUR = 22;
+export const PICKUP_INTERVAL_MINUTES = 30;
 export const CHECKOUT_HOLD_MINUTES = 15;
 export const DOCUMENT_DEADLINE_HOURS = 24;
 export const RETURN_REVIEW_HOURS = 24;
@@ -15,6 +16,40 @@ interface DateTimeParts {
   hour: number;
   minute: number;
 }
+
+export interface PickupTimeOption {
+  value: string;
+  label: string;
+}
+
+function pickupTimeLabel(hour: number, minute: number): string {
+  const period = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+}
+
+/**
+ * Explicit pickup choices keep the mobile UI and server rules in lockstep.
+ * The final slot starts 30 minutes before closing so a pickup never begins
+ * after the published operating window.
+ */
+export const PICKUP_TIME_OPTIONS: readonly PickupTimeOption[] = Array.from(
+  {
+    length:
+      ((PICKUP_CLOSE_HOUR - PICKUP_OPEN_HOUR) * 60) /
+      PICKUP_INTERVAL_MINUTES,
+  },
+  (_, index) => {
+    const totalMinutes =
+      PICKUP_OPEN_HOUR * 60 + index * PICKUP_INTERVAL_MINUTES;
+    const hour = Math.floor(totalMinutes / 60);
+    const minute = totalMinutes % 60;
+    return {
+      value: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+      label: pickupTimeLabel(hour, minute),
+    };
+  },
+);
 
 function partsAt(timestamp: number, timeZone: string): DateTimeParts {
   const values = new Intl.DateTimeFormat("en-US", {
@@ -58,9 +93,12 @@ export function localPickupToUtc(date: string, time: string): Date {
     desired.hour < PICKUP_OPEN_HOUR ||
     desired.hour >= PICKUP_CLOSE_HOUR ||
     desired.minute < 0 ||
-    desired.minute > 59
+    desired.minute > 59 ||
+    desired.minute % PICKUP_INTERVAL_MINUTES !== 0
   ) {
-    throw new Error("Pickup times are available daily from 6:00 AM to 9:59 PM.");
+    throw new Error(
+      "Pickup times are available every 30 minutes from 6:00 AM to 9:30 PM.",
+    );
   }
 
   const desiredAsUtc = Date.UTC(

@@ -4,7 +4,10 @@ import { useState } from "react";
 import type { BookingFormData } from "@/app/book/page";
 import type { RentalDuration } from "@/types/models";
 import { ALL_DURATIONS, DURATION_LABELS } from "@/lib/booking/pricing";
-import { formatBusinessDate } from "@/lib/booking/schedule";
+import {
+  formatBusinessDate,
+  PICKUP_TIME_OPTIONS,
+} from "@/lib/booking/schedule";
 
 interface Props {
   formData: BookingFormData;
@@ -93,14 +96,29 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           >
             Pickup Time <span className="text-error" aria-hidden="true">*</span>
           </label>
-          <input
+          <select
             id="booking-time"
-            type="time"
             required
             value={formData.time}
             onChange={(e) => updateForm({ time: e.target.value })}
+            aria-describedby="booking-time-help"
             className="w-full bg-surface-container-low text-on-surface font-body py-4 px-5 ghost-border focus:border-b-2 focus:border-primary-action outline-none transition-all"
-          />
+          >
+            <option value="" disabled>
+              Choose a pickup time
+            </option>
+            {PICKUP_TIME_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p
+            id="booking-time-help"
+            className="mt-2 text-xs text-on-surface-variant"
+          >
+            Central Time · pickups available every 30 minutes from 6:00 AM to 9:30 PM.
+          </p>
         </div>
 
         {/* Duration */}

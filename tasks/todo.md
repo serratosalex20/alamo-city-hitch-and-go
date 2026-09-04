@@ -79,7 +79,7 @@
       storage is not configured for the Preview environment. Configure sandbox/test
       integrations in Preview, production integrations in Production, and do not launch
       until both the safe test flow and a controlled live-mode flow pass.
-- [ ] Replace the inconsistent native mobile time wheel with explicit 30-minute pickup
+- [x] Replace the inconsistent native mobile time wheel with explicit 30-minute pickup
       options during operating hours; enforce the same choices server-side and add tests.
 - [x] Local API/UI-route smoke: booking → demo payment → demo agreement → demo identity
       → insurance upload → owner approval → deposit authorization → pre-inspection
@@ -93,6 +93,8 @@
       before converting a successful payment into a reservation. A late/conflicting real
       payment is refunded automatically instead of creating a double booking.
 - [x] `npm test`, `npm run lint`, `npx tsc --noEmit`, and `npm run build` pass.
+- [x] Smoke Test 1 scheduling correction passes 12 focused booking tests, ESLint,
+      TypeScript, and the 28-route production build.
 - [ ] Visual browser pass requires an external preview URL; local-only browser access was
       blocked by the test environment. Preview deployment awaits explicit owner approval.
 - [ ] Live providers and low-dollar card test remain blocked until production credentials,
