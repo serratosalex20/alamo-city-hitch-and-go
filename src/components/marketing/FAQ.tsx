@@ -46,7 +46,7 @@ const faqs: FAQ[] = [
   {
     question: "Is the security deposit charged to my card?",
     answer:
-      "No. The deposit is a $200 refundable pre-authorization hold, not a charge — the same amount across every trailer in the fleet. It releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning, fuel replacement, or overtime is owed, we capture only the amount due and release the remainder.",
+      "The refundable $200 deposit is charged at checkout along with the rental fee and tax. After the trailer is returned and inspected, we initiate a clean-return release or refund within 24 hours; your bank may take additional time to update the balance. If documented damage, cleaning, a missing lock or key, or overtime is owed, we retain only the supported amount and release or refund the remainder.",
   },
   {
     question: "How much does a trailer rental cost in San Antonio?",
@@ -61,7 +61,7 @@ const faqs: FAQ[] = [
   {
     question: "Is there a cleaning fee?",
     answer:
-      "Only if the trailer is returned uncleaned — meaning trash, mud, debris, manure, paint splatter, or any soiling that requires more than about 15 minutes of cleanup. The flat cleaning fee is $100 and is captured from your deposit hold. Sweep the deck and clear any obvious mess before return and you're set.",
+      "Only if the trailer is returned uncleaned — meaning trash, mud, debris, manure, paint splatter, or any soiling that requires more than about 15 minutes of cleanup. The flat cleaning fee is $100 and is deducted from your refundable deposit. Sweep the deck and clear any obvious mess before return and you're set.",
   },
   {
     question: "Can I take the trailer outside of Texas?",

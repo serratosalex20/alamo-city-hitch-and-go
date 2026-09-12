@@ -7,7 +7,7 @@
  * boundary so the rest of the app never touches floats.
  *
  * Texas motor vehicle rental tax is computed on the rental fee only
- * (deposits are refundable holds, not rental receipts). The Texas
+ * (the refundable deposit is itemized separately). The Texas
  * Comptroller publishes a 10% rate for rental contracts of 1–30 days;
  * every rental duration currently sold by this site falls in that range.
  * The owner should confirm registration, exemptions, and reporting with
@@ -26,7 +26,7 @@
  *     1 Week / 2 Weeks) rather than 4-hour micro-blocks. See Sprint 3.4b.
  */
 
-import type { RentalDuration, Trailer } from "@/types/models";
+import type { Booking, RentalDuration, Trailer } from "@/types/models";
 import { trailers } from "@/lib/data/trailers";
 
 export const MOTOR_VEHICLE_RENTAL_TAX_RATE = 0.1;
@@ -87,9 +87,10 @@ export interface PriceQuote {
   trailerId: string;
   duration: RentalDuration;
   rentalCents: number; // charged immediately
-  depositCents: number; // pre-authorized, captured later if damages
+  depositCents: number; // refundable charge at checkout
   taxCents: number; // computed on rental only
-  totalCents: number; // rentalCents + taxCents (NOT deposit — that's a hold)
+  totalCents: number; // rental + tax, excluding refundable deposit
+  checkoutTotalCents: number; // rental + tax + refundable deposit
 }
 
 function getTrailer(trailerId: string): Trailer {
@@ -121,6 +122,7 @@ export function calculatePrice(
     depositCents,
     taxCents,
     totalCents,
+    checkoutTotalCents: totalCents + depositCents,
   };
 }
 
@@ -131,4 +133,9 @@ export function formatUsd(cents: number): string {
     currency: "USD",
     minimumFractionDigits: 2,
   }).format(cents / 100);
+}
+
+/** Original checkout charge; legacy rentals collected their deposit separately. */
+export function bookingCheckoutTotal(booking: Pick<Booking, "rentalTotal" | "depositAmount" | "depositCollectedAtCheckout">): number {
+  return booking.rentalTotal + (booking.depositCollectedAtCheckout ? booking.depositAmount : 0);
 }

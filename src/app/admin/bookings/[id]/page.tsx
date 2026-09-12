@@ -1,3 +1,4 @@
+import { bookingCheckoutTotal } from "@/lib/booking/pricing";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
@@ -64,7 +65,7 @@ export default async function AdminBookingPage({ params }: { params: Promise<{ i
               <Item label="Trailer">{booking.trailerName} · {booking.unitId}</Item>
               <Item label="Pickup">{dateFormatter.format(new Date(booking.startTime))}</Item>
               <Item label="Return">{dateFormatter.format(new Date(booking.endTime))}</Item>
-              <Item label="Paid">{formatUsd(booking.rentalTotal)} · {booking.paymentStatus}</Item>
+              <Item label="Paid">{formatUsd(bookingCheckoutTotal(booking))} · {booking.paymentStatus}</Item>
               <Item label="Deposit">{formatUsd(booking.depositAmount)} · {booking.depositStatus.replaceAll("_", " ")}</Item>
               <Item label="Email"><a className="text-primary underline" href={`mailto:${booking.customerEmail}`}>{booking.customerEmail}</a></Item>
               <Item label="Phone"><a className="text-primary underline" href={`tel:${booking.customer.phone}`}>{booking.customer.phone}</a></Item>
@@ -98,6 +99,8 @@ export default async function AdminBookingPage({ params }: { params: Promise<{ i
           depositAmount={booking.depositAmount}
           prePhotoCount={booking.preInspectionPhotos.length}
           postPhotoCount={booking.postInspectionPhotos.length}
+          returnReminderStatus={booking.returnReminderStatus}
+          returnReminderScheduledAt={booking.returnReminderScheduledAt}
         />
 
         <section className="bg-surface-container-low p-6 ghost-border">

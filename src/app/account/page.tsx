@@ -1,3 +1,4 @@
+import { bookingCheckoutTotal } from "@/lib/booking/pricing";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
@@ -52,7 +53,7 @@ export default async function AccountPage() {
               <article key={booking.id} className="bg-surface-container-low p-6 ghost-border">
                 <div className="flex flex-wrap justify-between gap-5">
                   <div><div className="text-xs uppercase tracking-widest text-primary mb-2">{booking.status.replaceAll("_", " ")}</div><h2 className="font-headline text-2xl font-bold uppercase">{booking.trailerName}</h2><p className="text-sm text-on-surface-variant">Pickup {dateFormatter.format(new Date(booking.startTime))}</p></div>
-                  <div className="text-right"><div className="font-bold">{formatUsd(booking.rentalTotal)} · {booking.paymentStatus}</div><div className="text-sm text-on-surface-variant">Deposit: {booking.depositStatus.replaceAll("_", " ")}</div></div>
+                  <div className="text-right"><div className="font-bold">{formatUsd(bookingCheckoutTotal(booking))} · {booking.paymentStatus}</div><div className="text-sm text-on-surface-variant">Deposit: {booking.depositStatus.replaceAll("_", " ")}</div></div>
                 </div>
                 <Link href={`/booking/${booking.id}/documents`} className="inline-block mt-5 min-h-[44px] px-5 py-3 bg-primary-action font-headline font-bold uppercase tracking-widest">View Booking & Next Steps</Link>
               </article>

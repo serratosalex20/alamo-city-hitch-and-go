@@ -229,7 +229,7 @@ export function StepPayment({ formData, checkoutKey, onBack, onSuccess }: Props)
     <div>
       <h2 className="text-3xl font-headline font-bold tracking-tighter uppercase mb-2">Payment</h2>
       <p className="text-on-surface-variant mb-10">
-        Pay the rental and tax today. Your $200 security deposit is handled near pickup.
+        Pay the rental, tax, and refundable $200 security deposit today.
       </p>
 
       <div className="bg-surface-container-high p-6 mb-8">
@@ -241,7 +241,7 @@ export function StepPayment({ formData, checkoutKey, onBack, onSuccess }: Props)
           <div className="space-y-3 text-sm">
             <div className="flex justify-between"><span className="text-on-surface-variant">Rental ({DURATION_LABELS[formData.duration]})</span><span className="font-bold">{checkout.display.rental}</span></div>
             <div className="flex justify-between"><span className="text-on-surface-variant">Texas Motor Vehicle Rental Tax</span><span className="font-bold">{checkout.display.tax}</span></div>
-            <div className="flex justify-between"><span className="text-on-surface-variant">Security Deposit <span className="text-[10px]">(not charged today)</span></span><span className="font-bold">{checkout.display.deposit}</span></div>
+            <div className="flex justify-between"><span className="text-on-surface-variant">Security Deposit <span className="text-[10px]">(refundable, charged today)</span></span><span className="font-bold">{checkout.display.deposit}</span></div>
             <div className="h-px bg-white/10 my-2" />
             <div className="flex justify-between text-lg"><span className="font-headline font-bold uppercase">Total Today</span><span className="text-primary font-headline font-bold">{checkout.display.total}</span></div>
           </div>

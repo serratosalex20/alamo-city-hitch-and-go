@@ -24,7 +24,7 @@ function displayQuote(quote: ReturnType<typeof calculatePrice>) {
     rental: formatUsd(quote.rentalCents),
     deposit: formatUsd(quote.depositCents),
     tax: formatUsd(quote.taxCents),
-    total: formatUsd(quote.totalCents),
+    total: formatUsd(quote.checkoutTotalCents),
   };
 }
 
@@ -87,6 +87,7 @@ export async function POST(request: Request) {
       taxAmount: quote.taxCents,
       rentalTotal: quote.totalCents,
       depositAmount: quote.depositCents,
+      depositCollectedAtCheckout: true,
       paymentStatus: "pending",
       depositStatus: "not_requested",
       agreementStatus: "not_started",
@@ -130,7 +131,7 @@ export async function POST(request: Request) {
         rental: {
           paymentIntentId,
           clientSecret: "",
-          amountCents: quote.totalCents,
+          amountCents: quote.checkoutTotalCents,
         },
         display: displayQuote(quote),
         checkoutExpiresAt: held.checkoutExpiresAt,
@@ -168,22 +169,27 @@ export async function POST(request: Request) {
       ? await stripe.paymentIntents.retrieve(held.rentalPaymentIntentId)
       : await stripe.paymentIntents.create(
           {
-            amount: quote.totalCents,
+            amount: quote.checkoutTotalCents,
             currency: "usd",
             customer: customerId,
             payment_method_types: ["card"],
             setup_future_usage: "off_session",
             receipt_email: input.email,
-            description: `${trailer.name} — ${input.duration} rental`,
+            description: `${trailer.name} — ${input.duration} rental and refundable deposit`,
             metadata: {
               bookingId: held.id,
               trailerId: trailer.id,
               duration: input.duration,
               kind: "rental",
+              depositCollectedAtCheckout: "true",
             },
           },
           { idempotencyKey: `rental-${held.id}` },
         );
+
+    if (rental.amount !== quote.checkoutTotalCents || rental.currency !== "usd") {
+      throw new BookingConflictError("The payment amount changed. Return to review and restart checkout.");
+    }
 
     await updateBooking(
       held.id,
@@ -202,7 +208,7 @@ export async function POST(request: Request) {
       rental: {
         paymentIntentId: rental.id,
         clientSecret: rental.client_secret ?? "",
-        amountCents: quote.totalCents,
+        amountCents: quote.checkoutTotalCents,
       },
       display: displayQuote(quote),
       checkoutExpiresAt: held.checkoutExpiresAt,

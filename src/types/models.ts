@@ -26,6 +26,8 @@ export interface Trailer {
   name: string;
   type: TrailerType;
   slug: string;
+  vin?: string;
+  licensePlate?: string;
   description: string;
   imageUrl: string;
   images: string[]; // front-quarter, rear-quarter, interior/deck
@@ -140,6 +142,14 @@ export type DepositStatus =
   | "released"
   | "failed";
 
+export type ReturnReminderStatus =
+  | "scheduled"
+  | "sent_immediately"
+  | "cancelled"
+  | "not_configured"
+  | "failed"
+  | "cancel_failed";
+
 export interface BookingAuditEvent {
   action: string;
   actor: string;
@@ -210,6 +220,8 @@ export interface Booking {
   rentalSubtotal: number;    // cents
   taxAmount: number;         // cents
   rentalTotal: number;       // cents
+  depositCollectedAtCheckout?: boolean; // absent for legacy separate deposits
+  depositResolutionAmount?: number; // immutable retained amount once settlement starts
   depositAmount: number;     // cents
   // Stripe
   paymentStatus: PaymentStatus;
@@ -244,9 +256,15 @@ export interface Booking {
   adminNotes?: string;
   reviewNote?: string;
   confirmedAt?: string;
+  pickupReadyEmailId?: string;
+  pickupReadyEmailSentAt?: string;
   pickedUpAt?: string;
   returnedAt?: string;
   returnedAtMs?: number;
+  returnReminderEmailId?: string;
+  returnReminderScheduledAt?: string;
+  returnReminderStatus?: ReturnReminderStatus;
+  returnReminderCancelledAt?: string;
   depositResolvedAt?: string;
   auditTrail: BookingAuditEvent[];
   createdAt: string;

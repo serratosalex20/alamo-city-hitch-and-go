@@ -24,15 +24,14 @@ import type { Trailer } from "@/types/models";
  *
  *   |                 | Half Day | Full Day | 1 Week | 2 Weeks (15 days) |
  *   | 8.5×20 Enclosed | $90      | $150     | $900   | $1,680            |
- *   | 6.5×12 Utility  | $75      | $100     | $600   | $900*             |
+ *   | 6.5×12 Utility  | $75      | $100     | $600   | $900              |
  *   | 14' Dump        | $100     | $150     | $900   | $1,800            |
  *
  *   Founder-set 2026-07-27: enclosed 1-week $900; utility $75 half /
  *   $100 day / $600 week ("one day price $100, half day $75.00, one
  *   week $600.00").
- *   *TODO(owner): utility 2-WEEK price was not specified in that
- *    message — $900 remains a placeholder (1.5× the new weekly rate;
- *    the enclosed runs ~1.87×). Confirm or adjust the one number.
+ *   Owner confirmed on 2026-09-04 that the website's current prices are
+ *   the launch prices, including the utility trailer's $900 2-week block.
  *
  * Refundable deposit: $200 across the fleet. 2-week block is calendar-
  * extended to 15 days via DURATION_HOURS.twoWeeks = 360 in pricing.ts.
@@ -60,6 +59,7 @@ export const trailers: Trailer[] = [
     name: "8.5' × 20' Enclosed Trailer",
     type: "enclosed",
     slug: "20-enclosed",
+    vin: "7TKBE2021TN016423",
     description:
       "2026 Giddy Up 8.5×20 enclosed cargo trailer in charcoal blackout. Full weather protection for household moves, motorcycles, tools, and equipment — rear ramp door with spring assist, side entry door, interior LED lighting, and plywood-lined walls ready for tie-downs.",
     imageUrl: "/fleet/20-enclosed-side.png",
@@ -119,9 +119,8 @@ export const trailers: Trailer[] = [
       lengthFeet: 12,
     },
     // Founder-set 2026-07-27: "one day price $100, half day $75.00,
-    // one week $600.00". Only twoWeeks is still unconfirmed —
-    // TODO(owner): the founders' message named no 2-week price, so
-    // $900 (1.5× weekly) carries over as a placeholder.
+    // one week $600.00". Owner confirmed the complete displayed matrix,
+    // including the $900 two-week price, on 2026-09-04.
     pricing: {
       halfDay: 75,
       fullDay: 100,

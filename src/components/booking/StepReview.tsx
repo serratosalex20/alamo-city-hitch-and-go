@@ -140,7 +140,7 @@ export function StepReview({ formData, updateForm, onBack, onContinue }: Props) 
             <div className="flex justify-between">
               <span className="text-on-surface-variant">
                 Security Deposit{" "}
-                <span className="text-[10px]">(authorized near pickup)</span>
+                <span className="text-[10px]">(refundable, charged today)</span>
               </span>
               <span className="font-bold">{formatUsd(quote.depositCents)}</span>
             </div>
@@ -150,7 +150,7 @@ export function StepReview({ formData, updateForm, onBack, onContinue }: Props) 
                 Total Charged Today
               </span>
               <span className="text-primary font-headline font-bold">
-                {formatUsd(quote.totalCents)}
+                {formatUsd(quote.checkoutTotalCents)}
               </span>
             </div>
           </div>
@@ -193,7 +193,7 @@ export function StepReview({ formData, updateForm, onBack, onContinue }: Props) 
       </div>
 
       <p className="text-center text-[10px] text-on-surface-variant mt-4 uppercase tracking-wider">
-        Your rental and tax are charged today. The ${trailer.deposit} security deposit is handled near pickup.
+        Your rental, tax, and refundable ${trailer.deposit} security deposit are charged today.
       </p>
     </div>
   );

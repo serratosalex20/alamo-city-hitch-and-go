@@ -5,6 +5,7 @@ import { updateBooking } from "@/lib/booking/repository";
 import { formatBusinessDate } from "@/lib/booking/schedule";
 import { getStorageBucket } from "@/lib/firebase/admin";
 import { bookingStoragePrefix, isDemoEnvironment } from "@/lib/env";
+import { sendOwnerReviewEmail } from "@/lib/email/server";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "application/pdf"]);
@@ -76,6 +77,11 @@ export async function POST(
       },
       { action: bucket ? "insurance_uploaded" : "demo_insurance_uploaded", actor: session.email },
     );
+    try {
+      await sendOwnerReviewEmail(updated);
+    } catch (error) {
+      console.error(`[booking-email:owner-review:${updated.id}]`, error);
+    }
     return NextResponse.json({ ok: true, status: updated.insuranceStatus });
   } catch (error) {
     return NextResponse.json(

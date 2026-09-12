@@ -14,12 +14,19 @@ import {
   completeRentalPaymentRecord,
   createBookingHold,
   getBooking,
+  updateBooking,
 } from "../src/lib/booking/repository";
-import { markRentalPaymentSucceeded } from "../src/lib/booking/workflow";
-import { depositMethodForDuration } from "../src/lib/stripe/deposits";
+import { markRentalPaymentSucceeded, markPaymentIntentCanceled, markPaymentIntentFailed } from "../src/lib/booking/workflow";
+import { depositMethodForDuration, syncDepositPayment } from "../src/lib/stripe/deposits";
+import { agreementTextTabs } from "../src/lib/docusign/server";
 import { performAdminBookingAction } from "../src/lib/booking/admin-actions";
 import type { Booking } from "../src/types/models";
 import { resolveAppUrl } from "../src/lib/env";
+import {
+  pickupChecklist,
+  returnChecklist,
+  returnReminderScheduledAt,
+} from "../src/lib/booking/communications";
 
 function bookingFixture(id: string): Booking {
   const now = new Date("2026-09-04T12:00:00.000Z");
@@ -78,6 +85,7 @@ test("pricing is calculated in cents and excludes the deposit from rental total"
     depositCents: 20000,
     taxCents: 1500,
     totalCents: 16500,
+    checkoutTotalCents: 36500,
   });
 });
 
@@ -107,6 +115,38 @@ test("deployment callbacks use the current Vercel preview origin", () => {
     "https://www.alamocityhitchandgo.com",
   );
   assert.throws(() => resolveAppUrl("not-a-url", undefined), /valid absolute URL/);
+});
+
+test("return reminder is scheduled exactly two hours before drop-off", () => {
+  const now = Date.parse("2026-09-04T12:00:00.000Z");
+  const returnTime = Date.parse("2026-09-05T18:30:00.000Z");
+  assert.equal(
+    returnReminderScheduledAt(returnTime, now),
+    "2026-09-05T16:30:00.000Z",
+  );
+  assert.equal(
+    returnReminderScheduledAt(now + 90 * 60 * 1000, now),
+    null,
+  );
+});
+
+test("pickup and return checklists require inspection, ID, insurance, cleaning, and documented lock costs", () => {
+  const contact = {
+    pickupAddress: "Private test address",
+    pickupInstructions: "Wait for the representative before connecting.",
+    supportPhone: "210-555-0100",
+    supportEmail: "support@example.com",
+  };
+  const pickup = pickupChecklist(contact).join(" ");
+  const returning = returnChecklist(contact).join(" ");
+  assert.match(pickup, /physical government-issued ID or driver's license/i);
+  assert.match(pickup, /proof of insurance/i);
+  assert.match(pickup, /visual inspection/i);
+  assert.match(pickup, /documented replacement cost/i);
+  assert.doesNotMatch(pickup, /forfeit/i);
+  assert.match(returning, /sweep/i);
+  assert.match(returning, /lock, and key/i);
+  assert.match(returning, /within 24 hours/i);
 });
 
 test("one-week schedules are exactly 168 elapsed hours", () => {
@@ -148,6 +188,54 @@ test("deposit method uses a hold for short rentals and refundable charge for lon
   assert.equal(depositMethodForDuration("twoWeeks"), "refundable_charge");
 });
 
+test("pre-confirmation agreement never contains the private pickup address", () => {
+  const tabs = agreementTextTabs(bookingFixture("agreement-privacy"));
+  assert.equal(tabs.find((tab) => tab.tabLabel === "business_address")?.value,
+    "San Antonio, Texas — private pickup location provided after confirmation");
+});
+
+test("deposit event replays cannot reopen a rental or overwrite a newer owner action", async () => {
+  for (const status of ["active", "return_inspection", "completed", "cancelled"] as const) {
+    const fixture = bookingFixture(`replay-${status}`);
+    fixture.status = status;
+    fixture.depositStatus = status === "completed" ? "captured" : "authorized";
+    fixture.depositPaymentIntentId = `pi_${fixture.id}`;
+    await createBookingHold(fixture, 1);
+    for (const paymentStatus of ["requires_capture", "succeeded", "requires_action"] as const) {
+      const result = await syncDepositPayment(fixture, {
+        id: fixture.depositPaymentIntentId, status: paymentStatus,
+        metadata: { bookingId: fixture.id, kind: "deposit", depositMethod: "authorization" },
+      } as unknown as Stripe.PaymentIntent);
+      assert.equal(result.status, status);
+      assert.equal(result.depositStatus, fixture.depositStatus);
+    }
+  }
+  const stale = bookingFixture("stale-deposit-snapshot");
+  stale.status = "confirmed";
+  stale.depositPaymentIntentId = "pi_stale";
+  await createBookingHold(stale, 1);
+  await updateBooking(stale.id, { status: "active", depositStatus: "authorized" });
+  const result = await syncDepositPayment(stale, {
+    id: "pi_stale", status: "requires_capture",
+    metadata: { bookingId: stale.id, kind: "deposit", depositMethod: "authorization" },
+  } as unknown as Stripe.PaymentIntent);
+  assert.equal(result.status, "active");
+});
+
+test("late failure does not invalidate an authorized deposit; expiry preserves checked-out state", async () => {
+  const fixture = bookingFixture("deposit-failure-replay");
+  fixture.status = "active";
+  fixture.depositStatus = "authorized";
+  fixture.depositPaymentIntentId = "pi_failure_replay";
+  await createBookingHold(fixture, 1);
+  const intent = { id: fixture.depositPaymentIntentId,
+    metadata: { bookingId: fixture.id, kind: "deposit" } } as unknown as Stripe.PaymentIntent;
+  assert.equal((await markPaymentIntentFailed(intent))?.depositStatus, "authorized");
+  const expired = await markPaymentIntentCanceled(intent);
+  assert.equal(expired?.status, "active");
+  assert.equal(expired?.depositStatus, "failed");
+});
+
 test("rental payment webhook fulfillment is idempotent", async () => {
   const fixture = bookingFixture("24c2a311-62af-4fe1-83a2-01096c39eea5");
   fixture.trailerId = "trailer-002";
@@ -155,6 +243,7 @@ test("rental payment webhook fulfillment is idempotent", async () => {
   await createBookingHold(fixture, 1);
   const paymentIntent = {
     id: "pi_test_rental",
+    status: "succeeded", currency: "usd", amount_received: 16500,
     metadata: { bookingId: fixture.id, kind: "rental" },
     payment_method: "pm_test",
     customer: "cus_test",
@@ -220,4 +309,27 @@ test("owner approval requires the review state and complete documents", async ()
     () => performAdminBookingAction({ bookingId: fixture.id, action: "approve", actor: "owner@example.com" }),
     /not available/,
   );
+});
+
+test("pickup records return-reminder state without blocking demo operations", async () => {
+  const fixture = bookingFixture("24c2a311-62af-4fe1-83a2-01096c39eeab");
+  fixture.status = "ready_for_pickup";
+  fixture.depositStatus = "authorized";
+  fixture.preInspectionPhotos = ["demo/pre-inspection.jpg"];
+  fixture.endTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  fixture.endTimeMs = Date.parse(fixture.endTime);
+  await createBookingHold(fixture, 1);
+  const pickedUp = await performAdminBookingAction({
+    bookingId: fixture.id,
+    action: "mark_picked_up",
+    actor: "owner@example.com",
+  });
+  assert.equal(pickedUp.status, "active");
+  assert.equal(pickedUp.returnReminderStatus, "not_configured");
+  const returned = await performAdminBookingAction({
+    bookingId: fixture.id,
+    action: "mark_returned",
+    actor: "owner@example.com",
+  });
+  assert.equal(returned.status, "return_inspection");
 });

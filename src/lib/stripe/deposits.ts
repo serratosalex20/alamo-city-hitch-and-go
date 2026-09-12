@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import { getStripe, hasStripe } from "@/lib/stripe/server";
 import { isDemoEnvironment } from "@/lib/env";
 import { getBooking, updateBooking } from "@/lib/booking/repository";
+import { sendReadyForPickupEmail } from "@/lib/email/server";
 import type { Booking, DepositMethod } from "@/types/models";
 
 export function depositMethodForDuration(duration: Booking["duration"]): DepositMethod {
@@ -17,16 +18,45 @@ function captureDeadline(paymentIntent: Stripe.PaymentIntent) {
     : {};
 }
 
+export async function notifyReadyForPickup(booking: Booking) {
+  if (booking.status !== "ready_for_pickup" || booking.pickupReadyEmailId) return booking;
+  const delivery = await sendReadyForPickupEmail(booking);
+  if (!delivery.sent || !delivery.emailId || booking.pickupReadyEmailId === delivery.emailId) {
+    return booking;
+  }
+  return updateBooking(
+    booking.id,
+    {
+      pickupReadyEmailId: delivery.emailId,
+      pickupReadyEmailSentAt: new Date().toISOString(),
+    },
+    { action: "pickup_instructions_emailed", actor: "system" },
+  );
+}
+
 export async function syncDepositPayment(booking: Booking, paymentIntent: Stripe.PaymentIntent) {
   if (paymentIntent.metadata.bookingId !== booking.id || paymentIntent.metadata.kind !== "deposit") {
     throw new Error("Deposit payment does not match this booking.");
   }
+  // A replay must never reopen a rental or overwrite a replacement deposit.
+  if (booking.depositPaymentIntentId !== paymentIntent.id) return booking;
+  if (!["confirmed", "deposit_action_required", "ready_for_pickup"].includes(booking.status)) return booking;
+  if (["released", "captured", "partially_captured"].includes(booking.depositStatus)) return booking;
+  const applyDepositUpdate = (
+    id: string,
+    updates: Partial<Booking>,
+    event: Parameters<typeof updateBooking>[2],
+  ) => updateBooking(id, updates, event, (current) =>
+    current.status === booking.status &&
+    current.depositStatus === booking.depositStatus &&
+    current.depositPaymentIntentId === paymentIntent.id,
+  );
   const method = paymentIntent.metadata.depositMethod as DepositMethod;
   if (paymentIntent.status === "requires_capture") {
     if (booking.depositStatus === "authorized" && booking.status === "ready_for_pickup") {
-      return booking;
+      return notifyReadyForPickup(booking);
     }
-    return updateBooking(
+    const updated = await applyDepositUpdate(
       booking.id,
       {
         depositMethod: "authorization",
@@ -36,12 +66,16 @@ export async function syncDepositPayment(booking: Booking, paymentIntent: Stripe
       },
       { action: "deposit_authorized", actor: "stripe" },
     );
+    return notifyReadyForPickup(updated);
   }
   if (paymentIntent.status === "succeeded") {
+    // Capturing a short-rental hold is an owner return-inspection action,
+    // not a newly paid refundable deposit.
+    if (method !== "refundable_charge") return booking;
     if (booking.depositStatus === "charged" && booking.status === "ready_for_pickup") {
-      return booking;
+      return notifyReadyForPickup(booking);
     }
-    return updateBooking(
+    const updated = await applyDepositUpdate(
       booking.id,
       {
         depositMethod: method === "refundable_charge" ? "refundable_charge" : booking.depositMethod,
@@ -50,10 +84,11 @@ export async function syncDepositPayment(booking: Booking, paymentIntent: Stripe
       },
       { action: "refundable_deposit_charged", actor: "stripe" },
     );
+    return notifyReadyForPickup(updated);
   }
   if (paymentIntent.status === "canceled") {
     if (booking.depositStatus === "released") return booking;
-    return updateBooking(
+    return applyDepositUpdate(
       booking.id,
       { depositMethod: method, depositStatus: "failed", status: "confirmed" },
       { action: "deposit_authorization_expired_or_canceled", actor: "stripe" },
@@ -65,16 +100,17 @@ export async function syncDepositPayment(booking: Booking, paymentIntent: Stripe
     paymentIntent.status === "requires_payment_method" ||
     paymentIntent.status === "processing"
   ) {
+    if (["authorized", "charged"].includes(booking.depositStatus)) return booking;
     if (booking.depositStatus === "requires_action" && booking.status === "deposit_action_required") {
       return booking;
     }
-    return updateBooking(
+    return applyDepositUpdate(
       booking.id,
       { depositMethod: method, depositStatus: "requires_action", status: "deposit_action_required" },
       { action: "deposit_customer_action_required", actor: "stripe" },
     );
   }
-  return updateBooking(
+  return applyDepositUpdate(
     booking.id,
     { depositMethod: method, depositStatus: "failed" },
     { action: `deposit_${paymentIntent.status}`, actor: "stripe" },
@@ -84,13 +120,19 @@ export async function syncDepositPayment(booking: Booking, paymentIntent: Stripe
 export async function requestDeposit(bookingId: string, actor: string) {
   const booking = await getBooking(bookingId);
   if (!booking) throw new Error("Booking not found.");
+  if (booking.depositCollectedAtCheckout) {
+    if (booking.paymentStatus !== "succeeded" || booking.depositStatus !== "charged") {
+      throw new Error("The checkout deposit is not available. Do not charge a second deposit.");
+    }
+    return booking;
+  }
   if (!booking.stripeCustomerId || !booking.stripePaymentMethodId) {
     throw new Error("The saved payment method is missing.");
   }
   if (!hasStripe) {
     if (!isDemoEnvironment) throw new Error("Stripe is unavailable.");
     const method = depositMethodForDuration(booking.duration);
-    return updateBooking(
+    const updated = await updateBooking(
       bookingId,
       {
         depositPaymentIntentId: `pi_demo_deposit_${bookingId}`,
@@ -100,6 +142,7 @@ export async function requestDeposit(bookingId: string, actor: string) {
       },
       { action: "demo_deposit_ready", actor },
     );
+    return notifyReadyForPickup(updated);
   }
 
   const stripe = getStripe();
@@ -142,8 +185,26 @@ export async function requestDeposit(bookingId: string, actor: string) {
   return syncDepositPayment(withIntent, paymentIntent);
 }
 
+/** Claim one immutable settlement amount before calling Stripe, including concurrent retries. */
+async function claimDepositSettlement(bookingId: string, retained: number) {
+  const booking = await updateBooking(bookingId, { depositResolutionAmount: retained }, undefined,
+    (current) => {
+      if (current.depositResolutionAmount !== undefined && current.depositResolutionAmount !== retained) {
+        throw new Error("A different deposit settlement has already started.");
+      }
+      if (current.depositResolvedAt) return false;
+      if (current.status !== "return_inspection" || current.postInspectionPhotos.length === 0 ||
+          !["charged", "authorized"].includes(current.depositStatus)) {
+        throw new Error("Complete the return inspection before settling the deposit.");
+      }
+      return true;
+    });
+  return booking;
+}
+
 export async function releaseDeposit(bookingId: string, actor: string, note?: string) {
-  const booking = await getBooking(bookingId);
+  const booking = await claimDepositSettlement(bookingId, 0);
+  if (booking.depositResolvedAt) return booking;
   if (!booking?.depositPaymentIntentId || !booking.depositMethod) throw new Error("Deposit not found.");
   if (!hasStripe) {
     if (!isDemoEnvironment) throw new Error("Stripe is unavailable.");
@@ -157,8 +218,8 @@ export async function releaseDeposit(bookingId: string, actor: string, note?: st
       }
     } else {
       await stripe.refunds.create(
-        { payment_intent: booking.depositPaymentIntentId },
-        { idempotencyKey: `deposit-release-${bookingId}` },
+        { payment_intent: booking.depositPaymentIntentId, amount: booking.depositAmount },
+        { idempotencyKey: `deposit-settlement-${bookingId}` },
       );
     }
   }
@@ -182,6 +243,8 @@ export async function captureDeposit(
     throw new Error("Enter an amount between $0.01 and the deposit amount.");
   }
   if (note.trim().length < 5) throw new Error("Add a clear inspection note for the retained amount.");
+  const claimed = await claimDepositSettlement(bookingId, amountCents);
+  if (claimed.depositResolvedAt) return claimed;
 
   if (!hasStripe) {
     if (!isDemoEnvironment) throw new Error("Stripe is unavailable.");
@@ -200,7 +263,7 @@ export async function captureDeposit(
           payment_intent: booking.depositPaymentIntentId,
           amount: booking.depositAmount - amountCents,
         },
-        { idempotencyKey: `deposit-partial-refund-${bookingId}-${amountCents}` },
+        { idempotencyKey: `deposit-settlement-${bookingId}` },
       );
     }
   }

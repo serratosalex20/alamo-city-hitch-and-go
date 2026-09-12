@@ -1,3 +1,4 @@
+import { bookingCheckoutTotal } from "@/lib/booking/pricing";
 import { createSign } from "node:crypto";
 import {
   appUrl,
@@ -11,6 +12,8 @@ import {
   docusignUserId,
   hasDocuSign,
 } from "@/lib/env";
+import { DURATION_LABELS, formatUsd } from "@/lib/booking/pricing";
+import { trailers } from "@/lib/data/trailers";
 import type { Booking } from "@/types/models";
 
 let tokenCache: { value: string; expiresAtMs: number } | null = null;
@@ -85,6 +88,50 @@ function renterName(booking: Booking) {
   return `${booking.customer.firstName} ${booking.customer.lastName}`;
 }
 
+const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/Chicago",
+  dateStyle: "long",
+  timeStyle: "short",
+});
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/Chicago",
+  dateStyle: "long",
+});
+
+export function agreementTextTabs(booking: Booking) {
+  const trailer = trailers.find((item) => item.id === booking.trailerId);
+  const customerAddress = [
+    booking.customer.address.street,
+    booking.customer.address.city,
+    `${booking.customer.address.state} ${booking.customer.address.zip}`,
+  ].join(", ");
+  const values: Record<string, string> = {
+    booking_id: booking.id,
+    agreement_date: dateFormatter.format(new Date()),
+    business_legal_name: "Alamo City Hitch & Go Co LLC",
+    business_address: "San Antonio, Texas — private pickup location provided after confirmation",
+    customer_full_name: renterName(booking),
+    customer_address: customerAddress,
+    customer_phone: booking.customer.phone,
+    customer_email: booking.customerEmail,
+    trailer_class: booking.trailerName,
+    trailer_id: booking.unitId,
+    trailer_vin: trailer?.vin ?? "To be confirmed at pickup",
+    trailer_plate: trailer?.licensePlate ?? "To be confirmed at pickup",
+    trailer_odometer_in: "Not applicable",
+    trailer_accessories: "Supplied trailer lock and key; unit-specific accessories documented at pickup",
+    pickup_datetime: dateTimeFormatter.format(new Date(booking.startTime)),
+    return_datetime: dateTimeFormatter.format(new Date(booking.endTime)),
+    rental_block: DURATION_LABELS[booking.duration],
+    rental_fee_amount: formatUsd(booking.rentalSubtotal),
+    tax_amount: formatUsd(booking.taxAmount),
+    total_charge: formatUsd(bookingCheckoutTotal(booking)),
+    abandonment_threshold_hours: "24",
+  };
+  return Object.entries(values).map(([tabLabel, value]) => ({ tabLabel, value }));
+}
+
 export async function createEmbeddedSigningSession(booking: Booking) {
   if (!hasDocuSign || !docusignAccountId || !docusignTemplateId) {
     throw new Error("DocuSign is not configured.");
@@ -104,6 +151,7 @@ export async function createEmbeddedSigningSession(booking: Booking) {
             name: renterName(booking),
             roleName: docusignSignerRole,
             clientUserId: booking.id,
+            tabs: { textTabs: agreementTextTabs(booking) },
           }],
           customFields: {
             textCustomFields: [

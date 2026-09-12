@@ -53,7 +53,7 @@ const promises: Promise[] = [
     icon: "request_quote",
     heading: "What You See Is What You Pay",
     body:
-      "Flat block pricing on the rates page. Texas motor vehicle rental tax called out. Refundable deposit is a hold, not a charge. No mileage roulette, no fuel-fill gotchas.",
+      "Flat block pricing on the rates page. Texas motor vehicle rental tax called out. Refundable deposit is charged at checkout. No mileage roulette, no fuel-fill gotchas.",
   },
 ];
 

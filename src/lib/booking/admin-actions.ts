@@ -1,7 +1,11 @@
 import { appUrl } from "@/lib/env";
 import { getBooking, updateBooking } from "@/lib/booking/repository";
-import { sendBookingStatusEmail } from "@/lib/email/server";
-import { captureDeposit, releaseDeposit, requestDeposit } from "@/lib/stripe/deposits";
+import {
+  cancelReturnReminderEmail,
+  scheduleReturnReminderEmail,
+  sendBookingStatusEmail,
+} from "@/lib/email/server";
+import { captureDeposit, releaseDeposit, requestDeposit, notifyReadyForPickup } from "@/lib/stripe/deposits";
 import type { Booking } from "@/types/models";
 
 const DEPOSIT_REQUEST_WINDOW_MS = 48 * 60 * 60 * 1000;
@@ -12,6 +16,7 @@ export type AdminBookingAction =
   | "reject"
   | "request_deposit"
   | "mark_picked_up"
+  | "retry_return_reminder"
   | "mark_returned"
   | "release_deposit"
   | "retain_deposit";
@@ -46,6 +51,81 @@ async function emailStatus(
   }
 }
 
+async function ensureReturnReminder(booking: Booking, actor: string) {
+  if (
+    booking.returnReminderEmailId &&
+    (booking.returnReminderStatus === "scheduled" ||
+      booking.returnReminderStatus === "sent_immediately")
+  ) {
+    return booking;
+  }
+  try {
+    const delivery = await scheduleReturnReminderEmail(booking);
+    if (!delivery.sent) {
+      return updateBooking(
+        booking.id,
+        { returnReminderStatus: "not_configured" },
+        { action: "return_reminder_not_configured", actor },
+      );
+    }
+    return updateBooking(
+      booking.id,
+      {
+        returnReminderEmailId: delivery.emailId,
+        returnReminderScheduledAt: delivery.scheduledAt ?? new Date().toISOString(),
+        returnReminderStatus: delivery.sentImmediately
+          ? "sent_immediately"
+          : "scheduled",
+        returnReminderCancelledAt: undefined,
+      },
+      {
+        action: delivery.sentImmediately
+          ? "return_reminder_sent_immediately"
+          : "return_reminder_scheduled",
+        actor,
+      },
+    );
+  } catch (error) {
+    console.error(`[booking-email:return-reminder:${booking.id}]`, error);
+    return updateBooking(
+      booking.id,
+      { returnReminderStatus: "failed" },
+      {
+        action: "return_reminder_schedule_failed",
+        actor,
+        note: error instanceof Error ? error.message : "Return reminder scheduling failed.",
+      },
+    );
+  }
+}
+
+async function cancelPendingReturnReminder(booking: Booking, actor: string) {
+  if (!booking.returnReminderEmailId || booking.returnReminderStatus !== "scheduled") {
+    return booking;
+  }
+  try {
+    const result = await cancelReturnReminderEmail(booking.returnReminderEmailId);
+    if (!result.cancelled) return booking;
+    const now = new Date().toISOString();
+    return updateBooking(
+      booking.id,
+      { returnReminderStatus: "cancelled", returnReminderCancelledAt: now },
+      { action: "return_reminder_cancelled", actor, note: "Trailer returned before the reminder was sent." },
+    );
+  } catch (error) {
+    console.error(`[booking-email:return-reminder-cancel:${booking.id}]`, error);
+    return updateBooking(
+      booking.id,
+      { returnReminderStatus: "cancel_failed" },
+      {
+        action: "return_reminder_cancel_failed",
+        actor,
+        note: error instanceof Error ? error.message : "Return reminder cancellation failed.",
+      },
+    );
+  }
+}
+
 export async function performAdminBookingAction({
   bookingId,
   action,
@@ -74,10 +154,13 @@ export async function performAdminBookingAction({
       ) {
         throw new Error("Payment, agreement, identity, and insurance must all be complete.");
       }
+      if (booking.depositCollectedAtCheckout && booking.depositStatus !== "charged") {
+        throw new Error("The refundable checkout deposit must be collected before approval.");
+      }
       const updated = await updateBooking(
         bookingId,
         {
-          status: "confirmed",
+          status: booking.depositCollectedAtCheckout ? "ready_for_pickup" : "confirmed",
           insuranceStatus: "approved",
           confirmedAt: now.toISOString(),
           reviewNote: note?.trim() || undefined,
@@ -87,10 +170,10 @@ export async function performAdminBookingAction({
       await emailStatus(updated, {
         subject: "Your trailer reservation is confirmed",
         heading: "Reservation confirmed",
-        message: "Your documents are approved. We will request the security deposit authorization close to pickup and notify you if your card needs confirmation.",
+        message: booking.depositCollectedAtCheckout ? "Your documents are approved and your refundable deposit was collected at checkout. Pickup instructions will follow." : "Your documents are approved. We will request the security deposit authorization close to pickup and notify you if your card needs confirmation.",
         event: "booking-approved",
       });
-      return updated;
+      return booking.depositCollectedAtCheckout ? notifyReadyForPickup(updated) : updated;
     }
     case "request_insurance_resubmission": {
       assertState(booking, ["under_review"], "Insurance resubmission");
@@ -138,13 +221,6 @@ export async function performAdminBookingAction({
           message: "Your bank needs you to confirm the $200 security deposit before pickup. Open your booking to complete it.",
           event: "deposit-action",
         });
-      } else if (updated.status === "ready_for_pickup") {
-        await emailStatus(updated, {
-          subject: "Your trailer is ready for pickup",
-          heading: "Ready for pickup",
-          message: "Your security deposit is in place. Bring your physical driver’s license and current insurance to your scheduled pickup.",
-          event: "ready-pickup",
-        });
       }
       return updated;
     }
@@ -153,19 +229,25 @@ export async function performAdminBookingAction({
       if (booking.preInspectionPhotos.length === 0) {
         throw new Error("Upload at least one pre-rental inspection photo before releasing the trailer.");
       }
-      return updateBooking(
+      const pickedUp = await updateBooking(
         bookingId,
         { status: "active", pickedUpAt: now.toISOString() },
         { action: "trailer_picked_up", actor, note: note?.trim() || undefined },
       );
+      return ensureReturnReminder(pickedUp, actor);
     }
-    case "mark_returned":
+    case "retry_return_reminder":
+      assertState(booking, ["active"], "Return reminder");
+      return ensureReturnReminder(booking, actor);
+    case "mark_returned": {
       assertState(booking, ["active"], "Return");
-      return updateBooking(
+      const returned = await updateBooking(
         bookingId,
         { status: "return_inspection", returnedAt: now.toISOString(), returnedAtMs: now.getTime() },
         { action: "trailer_returned", actor, note: note?.trim() || undefined },
       );
+      return cancelPendingReturnReminder(returned, actor);
+    }
     case "release_deposit": {
       assertState(booking, ["return_inspection"], "Deposit release");
       if (booking.postInspectionPhotos.length === 0) {

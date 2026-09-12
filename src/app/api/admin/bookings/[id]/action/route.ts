@@ -13,6 +13,7 @@ const Body = z.object({
     "reject",
     "request_deposit",
     "mark_picked_up",
+    "retry_return_reminder",
     "mark_returned",
     "release_deposit",
     "retain_deposit",
@@ -38,7 +39,12 @@ export async function POST(
       note: input.note,
       amountCents: input.amountCents,
     });
-    return NextResponse.json({ ok: true, status: booking.status, depositStatus: booking.depositStatus });
+    return NextResponse.json({
+      ok: true,
+      status: booking.status,
+      depositStatus: booking.depositStatus,
+      returnReminderStatus: booking.returnReminderStatus,
+    });
   } catch (error) {
     const message = error instanceof z.ZodError
       ? error.issues[0]?.message

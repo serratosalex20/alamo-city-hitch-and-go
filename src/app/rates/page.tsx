@@ -45,7 +45,7 @@ export default function RatesPage() {
           <p className="text-xl text-on-surface-variant font-light leading-relaxed max-w-2xl">
             Pick a trailer, pick a block, see the total. No quote forms. No
             mileage surprises. The price you see is the price you pay, plus
-            Texas motor vehicle rental tax on the rental fee and a refundable deposit hold.
+            Texas motor vehicle rental tax on the rental fee and a refundable deposit charged at checkout.
           </p>
         </header>
 
@@ -126,7 +126,8 @@ export default function RatesPage() {
                       </div>
                       <div className="text-[10px] text-on-surface-variant mt-2 leading-tight">
                         + {formatUsd(quote.taxCents)} tax<br />
-                        = {formatUsd(quote.totalCents)} total
+                        + {formatUsd(quote.depositCents)} refundable deposit<br />
+                        = {formatUsd(quote.checkoutTotalCents)} due at checkout
                       </div>
                     </div>
                   );
@@ -136,7 +137,7 @@ export default function RatesPage() {
               {/* CTA strip */}
               <div className="p-6 md:p-8 flex items-center justify-between gap-4 flex-wrap">
                 <p className="text-on-surface-variant text-xs uppercase tracking-widest font-headline font-bold">
-                  All blocks include the deposit hold • Released after return inspection
+                  Refundable $200 deposit charged at checkout • Refunded after return inspection
                 </p>
                 {trailer.status === "available" || trailer.status === "rented" ? (
                   <Link
@@ -206,8 +207,8 @@ export default function RatesPage() {
         <section className="mt-12 text-xs text-on-surface-variant font-light leading-relaxed space-y-2">
           <p>
             <strong className="text-on-surface">Texas motor vehicle rental tax (10% for contracts of 1–30 days)</strong> applies
-            to the rental fee only. Refundable $200 deposit is a pre-authorization hold on your card, not a
-            charge — the same amount across every trailer in the fleet.
+            to the rental fee only. The refundable $200 deposit is charged at checkout,
+            with the same deposit amount across every trailer in the fleet.
           </p>
           <p>
             <strong className="text-on-surface">Mid-rental extensions</strong> are billed in the same block

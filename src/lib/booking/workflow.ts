@@ -10,6 +10,8 @@ import {
 import { trailers } from "@/lib/data/trailers";
 import { getStripe } from "@/lib/stripe/server";
 
+import { bookingCheckoutTotal } from "@/lib/booking/pricing";
+
 export class RentalPaymentRefundedError extends Error {}
 
 function bookingCapacity(trailerId: string): number {
@@ -24,6 +26,11 @@ export async function markRentalPaymentSucceeded(paymentIntent: Stripe.PaymentIn
 
   const booking = await getBooking(bookingId);
   if (!booking) return null;
+  if (paymentIntent.id !== booking.rentalPaymentIntentId ||
+      paymentIntent.status !== "succeeded" || paymentIntent.currency !== "usd" ||
+      paymentIntent.amount_received !== bookingCheckoutTotal(booking)) {
+    throw new Error("Payment does not match the booking amount or has not succeeded.");
+  }
   if (booking.paymentStatus === "succeeded") return booking;
   if (booking.paymentStatus === "refunded") {
     throw new RentalPaymentRefundedError(
@@ -48,6 +55,11 @@ export async function markRentalPaymentSucceeded(paymentIntent: Stripe.PaymentIn
       updates: {
         status: "pending_signature",
         paymentStatus: "succeeded",
+        ...(booking.depositCollectedAtCheckout ? {
+          depositStatus: "charged" as const,
+          depositMethod: "refundable_charge" as const,
+          depositPaymentIntentId: paymentIntent.id,
+        } : {}),
         stripeCustomerId:
           typeof paymentIntent.customer === "string"
             ? paymentIntent.customer
@@ -69,7 +81,7 @@ export async function markRentalPaymentSucceeded(paymentIntent: Stripe.PaymentIn
     if (latest && latest.paymentStatus !== "refunded") {
       await updateBooking(
         bookingId,
-        { status: "cancelled", paymentStatus: "refunded" },
+        { status: "cancelled", paymentStatus: "refunded", ...(booking.depositCollectedAtCheckout ? { depositStatus: "released" as const } : {}) },
         {
           action: "rental_payment_refunded_after_hold_expired",
           actor: "stripe",
@@ -96,6 +108,11 @@ export async function markDemoRentalPaymentSucceeded(bookingId: string) {
     updates: {
       status: "pending_signature",
       paymentStatus: "succeeded",
+      ...(booking.depositCollectedAtCheckout ? {
+        depositStatus: "charged" as const,
+        depositMethod: "refundable_charge" as const,
+        depositPaymentIntentId: booking.rentalPaymentIntentId ?? `pi_demo_${bookingId}`,
+      } : {}),
       stripeCustomerId: `cus_demo_${bookingId}`,
       stripePaymentMethodId: `pm_demo_${bookingId}`,
       documentsDueAt: due.toISOString(),
@@ -109,7 +126,7 @@ export async function markPaymentIntentFailed(paymentIntent: Stripe.PaymentInten
   if (!booking) return null;
   const kind = paymentIntent.metadata.kind;
   if (kind === "rental") {
-    if (booking.paymentStatus === "failed") return booking;
+    if (["failed", "succeeded", "refunded"].includes(booking.paymentStatus)) return booking;
     return updateBooking(
       booking.id,
       { paymentStatus: "failed" },
@@ -117,11 +134,13 @@ export async function markPaymentIntentFailed(paymentIntent: Stripe.PaymentInten
     );
   }
   if (kind === "deposit") {
-    if (booking.depositStatus === "failed") return booking;
+    if (["failed", "authorized", "charged", "released", "captured", "partially_captured"].includes(booking.depositStatus)) return booking;
+    if (!["confirmed", "deposit_action_required"].includes(booking.status)) return booking;
     return updateBooking(
       booking.id,
       { depositStatus: "failed", status: "confirmed" },
       { action: "deposit_payment_failed", actor: "stripe", note: paymentIntent.last_payment_error?.message },
+      (current) => current.status === booking.status && current.depositStatus === booking.depositStatus,
     );
   }
   return booking;
@@ -131,11 +150,13 @@ export async function markPaymentIntentCanceled(paymentIntent: Stripe.PaymentInt
   const booking = await findBookingByPaymentIntent(paymentIntent.id);
   if (!booking) return null;
   if (paymentIntent.metadata.kind === "deposit") {
-    if (booking.depositStatus === "released") return booking;
+    if (["released", "captured", "partially_captured"].includes(booking.depositStatus)) return booking;
+    if (["completed", "cancelled"].includes(booking.status)) return booking;
     return updateBooking(
       booking.id,
-      { depositStatus: "failed", status: booking.status === "return_inspection" ? "return_inspection" : "confirmed" },
+      { depositStatus: "failed", status: ["active", "return_inspection"].includes(booking.status) ? booking.status : "confirmed" },
       { action: "deposit_authorization_expired_or_canceled", actor: "stripe" },
+      (current) => current.status === booking.status && current.depositStatus === booking.depositStatus,
     );
   }
   if (paymentIntent.metadata.kind === "rental" && booking.paymentStatus !== "succeeded") {

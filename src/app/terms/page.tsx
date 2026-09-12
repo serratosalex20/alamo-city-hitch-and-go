@@ -46,7 +46,7 @@ const sections: Section[] = [
   {
     heading: "Refundable Deposit",
     body:
-      "Every rental requires a $200 security deposit. For shorter rentals, this is normally a card authorization placed near pickup. Longer rentals may require an eligible extended authorization or a refundable deposit charge because card-network holds expire. After return and inspection, we initiate the release or refund within 24 hours when nothing is owed; your bank may take additional time to update your available balance. If documented damage, cleaning ($100 flat), or unpaid overtime is owed, we retain only the supported amount and release or refund the remainder.",
+      "Every rental requires a $200 security deposit. The refundable deposit is charged at checkout along with the rental fee and tax. After return and inspection, we initiate the release or refund within 24 hours when nothing is owed; your bank may take additional time to update your available balance. If documented damage, cleaning ($100 flat), or unpaid overtime is owed, we retain only the supported amount and release or refund the remainder.",
   },
   {
     heading: "Insurance",
@@ -76,7 +76,7 @@ const sections: Section[] = [
   {
     heading: "Damage, Loss & Inspection",
     body:
-      "We inspect with you at pickup and document the trailer's condition on a joint inspection report. We complete the return review within 24 hours. Damage, loss, missing accessories, or excessive soiling that wasn't there at pickup is documented with photographs and billed at commercially reasonable rates.",
+      "We inspect with you at pickup and document the trailer's condition on a joint inspection report. The supplied trailer lock and key are included accessories and must be returned. We complete the return review within 24 hours. Damage, loss, missing accessories, or excessive soiling that wasn't there at pickup is documented with photographs and billed at commercially reasonable rates. If the supplied lock or key is lost or damaged, its documented replacement cost may be deducted from the deposit; the full deposit is not automatically forfeited.",
   },
   {
     heading: "Governing Law & Venue",

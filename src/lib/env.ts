@@ -73,12 +73,17 @@ export const docusignBaseUrl =
 // ─── Email ──────────────────────────────────────────────
 export const resendApiKey = read("RESEND_API_KEY");
 export const emailFrom =
-  read("EMAIL_FROM") ?? "Alamo City Hitch & Go <bookings@alamocityhitchandgo.com>";
+  read("EMAIL_FROM") ?? "Alamo City Hitch & Go <booking@alamocityhitchandgo.com>";
+export const supportEmail =
+  read("SUPPORT_EMAIL") ?? "alamocityhitchandgo@gmail.com";
+export const supportPhone = read("SUPPORT_PHONE") ?? "210-269-3467";
 
 // ─── Pickup operations ──────────────────────────────────
 // Kept server-side so the exact handoff location is disclosed only after approval.
 export const pickupAddress = read("PICKUP_ADDRESS");
-export const pickupInstructions = read("PICKUP_INSTRUCTIONS");
+export const pickupInstructions =
+  read("PICKUP_INSTRUCTIONS") ??
+  "Arrive at your scheduled time and wait for the representative before connecting or moving the trailer.";
 
 // ─── Owner access ───────────────────────────────────────
 export const adminEmails = new Set(

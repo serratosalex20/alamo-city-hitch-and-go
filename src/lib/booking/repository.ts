@@ -42,6 +42,7 @@ function sameCheckoutDetails(left: Booking, right: Booking): boolean {
     left.rentalSubtotal === right.rentalSubtotal &&
     left.taxAmount === right.taxAmount &&
     left.rentalTotal === right.rentalTotal &&
+    Boolean(left.depositCollectedAtCheckout) === Boolean(right.depositCollectedAtCheckout) &&
     left.depositAmount === right.depositAmount
   );
 }
@@ -287,6 +288,7 @@ export async function updateBooking(
   id: string,
   updates: Partial<Booking>,
   event?: Omit<BookingAuditEvent, "createdAt" | "createdAtMs">,
+  canUpdate?: (current: Booking) => boolean,
 ): Promise<Booking> {
   const now = new Date();
   const auditEvent: BookingAuditEvent | undefined = event
@@ -298,6 +300,7 @@ export async function updateBooking(
     const store = demoBookings();
     const current = store.get(id);
     if (!current) throw new Error("Booking not found.");
+    if (canUpdate && !canUpdate(current)) return structuredClone(current);
     const next: Booking = {
       ...current,
       ...updates,
@@ -316,6 +319,7 @@ export async function updateBooking(
     const snapshot = await transaction.get(ref);
     if (!snapshot.exists) throw new Error("Booking not found.");
     const current = snapshot.data() as Booking;
+    if (canUpdate && !canUpdate(current)) return current;
     const next: Booking = {
       ...current,
       ...updates,
