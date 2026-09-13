@@ -1,17 +1,10 @@
 /**
- * Server-side Firebase Admin initialization.
- *
- * Used in API routes for:
- *   - Generating sign-in links (server-side magic-link generation)
- *   - Verifying ID tokens after magic-link callback
- *   - Minting and verifying session cookies
- *
- * In STUB mode, `getFirebaseAdmin()` returns null and the auth API
- * routes synthesize fake links + tokens for local dev.
+ * Server-side Firebase initialization for booking persistence and document storage.
+ * Authentication uses the application email-link/session implementation; Firebase
+ * Auth must not be imported here because every booking route loads this module.
  */
 
 import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
-import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import {
@@ -41,15 +34,6 @@ function getApp(): App | null {
       storageBucket: firebaseStorageBucket,
     });
   return cachedApp;
-}
-
-/**
- * Returns the Firebase Admin Auth instance, or null in stub mode.
- * Server-only — never import this from a Client Component.
- */
-export function getFirebaseAdmin(): Auth | null {
-  const app = getApp();
-  return app ? getAuth(app) : null;
 }
 
 /** Returns Firestore for server-side booking persistence. */
