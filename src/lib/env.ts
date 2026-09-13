@@ -148,7 +148,7 @@ export const siteUrl = "https://www.alamocityhitchandgo.com";
 const DEV_FALLBACK_SECRET =
   "dev-only-fallback-secret-do-not-use-in-production-rotate-via-AUTH_SECRET";
 export const authSecret = read("AUTH_SECRET") ?? DEV_FALLBACK_SECRET;
-export const hasProductionAuthSecret = read("AUTH_SECRET") !== undefined;
+export const hasProductionAuthSecret = authSecret !== DEV_FALLBACK_SECRET && authSecret.length >= 32;
 
 // ─── Mode gates ──────────────────────────────────────────
 /**

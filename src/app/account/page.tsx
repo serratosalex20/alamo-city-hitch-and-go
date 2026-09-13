@@ -24,6 +24,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 export default async function AccountPage() {
   const session = await getSession();
   if (!session) redirect("/sign-in?error=invalid-or-expired");
+  if (session.bookingId) redirect(`/booking/${session.bookingId}/documents`);
   const bookings = await listBookingsForEmail(session.email);
   const admin = isAdminEmail(session.email);
 

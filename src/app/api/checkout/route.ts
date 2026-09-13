@@ -1,3 +1,4 @@
+import { hashCheckoutProof, newCheckoutProof, readCheckoutProof, saveCheckoutProof, hasCheckoutProof } from "@/lib/auth/checkout-proof";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -58,10 +59,12 @@ export async function POST(request: Request) {
     const now = new Date();
     const checkoutExpires = new Date(now.getTime() + CHECKOUT_HOLD_MINUTES * 60 * 1000);
     const bookingId = input.checkoutKey;
+    const proof = await readCheckoutProof(bookingId) ?? newCheckoutProof();
     const booking: Booking = {
       id: bookingId,
       schemaVersion: 2,
       checkoutKey: input.checkoutKey,
+      checkoutAccessHash: hashCheckoutProof(proof),
       customerEmail: input.email,
       customer: {
         firstName: input.firstName,
@@ -113,6 +116,8 @@ export async function POST(request: Request) {
       booking,
       trailer.inventoryCount + trailer.virtualBoost,
     );
+
+    await saveCheckoutProof(held.id, proof);
 
     if (!hasStripe) {
       if (!isDemoEnvironment) throw new Error("Stripe is not configured.");
@@ -240,6 +245,9 @@ export async function DELETE(request: Request) {
   try {
     const booking = await getBooking(checkoutKey);
     if (!booking) return NextResponse.json({ ok: true });
+    if (!(await hasCheckoutProof(booking))) {
+      return NextResponse.json({ ok: false, error: "Not authorized." }, { status: 403 });
+    }
     if (
       booking.checkoutKey !== checkoutKey ||
       booking.status !== "pending_payment" ||

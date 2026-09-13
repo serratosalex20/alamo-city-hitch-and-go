@@ -12,11 +12,15 @@ export function isAdminEmail(email: string): boolean {
 
 export async function getCustomerBooking(id: string) {
   const [session, booking] = await Promise.all([getSession(), getBooking(id)]);
-  if (!session || !booking || session.email !== booking.customerEmail) return null;
+  if (!session || !booking || !canAccessBooking(session, booking)) return null;
   return { session, booking };
 }
 
 export async function getAdminSession() {
   const session = await getSession();
-  return session && isAdminEmail(session.email) ? session : null;
+  return session && !session.bookingId && isAdminEmail(session.email) ? session : null;
+}
+
+export function canAccessBooking(session: { email: string; bookingId?: string }, booking: { id: string; customerEmail: string }) {
+  return session.email === booking.customerEmail && (!session.bookingId || session.bookingId === booking.id);
 }

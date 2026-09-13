@@ -1,3 +1,4 @@
+import { hasCheckoutProof } from "@/lib/auth/checkout-proof";
 import { NextResponse } from "next/server";
 import { getBooking } from "@/lib/booking/repository";
 import {
@@ -17,8 +18,8 @@ export async function POST(
 ) {
   const { id } = await params;
   const booking = await getBooking(id);
-  if (!booking) {
-    return NextResponse.json({ ok: false, error: "Booking not found." }, { status: 404 });
+  if (!booking || !(await hasCheckoutProof(booking))) {
+    return NextResponse.json({ ok: false, error: "Checkout authorization required. Use the access link sent to your email." }, { status: 403 });
   }
 
   try {
@@ -42,7 +43,7 @@ export async function POST(
     }
 
     if (!updated) throw new Error("Could not update the booking payment.");
-    await setSessionCookie(updated.customerEmail);
+    await setSessionCookie(updated.customerEmail, updated.id);
     const nextUrl = `/booking/${updated.id}/documents`;
     const linkToken = createToken(updated.customerEmail, "link", nextUrl);
     try {

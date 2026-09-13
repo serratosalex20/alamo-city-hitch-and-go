@@ -1,3 +1,4 @@
+import { hasCheckoutProof } from "@/lib/auth/checkout-proof";
 import { NextResponse } from "next/server";
 import { getBooking } from "@/lib/booking/repository";
 import { markRentalPaymentSucceeded, RentalPaymentRefundedError } from "@/lib/booking/workflow";
@@ -12,7 +13,7 @@ export async function GET(
 ) {
   const { id } = await params;
   const booking = await getBooking(id);
-  if (!booking?.rentalPaymentIntentId) {
+  if (!booking?.rentalPaymentIntentId || !(await hasCheckoutProof(booking))) {
     return NextResponse.redirect(new URL("/book?payment=missing", appUrl));
   }
 
@@ -25,7 +26,7 @@ export async function GET(
     }
     const updated = await markRentalPaymentSucceeded(paymentIntent);
     if (!updated) throw new Error("Booking could not be updated.");
-    await setSessionCookie(updated.customerEmail);
+    await setSessionCookie(updated.customerEmail, updated.id);
     const nextUrl = `/booking/${updated.id}/documents`;
     const linkToken = createToken(updated.customerEmail, "link", nextUrl);
     try {

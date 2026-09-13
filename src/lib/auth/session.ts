@@ -16,7 +16,7 @@
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { authSecret } from "@/lib/env";
+import { authSecret, hasProductionAuthSecret, isDemoEnvironment } from "@/lib/env";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
 
 export { SESSION_COOKIE_NAME };
@@ -26,6 +26,8 @@ const LINK_TTL_SECONDS = 60 * 10; // 10 minutes
 export type TokenKind = "session" | "link";
 
 export interface TokenPayload {
+  version: 2;
+  bookingId?: string;
   email: string;
   kind: TokenKind;
   next?: string;
@@ -44,19 +46,22 @@ function b64urlDecode(s: string): Buffer {
 
 // ─── Sign / verify ───────────────────────────────────────
 function sign(payload: string): string {
+  if (!isDemoEnvironment && !hasProductionAuthSecret) throw new Error("Secure sign-in is not configured.");
   return b64url(createHmac("sha256", authSecret).update(payload).digest());
 }
 
 /** Mint a token. Email is normalized (lower-case, trimmed). */
 export function safeNextPath(next: string | undefined): string | undefined {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) return undefined;
+  if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//") || /[\\\x00-\x20]/.test(next)) return undefined;
   return next;
 }
 
-export function createToken(email: string, kind: TokenKind, next?: string): string {
+export function createToken(email: string, kind: TokenKind, next?: string, bookingId?: string): string {
   const now = Math.floor(Date.now() / 1000);
   const ttl = kind === "session" ? SESSION_TTL_SECONDS : LINK_TTL_SECONDS;
   const payload: TokenPayload = {
+    version: 2,
+    ...(bookingId ? { bookingId } : {}),
     email: email.trim().toLowerCase(),
     kind,
     ...(safeNextPath(next) ? { next: safeNextPath(next) } : {}),
@@ -73,6 +78,7 @@ export function createToken(email: string, kind: TokenKind, next?: string): stri
  * Uses timing-safe comparison to prevent signature-oracle attacks.
  */
 export function verifyToken(token: string, expectedKind: TokenKind): TokenPayload | null {
+  if (!isDemoEnvironment && !hasProductionAuthSecret) return null;
   const parts = token.split(".");
   if (parts.length !== 2) return null;
   const [body, sig] = parts;
@@ -90,6 +96,8 @@ export function verifyToken(token: string, expectedKind: TokenKind): TokenPayloa
     return null;
   }
 
+  if (payload.version !== 2) return null;
+  if (payload.bookingId !== undefined && (typeof payload.bookingId !== "string" || !payload.bookingId)) return null;
   if (payload.kind !== expectedKind) return null;
   if (typeof payload.exp !== "number" || payload.exp < Math.floor(Date.now() / 1000)) {
     return null;
@@ -101,8 +109,8 @@ export function verifyToken(token: string, expectedKind: TokenKind): TokenPayloa
 }
 
 // ─── Cookie helpers (App Router — cookies() is async in Next 15+) ──
-export async function setSessionCookie(email: string): Promise<void> {
-  const token = createToken(email, "session");
+export async function setSessionCookie(email: string, bookingId?: string): Promise<void> {
+  const token = createToken(email, "session", undefined, bookingId);
   const jar = await cookies();
   jar.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,

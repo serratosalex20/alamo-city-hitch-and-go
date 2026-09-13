@@ -32,6 +32,7 @@ export class BookingPersistenceError extends Error {}
 function sameCheckoutDetails(left: Booking, right: Booking): boolean {
   return (
     left.checkoutKey === right.checkoutKey &&
+    left.checkoutAccessHash === right.checkoutAccessHash &&
     left.customerEmail === right.customerEmail &&
     JSON.stringify(left.customer) === JSON.stringify(right.customer) &&
     JSON.stringify(left.towVehicle) === JSON.stringify(right.towVehicle) &&

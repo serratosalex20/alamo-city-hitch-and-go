@@ -180,6 +180,7 @@ export interface Booking {
   id: string;
   schemaVersion: 2;
   checkoutKey: string;
+  checkoutAccessHash?: string; // browser capability digest; never the cookie value
   userId?: string;
   customerEmail: string;
   customer: {
