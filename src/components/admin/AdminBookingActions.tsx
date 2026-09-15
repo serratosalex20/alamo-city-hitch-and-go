@@ -1,5 +1,6 @@
 "use client";
 
+import { depositSelection } from "@/lib/booking/deposit-selection";
 import { InspectionPhotoPicker } from "./InspectionPhotoPicker";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -29,15 +30,17 @@ const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
 export function AdminBookingActions(props: Props) {
   const router = useRouter();
   const [note, setNote] = useState("");
-  const [retainDollars, setRetainDollars] = useState("");
+  const [retainDollars, setRetainDollars] = useState("0");
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const settlement = depositSelection(retainDollars, props.depositAmount);
 
   async function act(action: string) {
     setBusy(action);
     setMessage(null);
     try {
-      const amountCents = retainDollars ? Math.round(Number(retainDollars) * 100) : undefined;
+      const amountCents = action === "retain_deposit" ? settlement?.amountCents : undefined;
       const response = await fetch(`/api/admin/bookings/${props.bookingId}/action`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,7 +117,19 @@ export function AdminBookingActions(props: Props) {
           </div>
         </div>
       )}
-      {needsPostPhotos && <><InspectionPhotoPicker phase="post" savedCount={props.postPhotoCount} disabled={busy !== null} uploading={busy === "photos"} onUpload={uploadPhotos} /><div className="grid gap-3 md:grid-cols-[1fr_auto]"><div><label htmlFor="retain-amount" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Amount to retain (maximum ${(props.depositAmount / 100).toFixed(2)})</label><input id="retain-amount" type="number" min="0.01" max={props.depositAmount / 100} step="0.01" value={retainDollars} onChange={(event) => setRetainDollars(event.target.value)} className="w-full bg-surface-container-high p-3" /></div><div className="flex items-end gap-3 flex-wrap"><button disabled={busy !== null || props.postPhotoCount === 0} onClick={() => act("release_deposit")} className={actionClass}>Release Full Deposit</button><button disabled={busy !== null || props.postPhotoCount === 0 || !retainDollars} onClick={() => act("retain_deposit")} className={secondaryClass}>Retain Documented Amount</button></div></div></>}
+      {needsPostPhotos && <>
+        <InspectionPhotoPicker phase="post" savedCount={props.postPhotoCount} disabled={busy !== null} uploading={busy === "photos"} onUpload={uploadPhotos} />
+        <div className="space-y-3">
+          <label htmlFor="retain-amount" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Amount to retain (maximum ${(props.depositAmount / 100).toFixed(2)})</label>
+          <input id="retain-amount" type="number" min="0" max={props.depositAmount / 100} step="0.01" disabled={busy !== null} value={retainDollars} onChange={(event) => { setRetainDollars(event.target.value); setMessage(null); }} className="w-full bg-surface-container-high p-3" />
+          <p className="text-sm text-on-surface-variant">Enter 0 to return the full deposit. Enter a greater amount to retain it and return the remainder. A decision note is required when retaining money.</p>
+          {settlement ? <p aria-live="polite">Retain: ${(settlement.retainedCents / 100).toFixed(2)} · Return to renter: ${(settlement.returnedCents / 100).toFixed(2)}</p> : <p role="alert" className="text-error">Enter an amount from $0 to ${(props.depositAmount / 100).toFixed(2)}, with up to two decimal places.</p>}
+          <button disabled={busy !== null || props.postPhotoCount === 0 || !settlement || (settlement.retainedCents > 0 && !note.trim())} onClick={() => settlement && act(settlement.action)} className={actionClass}>
+            {busy === "release_deposit" || busy === "retain_deposit" ? "Processing…" : "Process Deposit"}
+          </button>
+        </div>
+      </>}
+
       {props.status === "completed" && <p className="text-sm text-green-400">Return is complete. Deposit outcome: {props.depositStatus.replaceAll("_", " ")}.</p>}
       {message && <p role="status" className={`text-sm ${message.ok ? "text-green-400" : "text-error"}`}>{message.text}</p>}
     </section>
