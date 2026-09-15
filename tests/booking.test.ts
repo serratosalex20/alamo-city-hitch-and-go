@@ -351,3 +351,20 @@ test("optional audit notes are omitted from persisted pickup and return events",
   });
   assert.equal(noted.auditTrail.at(-1)?.note, "No damage");
 });
+
+test("reminder updates remove explicitly cleared fields and preserve untouched booking data", async () => {
+  const fixture = bookingFixture("reminder-clear-fields");
+  fixture.returnReminderCancelledAt = "2026-09-01T12:00:00.000Z";
+  await createBookingHold(fixture, 1);
+  const updated = await updateBooking(fixture.id, {
+    returnReminderEmailId: "email-reminder-test",
+    returnReminderStatus: "scheduled",
+    returnReminderCancelledAt: undefined,
+  }, { action: "return_reminder_scheduled", actor: "owner@example.com" });
+  assert.equal(Object.hasOwn(updated, "returnReminderCancelledAt"), false);
+  const saved = (await getBooking(fixture.id))!;
+  assert.equal(Object.hasOwn(saved, "returnReminderCancelledAt"), false);
+  assert.equal(saved.returnReminderEmailId, "email-reminder-test");
+  assert.equal(saved.returnReminderStatus, "scheduled");
+  assert.deepEqual(saved.customer, fixture.customer);
+});

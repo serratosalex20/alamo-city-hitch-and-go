@@ -285,6 +285,16 @@ export async function listAllBookings(): Promise<Booking[]> {
     .map((booking) => structuredClone(booking));
 }
 
+// Explicit undefined updates clear optional fields. The full document is saved
+// below, so removing the property deletes it without passing undefined to Firestore.
+function applyBookingUpdates(current: Booking, updates: Partial<Booking>): Booking {
+  const next = { ...current, ...updates };
+  for (const key of Object.keys(updates) as (keyof Booking)[]) {
+    if (updates[key] === undefined) Reflect.deleteProperty(next, key);
+  }
+  return next;
+}
+
 export async function updateBooking(
   id: string,
   updates: Partial<Booking>,
@@ -305,8 +315,7 @@ export async function updateBooking(
     if (!current) throw new Error("Booking not found.");
     if (canUpdate && !canUpdate(current)) return structuredClone(current);
     const next: Booking = {
-      ...current,
-      ...updates,
+      ...applyBookingUpdates(current, updates),
       auditTrail: auditEvent ? [...current.auditTrail, auditEvent] : current.auditTrail,
       updatedAt: now.toISOString(),
       updatedAtMs: now.getTime(),
@@ -324,8 +333,7 @@ export async function updateBooking(
     const current = snapshot.data() as Booking;
     if (canUpdate && !canUpdate(current)) return current;
     const next: Booking = {
-      ...current,
-      ...updates,
+      ...applyBookingUpdates(current, updates),
       auditTrail: auditEvent ? [...current.auditTrail, auditEvent] : current.auditTrail,
       updatedAt: now.toISOString(),
       updatedAtMs: now.getTime(),
