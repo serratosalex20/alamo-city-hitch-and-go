@@ -176,7 +176,7 @@ export function PostPaymentChecklist(props: Props) {
       </section>
 
       {error && <p role="alert" className="border-l-4 border-error bg-error/10 px-4 py-3 text-sm text-error">{error}</p>}
-      {agreementComplete && identityComplete && insuranceComplete && (
+      {props.bookingStatus === "under_review" && agreementComplete && identityComplete && insuranceComplete && (
         <div className="flex items-start gap-3 border-l-4 border-primary bg-primary/10 px-5 py-4">
           <Icon name="schedule" className="text-primary" />
           <p className="text-sm text-on-surface-variant">Everything has been submitted. Your reservation is under owner review; it is not ready for pickup until you receive confirmation.</p>

@@ -46,7 +46,7 @@ export default async function BookingDocumentsPage({ params }: { params: Promise
             {confirmed ? "Reservation Confirmed" : booking.status === "under_review" ? "Under Owner Review" : "Complete Your Booking"}
           </h1>
           <p className="max-w-2xl text-on-surface-variant">
-            Payment received. Complete each required item below; your reservation is confirmed after owner approval.
+            {confirmed ? "Your reservation has been approved. Review your booking details and instructions below." : booking.status === "under_review" ? "Payment and documents received. The owner is reviewing your reservation." : "Payment received. Complete each required item below; your reservation is confirmed after owner approval."}
           </p>
         </div>
 
