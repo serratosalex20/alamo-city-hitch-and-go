@@ -252,7 +252,7 @@ test("rental payment webhook fulfillment is idempotent", async () => {
   await markRentalPaymentSucceeded(paymentIntent);
   const updated = await getBooking(fixture.id);
   assert.equal(updated?.paymentStatus, "succeeded");
-  assert.equal(updated?.status, "pending_signature");
+  assert.equal(updated?.status, "pending_identity");
   assert.equal(updated?.auditTrail.filter((event) => event.action === "rental_payment_succeeded").length, 1);
 });
 

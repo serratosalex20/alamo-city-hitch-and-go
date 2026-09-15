@@ -10,7 +10,7 @@ import {
 import { isDemoEnvironment } from "@/lib/env";
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -22,6 +22,10 @@ export async function POST(
   }
   if (booking.agreementStatus === "signed") {
     return NextResponse.json({ ok: true, mode: "complete" as const });
+  }
+
+  if (booking.identityStatus !== "verified" || !["uploaded", "approved"].includes(booking.insuranceStatus) || !booking.insurancePolicyNumber?.trim()) {
+    return NextResponse.json({ ok: false, error: "Complete identity verification and insurance details first." }, { status: 409 });
   }
 
   if (!hasDocuSign) {
@@ -36,13 +40,13 @@ export async function POST(
   }
 
   try {
-    const signing = await createEmbeddedSigningSession(booking);
+    const signing = await createEmbeddedSigningSession(booking, new URL(request.url).origin);
     await updateBooking(
       id,
       { docusignEnvelopeId: signing.envelopeId, agreementStatus: "sent" },
       { action: "agreement_sent", actor: session.email },
     );
-    return NextResponse.json({ ok: true, mode: "real" as const, url: signing.url });
+    return NextResponse.json({ ok: true, mode: "real" as const, url: signing.url, integrationKey: signing.integrationKey });
   } catch (error) {
     console.error("[agreement-create]", error);
     return NextResponse.json(
@@ -53,7 +57,7 @@ export async function POST(
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;

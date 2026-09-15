@@ -27,8 +27,8 @@ test("missing or invalid expiration cannot count as current; reused docs advance
   assert.equal(validThrough(undefined, "2026-09-20"), false);
   assert.equal(validThrough("2026-02-30", "2026-02-01"), false);
   assert.equal(validThrough("2026-09-20", "2026-09-20"), true);
-  assert.equal(nextDocumentStatus({ identityStatus: "verified", insuranceStatus: "uploaded" }), "under_review");
-  assert.equal(nextDocumentStatus({ identityStatus: "not_started", insuranceStatus: "uploaded" }), "pending_identity");
+  assert.equal(nextDocumentStatus({ identityStatus: "verified", insuranceStatus: "uploaded", agreementStatus: "signed" }), "under_review");
+  assert.equal(nextDocumentStatus({ identityStatus: "not_started", insuranceStatus: "uploaded", agreementStatus: "not_started" }), "pending_identity");
 });
 
 test("provider-confirmed current ID and approved insurance are reused without reusing the old agreement", async () => {

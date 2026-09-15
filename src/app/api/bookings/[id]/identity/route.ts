@@ -15,8 +15,8 @@ export async function POST(
   const authorized = await getCustomerBooking(id);
   if (!authorized) return NextResponse.json({ ok: false, error: "Not authorized." }, { status: 403 });
   const { booking, session } = authorized;
-  if (booking.agreementStatus !== "signed") {
-    return NextResponse.json({ ok: false, error: "Sign the rental agreement first." }, { status: 409 });
+  if (booking.paymentStatus !== "succeeded") {
+    return NextResponse.json({ ok: false, error: "Complete payment first." }, { status: 409 });
   }
   if (booking.identityStatus === "verified") {
     return NextResponse.json({ ok: true, mode: "complete" as const });

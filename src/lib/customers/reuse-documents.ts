@@ -15,7 +15,7 @@ export async function reuseDocuments(target: Booking, history: Booking[]) {
       insuranceSourceBookingId: insurance.id,
       insuranceStoragePath: insurance.insuranceStoragePath,
       insuranceExpiresAt: insurance.insuranceExpiresAt,
-      ...Object.fromEntries((["insuranceFileName", "insuranceMimeType", "insuranceCarrier", "insurancePolicyholder"] as const)
+      ...Object.fromEntries((["insuranceFileName", "insuranceMimeType", "insuranceCarrier", "insurancePolicyholder", "insurancePolicyNumber"] as const)
         .filter(key => insurance[key] !== undefined).map(key => [key, insurance[key]])),
     });
   }

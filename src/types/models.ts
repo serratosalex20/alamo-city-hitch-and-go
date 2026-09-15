@@ -241,6 +241,7 @@ export interface Booking {
   depositAmountRetained?: number;
   // DocuSign
   docusignEnvelopeId?: string;
+  supersededAgreementEnvelopeIds?: string[];
   agreementStatus: AgreementStatus;
   agreementSignedAt?: string;
   // Stripe Identity — raw ID images are not stored in this application.
@@ -257,6 +258,7 @@ export interface Booking {
   insuranceFileName?: string;
   insuranceMimeType?: string;
   insuranceCarrier?: string;
+  insurancePolicyNumber?: string;
   insurancePolicyholder?: string;
   insuranceExpiresAt?: string;
   // Admin

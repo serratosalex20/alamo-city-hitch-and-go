@@ -1,5 +1,7 @@
 "use client";
 
+import { EmbeddedAgreement } from "./EmbeddedAgreement";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
@@ -19,6 +21,12 @@ interface Props {
   depositStatus: DepositStatus;
   depositMethod?: DepositMethod;
   depositAmount: number;
+  identityExpiresAt?: string;
+  insuranceCarrier?: string;
+  insurancePolicyNumber?: string;
+  insuranceExpiresAt?: string;
+  insurancePolicyholder?: string;
+  hasInsuranceFile?: boolean;
 }
 
 function StatusBadge({ complete, label }: { complete: boolean; label: string }) {
@@ -32,11 +40,18 @@ function StatusBadge({ complete, label }: { complete: boolean; label: string }) 
 export function PostPaymentChecklist(props: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
+  const [signing, setSigning] = useState<{ url: string; integrationKey: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function syncStatus(kind: "agreement" | "identity") {
     try {
-      await fetch(`/api/bookings/${props.bookingId}/${kind}`);
+      for (let attempt = 0; attempt < (kind === "agreement" ? 3 : 1); attempt++) {
+        const response = await fetch(`/api/bookings/${props.bookingId}/${kind}`, { cache: "no-store" });
+        if (!response.ok) throw new Error("Could not verify document status.");
+        const result = await response.json();
+        if (kind !== "agreement" || result.status === "signed") break;
+        if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1500));
+      }
       router.refresh();
     } catch {
       setError(`Could not refresh ${kind} status.`);
@@ -58,12 +73,13 @@ export function PostPaymentChecklist(props: Props) {
     setError(null);
     try {
       const response = await fetch(`/api/bookings/${props.bookingId}/agreement`, { method: "POST" });
-      const result = (await response.json()) as { ok: boolean; mode?: string; url?: string; error?: string };
+      const result = (await response.json()) as { ok: boolean; mode?: string; url?: string; integrationKey?: string; error?: string };
       if (!response.ok || !result.ok) throw new Error(result.error ?? "Could not open agreement.");
-      if (result.mode === "real" && result.url) window.location.assign(result.url);
+      if (result.mode === "real" && result.url && result.integrationKey) setSigning({ url: result.url, integrationKey: result.integrationKey });
       else router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not open agreement.");
+    } finally {
       setBusy(null);
     }
   }
@@ -118,35 +134,23 @@ export function PostPaymentChecklist(props: Props) {
 
   const agreementComplete = props.agreementStatus === "signed";
   const identityComplete = props.identityStatus === "verified";
-  const insuranceComplete = props.insuranceStatus === "uploaded" || props.insuranceStatus === "approved";
+  const insuranceComplete = (props.insuranceStatus === "uploaded" || props.insuranceStatus === "approved") && (!!props.insurancePolicyNumber || agreementComplete);
   const reviewComplete = ["confirmed", "deposit_action_required", "ready_for_pickup", "active", "return_inspection", "completed"].includes(props.bookingStatus);
   const depositComplete = ["authorized", "charged", "partially_captured", "captured", "released"].includes(props.depositStatus);
   const inputClass = "w-full bg-surface-container-high px-4 py-3 text-on-surface ghost-border outline-none focus:border-b-2 focus:border-primary-action";
 
   return (
     <div className="space-y-5">
-      <section className="bg-surface-container-low p-6 ghost-border" aria-labelledby="agreement-step">
-        <div className="flex items-center justify-between gap-4 mb-3">
-          <h2 id="agreement-step" className="font-headline text-xl font-bold uppercase">1. Rental Agreement</h2>
-          <StatusBadge complete={agreementComplete} label="Required" />
-        </div>
-        <p className="text-sm text-on-surface-variant mb-5">Review and sign the complete rental agreement through DocuSign.</p>
-        {!agreementComplete && (
-          <button onClick={startAgreement} disabled={busy !== null} className="min-h-[44px] bg-primary-action px-6 py-3 font-headline font-bold uppercase tracking-widest text-white disabled:opacity-50">
-            {busy === "agreement" ? "Opening…" : "Review & Sign"}
-          </button>
-        )}
-      </section>
-
       <section className="bg-surface-container-low p-6 ghost-border" aria-labelledby="identity-step">
         <div className="flex items-center justify-between gap-4 mb-3">
-          <h2 id="identity-step" className="font-headline text-xl font-bold uppercase">2. Verify ID</h2>
-          <StatusBadge complete={identityComplete} label={agreementComplete ? "Required" : "Locked"} />
+          <h2 id="identity-step" className="font-headline text-xl font-bold uppercase">1. Verify ID</h2>
+          <StatusBadge complete={identityComplete} label="Required" />
         </div>
         <p className="text-sm text-on-surface-variant mb-2">Stripe verifies a valid driver&apos;s license or government ID and a matching selfie.</p>
         <p className="text-xs text-on-surface-variant mb-5">Stripe collects sensitive identity data. Read our <a href="/privacy" target="_blank" className="text-primary underline">privacy notice</a> before continuing.</p>
+        {identityComplete && <p className="text-sm text-green-400 mb-3">Identity verified{props.identityExpiresAt ? ` · ID expires ${props.identityExpiresAt}` : ""}.</p>}
         {!identityComplete && (
-          <button onClick={startIdentity} disabled={!agreementComplete || busy !== null} className="min-h-[44px] bg-primary-action px-6 py-3 font-headline font-bold uppercase tracking-widest text-white disabled:opacity-40">
+          <button onClick={startIdentity} disabled={busy !== null} className="min-h-[44px] bg-primary-action px-6 py-3 font-headline font-bold uppercase tracking-widest text-white disabled:opacity-40">
             {busy === "identity" ? "Verifying…" : props.identityStatus === "requires_input" ? "Try Verification Again" : "Verify My Identity"}
           </button>
         )}
@@ -154,26 +158,43 @@ export function PostPaymentChecklist(props: Props) {
 
       <section className="bg-surface-container-low p-6 ghost-border" aria-labelledby="insurance-step">
         <div className="flex items-center justify-between gap-4 mb-3">
-          <h2 id="insurance-step" className="font-headline text-xl font-bold uppercase">3. Current Insurance</h2>
+          <h2 id="insurance-step" className="font-headline text-xl font-bold uppercase">2. Current Insurance</h2>
           <StatusBadge complete={insuranceComplete} label={identityComplete ? "Required" : "Locked"} />
         </div>
         {insuranceComplete ? (
-          <p className="text-sm text-on-surface-variant">Insurance received. The owner will review it with the rest of your booking.</p>
+          <p className="text-sm text-on-surface-variant">Insurance received: {props.insuranceCarrier}{props.insurancePolicyNumber ? ` · Policy ${props.insurancePolicyNumber}` : ""}{props.insuranceExpiresAt ? ` · Expires ${props.insuranceExpiresAt}` : ""}. The owner will review it with your booking.</p>
         ) : (
           <form onSubmit={uploadInsurance} className="space-y-4">
             <p className="text-sm text-on-surface-variant">Upload a clear photo or PDF. The policy must remain current through your return date.</p>
             <div className="grid gap-4 md:grid-cols-2">
-              <div><label htmlFor="insurance-carrier" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Insurance Company</label><input id="insurance-carrier" name="carrier" required disabled={!identityComplete} className={inputClass} /></div>
-              <div><label htmlFor="insurance-policyholder" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Policyholder</label><input id="insurance-policyholder" name="policyholder" required disabled={!identityComplete} defaultValue={props.defaultPolicyholder} className={inputClass} /></div>
-              <div><label htmlFor="insurance-expiration" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Expiration Date</label><input id="insurance-expiration" name="expiresAt" type="date" required disabled={!identityComplete} className={inputClass} /></div>
-              <div><label htmlFor="insurance-file" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Insurance Photo or PDF</label><input id="insurance-file" name="file" type="file" accept="image/jpeg,image/png,application/pdf" required disabled={!identityComplete} className={inputClass} /></div>
+              <div><label htmlFor="insurance-carrier" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Insurance Company</label><input id="insurance-carrier" name="carrier" defaultValue={props.insuranceCarrier} required disabled={!identityComplete} className={inputClass} /></div>
+              <div><label htmlFor="insurance-policyholder" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Policyholder</label><input id="insurance-policyholder" name="policyholder" required disabled={!identityComplete} defaultValue={props.insurancePolicyholder ?? props.defaultPolicyholder} className={inputClass} /></div>
+              <div><label htmlFor="insurance-policy-number" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Policy Number</label><input id="insurance-policy-number" name="policyNumber" defaultValue={props.insurancePolicyNumber} maxLength={100} required disabled={!identityComplete} className={inputClass} /></div>
+              <div><label htmlFor="insurance-expiration" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Expiration Date</label><input id="insurance-expiration" name="expiresAt" type="date" defaultValue={props.insuranceExpiresAt} onClick={event => { try { event.currentTarget.showPicker?.(); } catch { /* Native input remains usable. */ } }} required disabled={!identityComplete} className={inputClass} /></div>
+              <div><label htmlFor="insurance-file" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Insurance Photo or PDF</label><input id="insurance-file" name="file" type="file" accept="image/jpeg,image/png,application/pdf" required={!props.hasInsuranceFile} disabled={!identityComplete} className={inputClass} /></div>
             </div>
+            {props.hasInsuranceFile && <p className="text-sm text-on-surface-variant">Your saved insurance document is available. Add the missing policy details; upload a new document if the policy has changed.</p>}
             <button type="submit" disabled={!identityComplete || busy !== null} className="min-h-[44px] bg-primary-action px-6 py-3 font-headline font-bold uppercase tracking-widest text-white disabled:opacity-40">
-              {busy === "insurance" ? "Uploading…" : "Upload Insurance"}
+              {busy === "insurance" ? "Saving…" : props.hasInsuranceFile ? "Confirm Insurance Details" : "Save Insurance & Continue"}
             </button>
           </form>
         )}
       </section>
+
+      <section className="bg-surface-container-low p-6 ghost-border" aria-labelledby="agreement-step">
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <h2 id="agreement-step" className="font-headline text-xl font-bold uppercase">3. Rental Agreement</h2>
+          <StatusBadge complete={agreementComplete} label={identityComplete && insuranceComplete ? "Required" : "Locked"} />
+        </div>
+        <p className="text-sm text-on-surface-variant mb-5">Your insurance details are filled in. Review and sign here through DocuSign.</p>
+        {!agreementComplete && (
+          <button onClick={startAgreement} disabled={!identityComplete || !insuranceComplete || busy !== null} className="min-h-[44px] bg-primary-action px-6 py-3 font-headline font-bold uppercase tracking-widest text-white disabled:opacity-50">
+            {busy === "agreement" ? "Opening…" : "Review & Sign"}
+          </button>
+        )}
+      </section>
+
+      {signing && <EmbeddedAgreement {...signing} bookingId={props.bookingId} onClose={() => { setSigning(null); setBusy("agreement"); void syncStatus("agreement").finally(() => setBusy(null)); }} />}
 
       {error && <p role="alert" className="border-l-4 border-error bg-error/10 px-4 py-3 text-sm text-error">{error}</p>}
       {props.bookingStatus === "under_review" && agreementComplete && identityComplete && insuranceComplete && (

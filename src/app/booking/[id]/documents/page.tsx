@@ -85,6 +85,12 @@ export default async function BookingDocumentsPage({ params }: { params: Promise
           identityStatus={booking.identityStatus}
           insuranceStatus={booking.insuranceStatus}
           defaultPolicyholder={customerName}
+          identityExpiresAt={booking.identityExpiresAt}
+          insuranceCarrier={booking.insuranceCarrier}
+          insurancePolicyNumber={booking.insurancePolicyNumber}
+          insuranceExpiresAt={booking.insuranceExpiresAt}
+          insurancePolicyholder={booking.insurancePolicyholder}
+          hasInsuranceFile={!!booking.insuranceStoragePath && booking.insuranceStatus !== "resubmit_requested"}
           bookingStatus={booking.status}
           depositStatus={booking.depositStatus}
           depositMethod={booking.depositMethod}

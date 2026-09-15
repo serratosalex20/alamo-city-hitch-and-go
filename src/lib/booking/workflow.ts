@@ -56,7 +56,7 @@ export async function markRentalPaymentSucceeded(paymentIntent: Stripe.PaymentIn
       paymentIntentId: paymentIntent.id,
       capacity: bookingCapacity(booking.trailerId),
       updates: {
-        status: "pending_signature",
+        status: nextDocumentStatus(booking),
         paymentStatus: "succeeded",
         ...(booking.depositCollectedAtCheckout ? {
           depositStatus: "charged" as const,
@@ -109,7 +109,7 @@ export async function markDemoRentalPaymentSucceeded(bookingId: string) {
     paymentIntentId: booking.rentalPaymentIntentId ?? `pi_demo_${bookingId}`,
     capacity: bookingCapacity(booking.trailerId),
     updates: {
-      status: "pending_signature",
+      status: nextDocumentStatus(booking),
       paymentStatus: "succeeded",
       ...(booking.depositCollectedAtCheckout ? {
         depositStatus: "charged" as const,
@@ -208,7 +208,7 @@ export async function notifyDocumentReview(booking: Booking) {
 
 export async function completeAgreement(booking: Booking, actor: string, signedAt = new Date().toISOString()) {
   const updated = await updateBooking(booking.id, {
-    agreementStatus: "signed", agreementSignedAt: signedAt, status: nextDocumentStatus(booking),
+    agreementStatus: "signed", agreementSignedAt: signedAt, status: nextDocumentStatus({ ...booking, agreementStatus: "signed" }),
   }, { action: "agreement_signed", actor });
   await notifyDocumentReview(updated);
   return updated;

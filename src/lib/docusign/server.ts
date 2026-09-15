@@ -1,3 +1,5 @@
+import { insuranceTabUpdates } from "./insurance-tabs";
+import { updateBooking } from "@/lib/booking/repository";
 import { bookingCheckoutTotal } from "@/lib/booking/pricing";
 import { createSign } from "node:crypto";
 import {
@@ -132,7 +134,7 @@ export function agreementTextTabs(booking: Booking) {
   return Object.entries(values).map(([tabLabel, value]) => ({ tabLabel, value }));
 }
 
-export async function createEmbeddedSigningSession(booking: Booking) {
+export async function createEmbeddedSigningSession(booking: Booking, origin = new URL(appUrl).origin) {
   if (!hasDocuSign || !docusignAccountId || !docusignTemplateId) {
     throw new Error("DocuSign is not configured.");
   }
@@ -144,7 +146,7 @@ export async function createEmbeddedSigningSession(booking: Booking) {
         method: "POST",
         body: JSON.stringify({
           templateId: docusignTemplateId,
-          status: "sent",
+          status: "created",
           emailSubject: `Trailer rental agreement — ${booking.trailerName}`,
           templateRoles: [{
             email: booking.customerEmail,
@@ -165,24 +167,38 @@ export async function createEmbeddedSigningSession(booking: Booking) {
       },
     );
     envelopeId = created.envelopeId;
+    if (envelopeId) await updateBooking(booking.id, { docusignEnvelopeId: envelopeId });
   }
   if (!envelopeId) throw new Error("DocuSign did not return an envelope ID.");
+  const envelopePath = `/v2.1/accounts/${encodeURIComponent(docusignAccountId)}/envelopes/${encodeURIComponent(envelopeId)}`;
+  const recipients = await requestDocuSign<{ signers?: { recipientId: string; clientUserId?: string; email?: string }[] }>(`${envelopePath}/recipients`);
+  const signer = recipients.signers?.find(item => item.clientUserId === booking.id && item.email?.toLowerCase() === booking.customerEmail.toLowerCase());
+  if (!signer) throw new Error("Agreement signer does not match this booking.");
+  const tabsPath = `${envelopePath}/recipients/${encodeURIComponent(signer.recipientId)}/tabs`;
+  const tabs = await requestDocuSign<{ textTabs?: { tabId?: string; tabLabel?: string; name?: string }[] }>(tabsPath);
+  const insuranceTabs = insuranceTabUpdates(booking, tabs.textTabs ?? []);
+  await requestDocuSign(tabsPath, { method: "PUT", body: JSON.stringify({ textTabs: insuranceTabs }) });
+  const envelope = await getEnvelopeStatus(envelopeId);
+  if (envelope.status === "created") await requestDocuSign(envelopePath, { method: "PUT", body: JSON.stringify({ status: "sent" }) });
+  const docusignOrigin = docusignOauthBaseUrl.includes("account-d.") ? "https://apps-d.docusign.com" : "https://apps.docusign.com";
   const view = await requestDocuSign<{ url?: string }>(
     `/v2.1/accounts/${encodeURIComponent(docusignAccountId)}/envelopes/${encodeURIComponent(envelopeId)}/views/recipient`,
     {
       method: "POST",
       body: JSON.stringify({
-        returnUrl: `${appUrl}/booking/${booking.id}/documents?agreement=returned`,
+        returnUrl: `${origin}/booking/${booking.id}/signing-return`,
+        frameAncestors: [origin, docusignOrigin],
+        messageOrigins: [docusignOrigin],
         authenticationMethod: "none",
         email: booking.customerEmail,
         userName: renterName(booking),
-        recipientId: "1",
+        recipientId: signer.recipientId,
         clientUserId: booking.id,
       }),
     },
   );
   if (!view.url) throw new Error("DocuSign did not return a signing URL.");
-  return { envelopeId, url: view.url };
+  return { envelopeId, url: view.url, integrationKey: docusignIntegrationKey! };
 }
 
 export async function getEnvelopeStatus(envelopeId: string) {

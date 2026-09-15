@@ -35,7 +35,11 @@ export function reusableInsurance(source: Booking, target: Booking, returnDate: 
     validThrough(source.insuranceExpiresAt, returnDate) && !!source.towVehicle && !!target.towVehicle &&
     (["year", "make", "model", "plate"] as const).every(key => normalize(source.towVehicle![key] ?? "") === normalize(target.towVehicle![key] ?? ""));
 }
-export function nextDocumentStatus(booking: Pick<Booking, "identityStatus" | "insuranceStatus">): BookingStatus {
-  return booking.identityStatus !== "verified" ? "pending_identity" :
-    ["uploaded", "approved"].includes(booking.insuranceStatus) ? "under_review" : "pending_insurance";
+export function nextDocumentStatus(booking: Pick<Booking, "identityStatus" | "insuranceStatus" | "agreementStatus" | "insurancePolicyNumber">): BookingStatus {
+  if (booking.identityStatus !== "verified") return "pending_identity";
+  if (!["uploaded", "approved"].includes(booking.insuranceStatus)) return "pending_insurance";
+  // Existing signed agreements predate collection of policy numbers in the portal.
+  if (booking.agreementStatus === "signed") return "under_review";
+  if (!booking.insurancePolicyNumber?.trim()) return "pending_insurance";
+  return "pending_signature";
 }

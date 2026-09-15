@@ -93,7 +93,7 @@ await t.test("combined payment validates amount and status, records deposit once
   assert.equal(paid?.depositStatus, "charged");
   assert.equal(paid?.depositPaymentIntentId, intent.id);
   assert.equal(paid?.stripePaymentMethodId, "pm_local");
-  assert.equal(paid?.status, "pending_signature");
+  assert.equal(paid?.status, "pending_identity");
   assert.equal((await markPaymentIntentFailed(intent))?.depositStatus, "charged");
   await markRentalPaymentSucceeded(intent);
   assert.equal((await getBooking(fixture.id))?.auditTrail.filter(e => e.action === "rental_payment_succeeded").length, 1);
