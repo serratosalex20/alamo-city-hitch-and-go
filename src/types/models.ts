@@ -72,6 +72,7 @@ export interface Trailer {
 
 export type UserRole = "customer" | "admin";
 export type ReferralSource =
+  | "previous_customer"
   | "business_card"
   | "referral"
   | "website"
@@ -246,6 +247,10 @@ export interface Booking {
   stripeIdentitySessionId?: string;
   identityStatus: IdentityStatus;
   identityVerifiedAt?: string;
+  identityExpiresAt?: string;
+  identityVerificationSourceId?: string;
+  identitySourceBookingId?: string;
+  insuranceSourceBookingId?: string;
   // Insurance
   insuranceStatus: InsuranceStatus;
   insuranceStoragePath?: string;

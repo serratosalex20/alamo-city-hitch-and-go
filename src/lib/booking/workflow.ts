@@ -1,3 +1,6 @@
+import { nextDocumentStatus } from "@/lib/customers/returning";
+import { sendOwnerReviewEmail } from "@/lib/email/server";
+import type { Booking } from "@/types/models";
 import type Stripe from "stripe";
 import { DOCUMENT_DEADLINE_HOURS } from "@/lib/booking/schedule";
 import {
@@ -178,11 +181,13 @@ export async function syncIdentityVerificationSession(
   if (!booking || booking.stripeIdentitySessionId !== verification.id) return null;
   if (verification.status === "verified") {
     if (booking.identityStatus === "verified") return booking;
-    return updateBooking(
+    const updated = await updateBooking(
       bookingId,
-      { identityStatus: "verified", identityVerifiedAt: new Date().toISOString(), status: "pending_insurance" },
+      { identityStatus: "verified", identityVerifiedAt: new Date().toISOString(), status: nextDocumentStatus({ ...booking, identityStatus: "verified" }) },
       { action: "identity_verified", actor: "stripe" },
     );
+    await notifyDocumentReview(updated);
+    return updated;
   }
   if (verification.status === "requires_input" || verification.status === "canceled") {
     if (booking.identityStatus === verification.status) return booking;
@@ -193,4 +198,18 @@ export async function syncIdentityVerificationSession(
     );
   }
   return booking;
+}
+
+export async function notifyDocumentReview(booking: Booking) {
+  if (booking.status !== "under_review") return;
+  try { await sendOwnerReviewEmail(booking); }
+  catch { console.error("[booking-email:owner-review] Could not send owner review notification."); }
+}
+
+export async function completeAgreement(booking: Booking, actor: string, signedAt = new Date().toISOString()) {
+  const updated = await updateBooking(booking.id, {
+    agreementStatus: "signed", agreementSignedAt: signedAt, status: nextDocumentStatus(booking),
+  }, { action: "agreement_signed", actor });
+  await notifyDocumentReview(updated);
+  return updated;
 }

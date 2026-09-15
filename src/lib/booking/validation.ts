@@ -30,6 +30,7 @@ export const checkoutSchema = scheduleSchema.extend({
     zip: z.string().trim().regex(/^\d{5}(?:-\d{4})?$/, "Enter a valid ZIP code."),
   }),
   referralSource: z.enum([
+    "previous_customer",
     "business_card",
     "referral",
     "website",

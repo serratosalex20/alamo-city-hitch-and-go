@@ -1,3 +1,7 @@
+import { getSession } from "@/lib/auth/session";
+import { listBookingsForEmail } from "@/lib/booking/repository";
+import { reuseDocuments } from "@/lib/customers/reuse-documents";
+import { paidBookings } from "@/lib/customers/returning";
 import { MARKETING_CONSENT_TEXT } from "@/lib/customers/profile";
 import { hashCheckoutProof, newCheckoutProof, readCheckoutProof, saveCheckoutProof, hasCheckoutProof } from "@/lib/auth/checkout-proof";
 import { randomUUID } from "node:crypto";
@@ -115,6 +119,16 @@ export async function POST(request: Request) {
       updatedAt: now.toISOString(),
       updatedAtMs: now.getTime(),
     };
+
+    const session = await getSession();
+    if (session && !session.bookingId && session.email.toLowerCase() === input.email) {
+      const history = await listBookingsForEmail(session.email);
+      if (paidBookings(session.email, history).length) {
+        booking.customer.referralSource = "previous_customer";
+        delete booking.customer.referralDetail;
+      }
+      await reuseDocuments(booking, history);
+    }
 
     const held = await createBookingHold(
       booking,

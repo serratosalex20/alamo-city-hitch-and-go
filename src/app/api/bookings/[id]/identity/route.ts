@@ -1,3 +1,5 @@
+import { nextDocumentStatus } from "@/lib/customers/returning";
+import { notifyDocumentReview } from "@/lib/booking/workflow";
 import { NextResponse } from "next/server";
 import { getCustomerBooking } from "@/lib/auth/authorization";
 import { updateBooking } from "@/lib/booking/repository";
@@ -24,11 +26,12 @@ export async function POST(
     if (!isDemoEnvironment) {
       return NextResponse.json({ ok: false, error: "Identity verification is unavailable." }, { status: 503 });
     }
-    await updateBooking(
+    const updated = await updateBooking(
       id,
-      { identityStatus: "verified", identityVerifiedAt: new Date().toISOString(), status: "pending_insurance" },
+      { identityStatus: "verified", identityVerifiedAt: new Date().toISOString(), status: nextDocumentStatus({ ...booking, identityStatus: "verified" }) },
       { action: "demo_identity_verified", actor: session.email },
     );
+    await notifyDocumentReview(updated);
     return NextResponse.json({ ok: true, mode: "demo" as const });
   }
 

@@ -1,3 +1,4 @@
+import { completeAgreement } from "@/lib/booking/workflow";
 import { NextResponse } from "next/server";
 import { getCustomerBooking } from "@/lib/auth/authorization";
 import { updateBooking } from "@/lib/booking/repository";
@@ -30,15 +31,7 @@ export async function POST(
         { status: 503 },
       );
     }
-    await updateBooking(
-      id,
-      {
-        agreementStatus: "signed",
-        agreementSignedAt: new Date().toISOString(),
-        status: "pending_identity",
-      },
-      { action: "demo_agreement_signed", actor: session.email },
-    );
+    await completeAgreement(booking, session.email);
     return NextResponse.json({ ok: true, mode: "demo" as const });
   }
 
@@ -78,15 +71,7 @@ export async function GET(
     const envelope = await getEnvelopeStatus(booking.docusignEnvelopeId);
     const completed = envelope.status === "completed";
     if (completed) {
-      await updateBooking(
-        id,
-        {
-          agreementStatus: "signed",
-          agreementSignedAt: envelope.completedDateTime ?? new Date().toISOString(),
-          status: "pending_identity",
-        },
-        { action: "agreement_signed", actor: session.email },
-      );
+      await completeAgreement(booking, session.email, envelope.completedDateTime);
     }
     return NextResponse.json({ ok: true, status: completed ? "signed" : envelope.status });
   } catch (error) {

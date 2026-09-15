@@ -80,6 +80,9 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           <input
             id="booking-date"
             type="date"
+            onClick={(event) => {
+              try { event.currentTarget.showPicker?.(); } catch { /* Native keyboard entry remains available. */ }
+            }}
             required
             min={today}
             value={formData.date}
