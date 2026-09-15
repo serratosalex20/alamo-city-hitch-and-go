@@ -1,3 +1,4 @@
+import { MARKETING_CONSENT_TEXT } from "@/lib/customers/profile";
 import { hashCheckoutProof, newCheckoutProof, readCheckoutProof, saveCheckoutProof, hasCheckoutProof } from "@/lib/auth/checkout-proof";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
@@ -85,6 +86,9 @@ export async function POST(request: Request) {
       checkoutExpiresAt: checkoutExpires.toISOString(),
       checkoutExpiresAtMs: checkoutExpires.getTime(),
       policiesAcceptedAt: now.toISOString(),
+      emailMarketingOptIn: input.emailMarketingOptIn,
+      emailMarketingConsentAt: now.toISOString(),
+      emailMarketingConsentText: MARKETING_CONSENT_TEXT,
       extensions: [],
       rentalSubtotal: quote.rentalCents,
       taxAmount: quote.taxCents,

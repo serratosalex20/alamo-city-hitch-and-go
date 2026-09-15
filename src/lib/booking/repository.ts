@@ -44,6 +44,7 @@ function sameCheckoutDetails(left: Booking, right: Booking): boolean {
     left.taxAmount === right.taxAmount &&
     left.rentalTotal === right.rentalTotal &&
     Boolean(left.depositCollectedAtCheckout) === Boolean(right.depositCollectedAtCheckout) &&
+    Boolean(left.emailMarketingOptIn) === Boolean(right.emailMarketingOptIn) &&
     left.depositAmount === right.depositAmount
   );
 }

@@ -368,3 +368,12 @@ test("reminder updates remove explicitly cleared fields and preserve untouched b
   assert.equal(saved.returnReminderStatus, "scheduled");
   assert.deepEqual(saved.customer, fixture.customer);
 });
+
+
+test("checkout retry cannot silently replace the recorded marketing choice", async () => {
+  const original = bookingFixture("marketing-choice-retry");
+  original.emailMarketingOptIn = false;
+  await createBookingHold(original, 1);
+  await assert.rejects(() => createBookingHold({ ...original, emailMarketingOptIn: true }, 1), BookingConflictError);
+  assert.equal((await getBooking(original.id))?.emailMarketingOptIn, false);
+});

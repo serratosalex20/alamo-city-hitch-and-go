@@ -10,6 +10,10 @@ export const metadata: Metadata = {
 
 const sections = [
   {
+    title: "Customer Profiles and Email Preferences",
+    body: "You can keep a customer profile with your name, phone number, and verified email even when you have no current rental. If you choose to subscribe, we record your email-marketing preference, the consent wording, and when your choice was recorded. Marketing is optional. You can change your preference in your account. Essential booking, pickup, return, and payment messages are separate from marketing. Providing a phone number does not subscribe you to promotional text messages.",
+  },
+  {
     title: "Information We Collect",
     body: "We collect the contact, address, tow-vehicle, scheduling, payment-reference, agreement, identity-verification status, insurance, and trailer-inspection information needed to evaluate and manage a rental.",
   },

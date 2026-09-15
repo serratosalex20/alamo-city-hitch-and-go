@@ -1,3 +1,5 @@
+import { CustomerProfileForm } from "@/components/account/CustomerProfileForm";
+import { getProfile } from "@/lib/customers/repository";
 import { bookingCheckoutTotal } from "@/lib/booking/pricing";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -27,6 +29,8 @@ export default async function AccountPage() {
   if (session.bookingId) redirect(`/booking/${session.bookingId}/documents`);
   const bookings = await listBookingsForEmail(session.email);
   const admin = isAdminEmail(session.email);
+  const profile = await getProfile(session.email);
+  const latest = bookings[0];
 
   return (
     <>
@@ -37,11 +41,14 @@ export default async function AccountPage() {
             <div className="text-xs font-bold uppercase tracking-[0.24em] text-primary mb-2">Signed in as {session.email}</div>
             <h1 className="font-headline text-5xl font-bold uppercase">My Bookings</h1>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
+            <Link href="/book" className="min-h-[44px] px-5 py-3 bg-primary-action font-bold uppercase">Book a Trailer</Link>
             {admin && <Link href="/admin" className="min-h-[44px] px-5 py-3 bg-primary-action font-headline uppercase tracking-widest">Owner Console</Link>}
             <form action="/api/auth/logout" method="POST"><button className="min-h-[44px] px-5 py-3 bg-surface-container-high font-headline uppercase tracking-widest">Sign Out</button></form>
           </div>
         </div>
+
+        <CustomerProfileForm email={session.email} initialName={profile?.name ?? (latest ? `${latest.customer.firstName} ${latest.customer.lastName}` : "")} initialPhone={profile?.phone ?? latest?.customer.phone ?? ""} initialMarketing={profile?.emailMarketing ?? latest?.emailMarketingOptIn ?? false} />
 
         {bookings.length === 0 ? (
           <section className="bg-surface-container-low p-8 ghost-border">

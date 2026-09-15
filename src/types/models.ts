@@ -217,6 +217,9 @@ export interface Booking {
   documentsDueAt?: string;
   documentsDueAtMs?: number;
   policiesAcceptedAt: string;
+  emailMarketingOptIn?: boolean;
+  emailMarketingConsentAt?: string;
+  emailMarketingConsentText?: string;
   extensions: Extension[];
   rentalSubtotal: number;    // cents
   taxAmount: number;         // cents

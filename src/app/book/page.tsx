@@ -37,6 +37,7 @@ export interface BookingFormData {
     plate: string;
   };
   policiesAccepted: boolean;
+  emailMarketingOptIn: boolean;
 }
 
 const initialFormData: BookingFormData = {
@@ -55,6 +56,7 @@ const initialFormData: BookingFormData = {
   referralDetail: "",
   towVehicle: { year: "", make: "", model: "", plate: "" },
   policiesAccepted: false,
+  emailMarketingOptIn: false,
 };
 
 const steps = [

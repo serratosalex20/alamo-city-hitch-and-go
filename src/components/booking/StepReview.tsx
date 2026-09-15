@@ -1,5 +1,6 @@
 "use client";
 
+import { MARKETING_CONSENT_TEXT } from "@/lib/customers/profile";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { trailers } from "@/lib/data/trailers";
@@ -172,6 +173,11 @@ export function StepReview({ formData, updateForm, onBack, onContinue }: Props) 
           </span>
         </label>
       </div>
+
+      <label className="mt-5 flex items-start gap-3 bg-surface-container-low p-5 cursor-pointer ghost-border">
+        <input type="checkbox" checked={formData.emailMarketingOptIn} onChange={(event) => updateForm({ emailMarketingOptIn: event.target.checked })} className="mt-1 h-5 w-5 shrink-0 accent-primary-action" />
+        <span className="text-sm text-on-surface-variant">{MARKETING_CONSENT_TEXT}<br />Pickup and return reminders are included with your booking regardless of this choice.</span>
+      </label>
 
       {/* Actions */}
       <div className="flex gap-4 mt-12">

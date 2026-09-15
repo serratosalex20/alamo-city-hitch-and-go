@@ -44,6 +44,7 @@ export const checkoutSchema = scheduleSchema.extend({
     model: z.string().trim().min(1, "Enter the tow vehicle model.").max(80),
     plate: z.string().trim().max(20).optional().default(""),
   }),
+  emailMarketingOptIn: z.boolean().default(false),
   policiesAccepted: z.literal(true, {
     error: "Accept the key rental and deposit policies before payment.",
   }),
