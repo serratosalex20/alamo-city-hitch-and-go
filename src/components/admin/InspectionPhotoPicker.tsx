@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { InspectionCamera } from "./InspectionCamera";
 
 interface Props {
   phase: "pre" | "post";
@@ -15,7 +16,7 @@ export function InspectionPhotoPicker({ phase, savedCount, disabled, uploading, 
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
   const [error, setError] = useState("");
   const upload = useRef<HTMLInputElement>(null);
-  const camera = useRef<HTMLInputElement>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const urls = useRef(new Set<string>());
   useEffect(() => {
     const allocated = urls.current;
@@ -27,6 +28,10 @@ export function InspectionPhotoPicker({ phase, savedCount, disabled, uploading, 
   function select(input: HTMLInputElement) {
     const files = Array.from(input.files ?? []);
     input.value = "";
+    addFiles(files);
+  }
+
+  function addFiles(files: File[]) {
     if (!files.length) return;
     if (photos.length + files.length > 8) { setError("Select up to 8 photos per upload."); return; }
     if (files.some((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size === 0 || file.size > 10 * 1024 * 1024)) {
@@ -54,14 +59,14 @@ export function InspectionPhotoPicker({ phase, savedCount, disabled, uploading, 
     }
   }}>
     <h3 className="text-xs font-bold uppercase tracking-widest">{label} Inspection Photos ({savedCount} saved)</h3>
-    <button type="button" disabled={disabled} aria-expanded={choices} aria-controls={`${phase}-photo-options`} onClick={() => setChoices(!choices)} className={`${buttonClass} border border-primary`}>Add {label} Photos</button>
+    <button type="button" disabled={disabled || cameraOpen} aria-expanded={choices} aria-controls={`${phase}-photo-options`} onClick={() => setChoices(!choices)} className={`${buttonClass} border border-primary`}>Add {label} Photos</button>
     {choices && <div id={`${phase}-photo-options`} className="flex flex-wrap gap-3">
-      <button type="button" disabled={disabled} onClick={() => upload.current?.click()} className={buttonClass}>Upload from device</button>
-      <button type="button" disabled={disabled} onClick={() => camera.current?.click()} className={buttonClass}>Camera — take photo</button>
-      <p className="w-full text-xs text-on-surface-variant">Camera opens on supported phones. Other devices may show a file picker. Up to 8 photos per upload; JPG, PNG, or WebP, 10 MB each.</p>
+      <button type="button" disabled={disabled || cameraOpen} onClick={() => upload.current?.click()} className={buttonClass}>Upload from device</button>
+      <button type="button" disabled={disabled || cameraOpen || photos.length >= 8} onClick={() => setCameraOpen(true)} className={buttonClass}>Camera — take photo</button>
+      <p className="w-full text-xs text-on-surface-variant">Up to 8 photos per upload; JPG, PNG, or WebP, 10 MB each.</p>
     </div>}
     <input ref={upload} type="file" hidden accept="image/jpeg,image/png,image/webp" multiple onChange={(event) => select(event.currentTarget)} />
-    <input ref={camera} type="file" hidden accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(event) => select(event.currentTarget)} />
+    {cameraOpen && <InspectionCamera onCapture={(file) => addFiles([file])} onClose={() => setCameraOpen(false)} />}
     {photos.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {photos.map(({ file, url }) => <div key={url} className="space-y-2">
         {/* Local file previews use temporary blob URLs. */}
@@ -75,6 +80,6 @@ export function InspectionPhotoPicker({ phase, savedCount, disabled, uploading, 
       </div>)}
     </div>}
     {error && <p role="alert" className="text-sm text-error">{error}</p>}
-    <div><button type="submit" disabled={disabled || photos.length === 0} className={buttonClass}>{uploading ? "Uploading…" : `Upload ${label} Photos${photos.length ? ` (${photos.length})` : ""}`}</button></div>
+    <div><button type="submit" disabled={disabled || cameraOpen || photos.length === 0} className={buttonClass}>{uploading ? "Uploading…" : `Upload ${label} Photos${photos.length ? ` (${photos.length})` : ""}`}</button></div>
   </form>;
 }

@@ -333,3 +333,21 @@ test("pickup records return-reminder state without blocking demo operations", as
   });
   assert.equal(returned.status, "return_inspection");
 });
+
+test("optional audit notes are omitted from persisted pickup and return events", async () => {
+  const fixture = bookingFixture("optional-audit-note");
+  fixture.status = "ready_for_pickup";
+  await createBookingHold(fixture, 1);
+  for (const status of ["active", "return_inspection"] as const) {
+    const result = await updateBooking(fixture.id, { status }, {
+      action: status === "active" ? "trailer_picked_up" : "trailer_returned",
+      actor: "owner@example.com", note: undefined,
+    });
+    assert.equal(Object.hasOwn(result.auditTrail.at(-1)!, "note"), false);
+    assert.equal((await getBooking(fixture.id))?.status, status);
+  }
+  const noted = await updateBooking(fixture.id, {}, {
+    action: "inspection_reviewed", actor: "owner@example.com", note: "No damage",
+  });
+  assert.equal(noted.auditTrail.at(-1)?.note, "No damage");
+});

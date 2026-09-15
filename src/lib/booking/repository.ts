@@ -295,6 +295,8 @@ export async function updateBooking(
   const auditEvent: BookingAuditEvent | undefined = event
     ? { ...event, createdAt: now.toISOString(), createdAtMs: now.getTime() }
     : undefined;
+  // Firestore rejects undefined values, including optional audit notes.
+  if (auditEvent?.note === undefined && auditEvent) delete auditEvent.note;
 
   if (!hasFirebase) {
     if (!isDemoEnvironment) throw new BookingPersistenceError("Booking storage is not configured.");
