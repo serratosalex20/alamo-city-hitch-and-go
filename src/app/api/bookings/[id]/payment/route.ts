@@ -9,7 +9,7 @@ import {
 import { BookingConflictError } from "@/lib/booking/repository";
 import { appUrl, isDemoEnvironment } from "@/lib/env";
 import { getStripe, hasStripe } from "@/lib/stripe/server";
-import { createToken, setSessionCookie } from "@/lib/auth/session";
+import { createToken, setCheckoutSessionCookie } from "@/lib/auth/session";
 import { sendAccessLinkEmail } from "@/lib/email/server";
 
 export async function POST(
@@ -43,7 +43,7 @@ export async function POST(
     }
 
     if (!updated) throw new Error("Could not update the booking payment.");
-    await setSessionCookie(updated.customerEmail, updated.id);
+    await setCheckoutSessionCookie(updated.customerEmail, updated.id);
     const nextUrl = `/booking/${updated.id}/documents`;
     const linkToken = createToken(updated.customerEmail, "link", nextUrl);
     try {
@@ -51,7 +51,7 @@ export async function POST(
         to: updated.customerEmail,
         link: `${appUrl}/api/auth/callback?token=${encodeURIComponent(linkToken)}`,
         subject: "Payment received — complete your trailer booking",
-        intro: "Your rental payment was received. Sign the agreement, verify your ID, and upload current insurance to finish your reservation.",
+        intro: "Your rental payment was received. Verify your ID, provide current insurance, and sign the agreement to finish your reservation.",
         idempotencyKey: `booking-access-${updated.id}`,
       });
     } catch (emailError) {

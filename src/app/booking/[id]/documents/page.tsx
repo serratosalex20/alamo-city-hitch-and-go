@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { bookingHeading } from "@/lib/auth/portal-navigation";
 import { bookingCheckoutTotal } from "@/lib/booking/pricing";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -29,7 +31,7 @@ export default async function BookingDocumentsPage({ params }: { params: Promise
   const { id } = await params;
   const authorized = await getCustomerBooking(id);
   if (!authorized) redirect(`/sign-in?next=${encodeURIComponent(`/booking/${id}/documents`)}`);
-  const { booking } = authorized;
+  const { booking, session } = authorized;
   const customerName = `${booking.customer.firstName} ${booking.customer.lastName}`;
   const confirmed = ["confirmed", "deposit_action_required", "ready_for_pickup", "active", "return_inspection", "completed"].includes(booking.status);
   const operationsContact = pickupAddress
@@ -40,13 +42,18 @@ export default async function BookingDocumentsPage({ params }: { params: Promise
     <>
       <Navbar />
       <main id="main-content" className="min-h-screen max-w-5xl mx-auto px-4 md:px-8 pt-28 pb-20">
+        <nav aria-label="Renter navigation" className="flex flex-wrap gap-3 mb-8">
+          <Link href={session.bookingId ? "/sign-in?next=%2Faccount" : "/account"} className="min-h-[44px] px-5 py-3 bg-primary-action text-white font-bold uppercase">Go to My Command Center</Link>
+          <Link href="/book" className="min-h-[44px] px-5 py-3 bg-surface-container-high font-bold uppercase">Book Another Trailer</Link>
+        </nav>
+        {session.bookingId && <p className="text-sm text-on-surface-variant mb-6">Use your emailed sign-in link to access your full account and booking history.</p>}
         <div className="mb-10">
           <div className="text-xs font-bold uppercase tracking-[0.24em] text-primary mb-2">Booking {booking.id.slice(0, 8).toUpperCase()}</div>
           <h1 className="text-4xl md:text-5xl font-headline font-bold uppercase tracking-tight mb-3">
-            {confirmed ? "Reservation Confirmed" : booking.status === "under_review" ? "Under Owner Review" : "Complete Your Booking"}
+            {bookingHeading(booking.status)}
           </h1>
           <p className="max-w-2xl text-on-surface-variant">
-            {confirmed ? "Your reservation has been approved. Review your booking details and instructions below." : booking.status === "under_review" ? "Payment and documents received. The owner is reviewing your reservation." : "Payment received. Complete each required item below; your reservation is confirmed after owner approval."}
+            {booking.status === "active" ? "Your trailer has been picked up. Review your return time and instructions below." : booking.status === "completed" ? "Your rental is complete. Visit your command center to view your bookings or book again." : confirmed ? "Your reservation has been approved. Review your booking details and instructions below." : booking.status === "under_review" ? "Payment and documents received. The owner is reviewing your reservation." : "Payment received. Complete each required item below; your reservation is confirmed after owner approval."}
           </p>
         </div>
 

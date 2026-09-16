@@ -12,7 +12,7 @@ import { listBookingsForEmail } from "@/lib/booking/repository";
 import { formatUsd } from "@/lib/booking/pricing";
 
 export const metadata: Metadata = {
-  title: "My Bookings",
+  title: "Renter Command Center",
   description: "View your trailer bookings and required next steps.",
   robots: { index: false, follow: false },
 };
@@ -26,7 +26,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 export default async function AccountPage() {
   const session = await getSession();
   if (!session) redirect("/sign-in?error=invalid-or-expired");
-  if (session.bookingId) redirect(`/booking/${session.bookingId}/documents`);
+  if (session.bookingId) redirect("/sign-in?next=%2Faccount");
   const bookings = await listBookingsForEmail(session.email);
   const admin = isAdminEmail(session.email);
   const profile = await getProfile(session.email);
@@ -39,7 +39,7 @@ export default async function AccountPage() {
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.24em] text-primary mb-2">Signed in as {session.email}</div>
-            <h1 className="font-headline text-5xl font-bold uppercase">My Bookings</h1>
+            <h1 className="font-headline text-5xl font-bold uppercase">Renter Command Center</h1>
           </div>
           <div className="flex gap-3 flex-wrap">
             <Link href="/book" className="min-h-[44px] px-5 py-3 bg-primary-action font-bold uppercase">Book a Trailer</Link>
@@ -48,7 +48,7 @@ export default async function AccountPage() {
           </div>
         </div>
 
-        <CustomerProfileForm email={session.email} initialName={profile?.name ?? (latest ? `${latest.customer.firstName} ${latest.customer.lastName}` : "")} initialPhone={profile?.phone ?? latest?.customer.phone ?? ""} initialMarketing={profile?.emailMarketing ?? latest?.emailMarketingOptIn ?? false} />
+
 
         {bookings.length === 0 ? (
           <section className="bg-surface-container-low p-8 ghost-border">
@@ -57,10 +57,11 @@ export default async function AccountPage() {
           </section>
         ) : (
           <div className="space-y-4">
+            <h2 className="font-headline text-2xl font-bold uppercase">My Bookings</h2>
             {bookings.map((booking) => (
               <article key={booking.id} className="bg-surface-container-low p-6 ghost-border">
                 <div className="flex flex-wrap justify-between gap-5">
-                  <div><div className="text-xs uppercase tracking-widest text-primary mb-2">{booking.status.replaceAll("_", " ")}</div><h2 className="font-headline text-2xl font-bold uppercase">{booking.trailerName}</h2><p className="text-sm text-on-surface-variant">Pickup {dateFormatter.format(new Date(booking.startTime))}</p></div>
+                  <div><div className="text-xs uppercase tracking-widest text-primary mb-2">{booking.status.replaceAll("_", " ")}</div><h2 className="font-headline text-2xl font-bold uppercase">{booking.trailerName}</h2><p className="text-sm text-on-surface-variant">Pickup {dateFormatter.format(new Date(booking.startTime))}</p><p className="text-sm text-on-surface-variant">Return {dateFormatter.format(new Date(booking.endTime))}</p></div>
                   <div className="text-right"><div className="font-bold">{formatUsd(bookingCheckoutTotal(booking))} · {booking.paymentStatus}</div><div className="text-sm text-on-surface-variant">Deposit: {booking.depositStatus.replaceAll("_", " ")}</div></div>
                 </div>
                 <Link href={`/booking/${booking.id}/documents`} className="inline-block mt-5 min-h-[44px] px-5 py-3 bg-primary-action font-headline font-bold uppercase tracking-widest">View Booking & Next Steps</Link>
@@ -68,6 +69,9 @@ export default async function AccountPage() {
             ))}
           </div>
         )}
+        <section className="mt-10" aria-label="Your profile">
+        <CustomerProfileForm email={session.email} initialName={profile?.name ?? (latest ? `${latest.customer.firstName} ${latest.customer.lastName}` : "")} initialPhone={profile?.phone ?? latest?.customer.phone ?? ""} initialMarketing={profile?.emailMarketing ?? latest?.emailMarketingOptIn ?? false} />
+        </section>
       </main>
       <Footer />
     </>

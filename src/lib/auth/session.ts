@@ -1,3 +1,4 @@
+import { checkoutSessionScope } from "./portal-navigation";
 /**
  * HMAC-signed session + magic-link tokens.
  *
@@ -132,4 +133,10 @@ export async function getSession(): Promise<TokenPayload | null> {
   const cookie = jar.get(SESSION_COOKIE_NAME);
   if (!cookie?.value) return null;
   return verifyToken(cookie.value, "session");
+}
+
+/** Preserve email-verified account access when the same renter completes another checkout. */
+export async function setCheckoutSessionCookie(email: string, bookingId: string): Promise<void> {
+  const current = await getSession();
+  await setSessionCookie(email, checkoutSessionScope(current, email, bookingId));
 }

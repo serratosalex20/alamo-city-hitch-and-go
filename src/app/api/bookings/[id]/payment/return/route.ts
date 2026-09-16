@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getBooking } from "@/lib/booking/repository";
 import { markRentalPaymentSucceeded, RentalPaymentRefundedError } from "@/lib/booking/workflow";
 import { getStripe } from "@/lib/stripe/server";
-import { createToken, setSessionCookie } from "@/lib/auth/session";
+import { createToken, setCheckoutSessionCookie } from "@/lib/auth/session";
 import { sendAccessLinkEmail } from "@/lib/email/server";
 import { appUrl } from "@/lib/env";
 
@@ -26,7 +26,7 @@ export async function GET(
     }
     const updated = await markRentalPaymentSucceeded(paymentIntent);
     if (!updated) throw new Error("Booking could not be updated.");
-    await setSessionCookie(updated.customerEmail, updated.id);
+    await setCheckoutSessionCookie(updated.customerEmail, updated.id);
     const nextUrl = `/booking/${updated.id}/documents`;
     const linkToken = createToken(updated.customerEmail, "link", nextUrl);
     try {
@@ -34,7 +34,7 @@ export async function GET(
         to: updated.customerEmail,
         link: `${appUrl}/api/auth/callback?token=${encodeURIComponent(linkToken)}`,
         subject: "Payment received — complete your trailer booking",
-        intro: "Your rental payment was received. Sign the agreement, verify your ID, and upload current insurance to finish your reservation.",
+        intro: "Your rental payment was received. Verify your ID, provide current insurance, and sign the agreement to finish your reservation.",
         idempotencyKey: `booking-access-${updated.id}`,
       });
     } catch (emailError) {

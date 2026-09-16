@@ -1,3 +1,5 @@
+import { portalSignInDestination } from "@/lib/auth/portal-navigation";
+import { getBooking } from "@/lib/booking/repository";
 /**
  * GET /api/auth/callback?token=<link-token>
  *
@@ -12,21 +14,23 @@
 
 import { NextResponse } from "next/server";
 import { setSessionCookie, verifyToken } from "@/lib/auth/session";
-import { appUrl } from "@/lib/env";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
 
   if (!token) {
-    return NextResponse.redirect(new URL("/sign-in?error=missing-token", appUrl));
+    return NextResponse.redirect(new URL("/sign-in?error=missing-token", url.origin));
   }
 
   const payload = verifyToken(token, "link");
   if (!payload) {
-    return NextResponse.redirect(new URL("/sign-in?error=invalid-or-expired", appUrl));
+    return NextResponse.redirect(new URL("/sign-in?error=invalid-or-expired", url.origin));
   }
 
   await setSessionCookie(payload.email);
-  return NextResponse.redirect(new URL(payload.next ?? "/account", appUrl));
+  const match = payload.next?.match(/^\/booking\/([^/]+)\/documents(?:\?.*)?$/);
+  const booking = match ? await getBooking(match[1]) : null;
+  const destination = portalSignInDestination(payload.next, payload.email, booking);
+  return NextResponse.redirect(new URL(destination, url.origin));
 }
