@@ -35,22 +35,21 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       <div className="flex items-center gap-2">
         <details className="relative"><summary aria-label="Open navigation menu" className="min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer list-none"><Icon name="menu" className="text-primary" /></summary>
           <nav aria-label="Hauler Command menu" className="absolute top-full left-0 w-64 bg-surface-container-high p-3 rounded-lg shadow-xl border border-white/10">
-            <Link href="/account" className="block p-3 min-h-[44px]">Hauler Command</Link><Link href="/account/bookings" className="block p-3 min-h-[44px]">My Bookings</Link><Link href="/account/bookings#profile" className="block p-3 min-h-[44px]">My Profile</Link><Link href="/book" className="block p-3 min-h-[44px]">Book a Trailer</Link>{admin && <Link href="/admin" className="block p-3 min-h-[44px]">Owner Console</Link>}
+            <Link href="/account" className="block p-3 min-h-[44px]">Hauler Command</Link><Link href="/account/bookings" className="block p-3 min-h-[44px]">My Bookings</Link><Link href="/book" className="block p-3 min-h-[44px]">Book a Trailer</Link>{admin && <Link href="/admin" className="block p-3 min-h-[44px]">Owner Console</Link>}
           </nav>
         </details>
-        <Link href="/account" className="text-2xl md:text-3xl font-bold tracking-widest text-white uppercase font-teko">HAULER_COMMAND</Link>
+        <Link href="/account" className="text-xl sm:text-3xl font-bold tracking-wider text-white uppercase font-teko">HAULER_COMMAND</Link>
       </div>
-      <Link href="/account/bookings#profile" aria-label="My Profile" className="w-11 h-11 rounded-lg border border-white/10 bg-surface-container-high flex items-center justify-center"><Icon name="person" /></Link>
+      <Link href="/account/bookings#profile" className="min-h-[44px] px-3 shrink-0 rounded-lg border border-white/10 bg-surface-container-high flex items-center justify-center gap-2"><Icon name="person" /><span className="text-xs font-bold">Profile</span></Link>
     </header>
     <main id="main-content" className="pt-24 px-5 space-y-7 max-w-lg mx-auto pb-28">
       <div><p className="text-xs font-bold tracking-[0.15em] text-on-surface-variant uppercase">Alamo City Hitch &amp; Go</p><h1 className="text-3xl font-headline font-bold uppercase mt-1">Hauler Command</h1></div>
-      <div className="flex gap-3"><Link href="/book" className="flex-1 min-h-[44px] px-3 py-3 text-center bg-primary-action font-bold uppercase text-sm">Book a Trailer</Link><Link href="/account/bookings" className="flex-1 min-h-[44px] px-3 py-3 text-center bg-surface-container-high font-bold uppercase text-sm">My Bookings</Link></div>
       {booking ? <>
         <ActiveRental key={booking.id} bookingId={booking.id} trailerName={booking.trailerName} unitId={booking.unitId} status={booking.status} startTime={booking.startTime} endTime={booking.endTime} nowMs={nowMs} supportPhone={supportPhone} />
         {bookings.length > 1 && <p className="text-xs text-on-surface-variant">Viewing booking {booking.id.slice(0, 8).toUpperCase()}. <Link href="/account/bookings" className="text-primary underline">Choose another booking</Link></p>}
         {approved && <BookingInstructions key={`instructions-${booking.id}`} status={booking.status} endTime={booking.endTime} contact={contact} nowMs={nowMs} />}
         <DocumentList key={`documents-${booking.id}`} bookingId={booking.id} signedAvailable={booking.agreementStatus === "signed" && !!booking.docusignEnvelopeId} />
-      </> : <section className="bg-surface-container-high rounded-lg p-6"><h2 className="text-xl font-bold">Ready for your next rental?</h2><p className="text-on-surface-variant mt-3">Your account stays available between bookings. Choose a trailer above to get started.</p></section>}
+      </> : <section className="bg-surface-container-high rounded-lg p-6"><h2 className="text-xl font-bold">Ready for your next rental?</h2><p className="text-on-surface-variant mt-3">Your account stays available between bookings, with your saved details ready for next time.</p><Link href="/book" className="block text-center mt-5 min-h-[44px] px-4 py-3 bg-primary-action font-bold uppercase">Book a Trailer</Link></section>}
       <section className="bg-surface-container-low rounded-lg border border-white/5 p-5" aria-label="Account session">
         <div className="flex flex-wrap items-center justify-between gap-3"><div className="min-w-0"><p className="text-[10px] uppercase tracking-widest text-on-surface-variant">Signed In As</p><p className="text-sm font-bold break-all">{session.email}</p></div><form action="/api/auth/logout" method="POST"><button className="min-h-[44px] px-4 py-3 bg-surface-container-high text-xs font-bold uppercase">Sign Out</button></form></div>
       </section>

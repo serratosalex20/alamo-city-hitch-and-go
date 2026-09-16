@@ -35,7 +35,10 @@ export function ActiveRental({ bookingId, trailerName, unitId, status, startTime
         <button onClick={() => setExtension(value => !value)} aria-expanded={extension} className="w-full min-h-[44px] bg-primary-action text-white py-4 font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-2"><Icon name="timer" />Extend Rental Time</button>
         {extension && <div className="p-4 bg-surface-container-low rounded space-y-3"><p className="text-sm">Contact the owner to check availability and pricing. Your return time stays the same until an extension is approved.</p><div className="flex flex-wrap gap-3"><a href={`sms:${phone}?body=${request}`} className="min-h-[44px] p-3 bg-primary-action font-bold">Text Extension Request</a><a href={`tel:${phone}`} className="min-h-[44px] p-3 bg-surface-container-high font-bold">Call Owner</a></div></div>}
       </>}
-      {!active && <Link href={`/booking/${bookingId}/documents?details=1`} className="block text-center min-h-[44px] py-3 bg-primary-action font-bold">{terminal ? "View Rental Details" : "View Booking & Next Steps"}</Link>}
+      {terminal ? <>
+        <Link href="/book" className="block text-center min-h-[44px] py-3 bg-primary-action font-bold uppercase">Book a Trailer</Link>
+        <Link href={`/booking/${bookingId}/documents?details=1`} className="block text-center min-h-[44px] py-3 text-on-surface-variant underline">View Rental Details</Link>
+      </> : !active && <Link href={`/booking/${bookingId}/documents?details=1`} className="block text-center min-h-[44px] py-3 bg-primary-action font-bold">View Booking & Next Steps</Link>}
       {status === "completed" && <p className="text-sm text-green-400">Rental completed. Your account and documents remain available.</p>}
     </div>
   </section>;
