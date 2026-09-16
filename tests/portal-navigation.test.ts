@@ -18,3 +18,9 @@ test("booking sign-in links lead to account after approval and retain unfinished
   assert.equal(bookingHeading("active"), "Rental In Progress");
   assert.equal(bookingHeading("completed"), "Rental Completed");
 });
+test("ready-for-pickup and completed email links land in the command center", () => {
+  for (const status of ["ready_for_pickup", "completed", "return_inspection"] as const) {
+    const booking = { id: "booking-a", customerEmail: "a@example.com", status };
+    assert.equal(portalSignInDestination("/booking/booking-a/documents?identity=verified", booking.customerEmail, booking), "/account");
+  }
+});

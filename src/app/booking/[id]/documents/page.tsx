@@ -1,3 +1,5 @@
+import { BookingInstructions } from "@/components/account/BookingInstructions";
+import { RefreshBookingStatus } from "@/components/account/RefreshBookingStatus";
 import Link from "next/link";
 import { bookingHeading } from "@/lib/auth/portal-navigation";
 import { bookingCheckoutTotal } from "@/lib/booking/pricing";
@@ -14,7 +16,6 @@ import {
   supportEmail,
   supportPhone,
 } from "@/lib/env";
-import { pickupChecklist, returnChecklist } from "@/lib/booking/communications";
 
 export const metadata: Metadata = {
   title: "Complete Your Booking",
@@ -27,13 +28,18 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   timeStyle: "short",
 });
 
-export default async function BookingDocumentsPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function BookingDocumentsPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ details?: string }> }) {
   const { id } = await params;
   const authorized = await getCustomerBooking(id);
   if (!authorized) redirect(`/sign-in?next=${encodeURIComponent(`/booking/${id}/documents`)}`);
   const { booking, session } = authorized;
+  // Request-time server snapshot; authorization reads cookies on every request.
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
   const customerName = `${booking.customer.firstName} ${booking.customer.lastName}`;
   const confirmed = ["confirmed", "deposit_action_required", "ready_for_pickup", "active", "return_inspection", "completed"].includes(booking.status);
+  const search = await searchParams;
+  if (confirmed && !session.bookingId && search.details !== "1") redirect("/account");
   const operationsContact = pickupAddress
     ? { pickupAddress, pickupInstructions, supportPhone, supportEmail }
     : null;
@@ -41,10 +47,12 @@ export default async function BookingDocumentsPage({ params }: { params: Promise
   return (
     <>
       <Navbar />
+      <RefreshBookingStatus enabled={confirmed || booking.status === "under_review"} />
       <main id="main-content" className="min-h-screen max-w-5xl mx-auto px-4 md:px-8 pt-28 pb-20">
         <nav aria-label="Renter navigation" className="flex flex-wrap gap-3 mb-8">
           <Link href={session.bookingId ? "/sign-in?next=%2Faccount" : "/account"} className="min-h-[44px] px-5 py-3 bg-primary-action text-white font-bold uppercase">Go to My Command Center</Link>
           <Link href="/book" className="min-h-[44px] px-5 py-3 bg-surface-container-high font-bold uppercase">Book Another Trailer</Link>
+          <form action="/api/auth/logout" method="POST"><button className="min-h-[44px] px-5 py-3 bg-surface-container-high font-bold uppercase">Sign Out</button></form>
         </nav>
         {session.bookingId && <p className="text-sm text-on-surface-variant mb-6">Use your emailed sign-in link to access your full account and booking history.</p>}
         <div className="mb-10">
@@ -63,27 +71,7 @@ export default async function BookingDocumentsPage({ params }: { params: Promise
           <div className="bg-surface-container p-5"><div className="text-xs uppercase tracking-widest text-on-surface-variant mb-2">Paid</div><div className="font-bold text-primary">{formatUsd(bookingCheckoutTotal(booking))}</div><div className="text-sm text-on-surface-variant">{booking.depositCollectedAtCheckout ? "Includes refundable security deposit" : "Deposit handled separately near pickup"}</div></div>
         </section>
 
-        {confirmed && (
-          <section className="mb-8 border-l-4 border-green-500 bg-green-500/10 p-6">
-            <h2 className="font-headline text-xl font-bold uppercase mb-2">Pickup Instructions</h2>
-            <p className="text-sm text-on-surface-variant"><strong>Private pickup address:</strong> {pickupAddress ?? "Contact the owner for the exact handoff location."}</p>
-            {operationsContact && (
-              <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-on-surface-variant">
-                {pickupChecklist(operationsContact).map((item) => <li key={item}>{item}</li>)}
-              </ul>
-            )}
-          </section>
-        )}
-
-        {operationsContact && ["active", "return_inspection"].includes(booking.status) && (
-          <section className="mb-8 border-l-4 border-primary bg-primary/10 p-6">
-            <h2 className="font-headline text-xl font-bold uppercase mb-2">Return Instructions</h2>
-            <p className="text-sm text-on-surface-variant"><strong>Return by:</strong> {dateFormatter.format(new Date(booking.endTime))} at {pickupAddress}</p>
-            <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-on-surface-variant">
-              {returnChecklist(operationsContact).map((item) => <li key={item}>{item}</li>)}
-            </ul>
-          </section>
-        )}
+        {confirmed && <div className="mb-8"><BookingInstructions status={booking.status} endTime={booking.endTime} contact={operationsContact} nowMs={nowMs} /></div>}
 
         <PostPaymentChecklist
           bookingId={booking.id}
