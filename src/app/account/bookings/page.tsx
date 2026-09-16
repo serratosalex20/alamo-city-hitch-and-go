@@ -1,0 +1,91 @@
+import { BookingInstructions } from "@/components/account/BookingInstructions";
+import { RefreshBookingStatus } from "@/components/account/RefreshBookingStatus";
+import { instructionState } from "@/lib/booking/renter-instructions";
+import { pickupAddress, pickupInstructions, supportPhone, supportEmail } from "@/lib/env";
+import { CustomerProfileForm } from "@/components/account/CustomerProfileForm";
+import { getProfile } from "@/lib/customers/repository";
+import { bookingCheckoutTotal } from "@/lib/booking/pricing";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { Navbar } from "@/components/marketing/Navbar";
+import { Footer } from "@/components/marketing/Footer";
+import { getSession } from "@/lib/auth/session";
+import { isAdminEmail } from "@/lib/auth/authorization";
+import { listBookingsForEmail } from "@/lib/booking/repository";
+import { formatUsd } from "@/lib/booking/pricing";
+
+export const metadata: Metadata = {
+  title: "My Bookings",
+  description: "View your trailer bookings and required next steps.",
+  robots: { index: false, follow: false },
+};
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/Chicago",
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+
+export default async function AccountPage() {
+  const session = await getSession();
+  if (!session) redirect("/sign-in?error=invalid-or-expired");
+  if (session.bookingId) redirect("/sign-in?next=%2Faccount");
+  const bookings = await listBookingsForEmail(session.email);
+  const admin = isAdminEmail(session.email);
+  const profile = await getProfile(session.email);
+  const latest = bookings[0];
+  // Request-time server snapshot; cookies make this page dynamic.
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
+  const contact = pickupAddress ? { pickupAddress, pickupInstructions, supportPhone, supportEmail } : null;
+
+  return (
+    <>
+      <Navbar />
+      <RefreshBookingStatus />
+      <main id="main-content" className="min-h-screen max-w-5xl mx-auto px-4 md:px-8 pt-28 pb-20">
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.24em] text-primary mb-2">Signed in as {session.email}</div>
+            <h1 className="font-headline text-5xl font-bold uppercase">My Bookings</h1>
+          </div>
+          <div className="flex gap-3 flex-wrap">
+            <Link href="/account" className="min-h-[44px] px-5 py-3 bg-surface-container-high font-bold">Hauler Command</Link>
+            <Link href="/book" className="min-h-[44px] px-5 py-3 bg-primary-action font-bold uppercase">Book a Trailer</Link>
+            {admin && <Link href="/admin" className="min-h-[44px] px-5 py-3 bg-primary-action font-headline uppercase tracking-widest">Owner Console</Link>}
+            <form action="/api/auth/logout" method="POST"><button className="min-h-[44px] px-5 py-3 bg-surface-container-high font-headline uppercase tracking-widest">Sign Out</button></form>
+          </div>
+        </div>
+
+
+
+        {bookings.length === 0 ? (
+          <section className="bg-surface-container-low p-8 ghost-border">
+            <p className="text-on-surface-variant mb-5">No bookings are connected to this email.</p>
+            <Link href="/book" className="text-primary font-bold uppercase tracking-widest">Book a trailer →</Link>
+          </section>
+        ) : (
+          <div className="space-y-4">
+            <h2 className="font-headline text-2xl font-bold uppercase">My Bookings</h2>
+            {bookings.map((booking) => (
+              <article key={booking.id} className="bg-surface-container-low p-6 ghost-border">
+                <div className="flex flex-wrap justify-between gap-5">
+                  <div><div className="text-xs uppercase tracking-widest text-primary mb-2">{booking.status.replaceAll("_", " ")}</div><h2 className="font-headline text-2xl font-bold uppercase">{booking.trailerName}</h2><p className="text-sm text-on-surface-variant">Pickup {dateFormatter.format(new Date(booking.startTime))}</p><p className="text-sm text-on-surface-variant">Return {dateFormatter.format(new Date(booking.endTime))}</p></div>
+                  <div className="text-right"><div className="font-bold">{formatUsd(bookingCheckoutTotal(booking))} · {booking.paymentStatus}</div><div className="text-sm text-on-surface-variant">Deposit: {booking.depositStatus.replaceAll("_", " ")}</div></div>
+                </div>
+                <Link href={`/booking/${booking.id}/documents?details=1`} className="inline-block mt-5 min-h-[44px] px-5 py-3 bg-primary-action font-headline font-bold uppercase tracking-widest">View Booking & Documents</Link>
+                <Link href={`/account?booking=${booking.id}`} className="inline-block ml-3 mt-5 min-h-[44px] px-5 py-3 bg-surface-container-high font-bold">Open in Hauler Command</Link>
+                {(instructionState(booking.status, booking.endTimeMs, nowMs).pickup || booking.status === "active") && <BookingInstructions status={booking.status} endTime={booking.endTime} contact={contact} nowMs={nowMs} />}
+              </article>
+            ))}
+          </div>
+        )}
+        <section id="profile" className="mt-10 scroll-mt-28" aria-label="Your profile">
+        <CustomerProfileForm email={session.email} initialName={profile?.name ?? (latest ? `${latest.customer.firstName} ${latest.customer.lastName}` : "")} initialPhone={profile?.phone ?? latest?.customer.phone ?? ""} initialMarketing={profile?.emailMarketing ?? latest?.emailMarketingOptIn ?? false} />
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
+}

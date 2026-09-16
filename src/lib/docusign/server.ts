@@ -209,3 +209,26 @@ export async function getEnvelopeStatus(envelopeId: string) {
 }
 
 export { hasDocuSign };
+
+export class AgreementDocumentError extends Error {
+  constructor(message: string, public readonly status: number) { super(message); }
+}
+
+/** Return the provider's original signed bytes, never a regenerated agreement. */
+export async function getSignedAgreementPdf(booking: Pick<Booking, "agreementStatus" | "docusignEnvelopeId">) {
+  if (booking.agreementStatus !== "signed" || !booking.docusignEnvelopeId) {
+    throw new AgreementDocumentError("The signed agreement is not available yet.", 409);
+  }
+  if (!hasDocuSign || !docusignAccountId) throw new AgreementDocumentError("Agreement downloads are temporarily unavailable.", 503);
+  const envelope = await getEnvelopeStatus(booking.docusignEnvelopeId);
+  if (envelope.status !== "completed") throw new AgreementDocumentError("The agreement is not yet complete. Please try again shortly.", 409);
+  const token = await accessToken();
+  const path = `/v2.1/accounts/${encodeURIComponent(docusignAccountId)}/envelopes/${encodeURIComponent(booking.docusignEnvelopeId)}/documents/combined?certificate=true`;
+  const response = await fetch(`${docusignBaseUrl}${path}`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/pdf" }, cache: "no-store",
+  });
+  if (!response.ok) throw new AgreementDocumentError("Could not retrieve the signed agreement. Please try again.", 502);
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (new TextDecoder().decode(bytes.slice(0, 5)) !== "%PDF-") throw new AgreementDocumentError("Could not retrieve a valid agreement PDF.", 502);
+  return bytes;
+}

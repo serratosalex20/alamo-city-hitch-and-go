@@ -1,3 +1,4 @@
+import { DocumentList } from "@/components/dashboard/DocumentList";
 import { BookingInstructions } from "@/components/account/BookingInstructions";
 import { RefreshBookingStatus } from "@/components/account/RefreshBookingStatus";
 import Link from "next/link";
@@ -39,7 +40,7 @@ export default async function BookingDocumentsPage({ params, searchParams }: { p
   const customerName = `${booking.customer.firstName} ${booking.customer.lastName}`;
   const confirmed = ["confirmed", "deposit_action_required", "ready_for_pickup", "active", "return_inspection", "completed"].includes(booking.status);
   const search = await searchParams;
-  if (confirmed && !session.bookingId && search.details !== "1") redirect("/account");
+  if (confirmed && !session.bookingId && search.details !== "1") redirect(`/account?booking=${booking.id}`);
   const operationsContact = pickupAddress
     ? { pickupAddress, pickupInstructions, supportPhone, supportEmail }
     : null;
@@ -72,6 +73,8 @@ export default async function BookingDocumentsPage({ params, searchParams }: { p
         </section>
 
         {confirmed && <div className="mb-8"><BookingInstructions status={booking.status} endTime={booking.endTime} contact={operationsContact} nowMs={nowMs} /></div>}
+
+        <div className="mb-8"><DocumentList bookingId={booking.id} signedAvailable={booking.agreementStatus === "signed" && !!booking.docusignEnvelopeId} /></div>
 
         <PostPaymentChecklist
           bookingId={booking.id}
