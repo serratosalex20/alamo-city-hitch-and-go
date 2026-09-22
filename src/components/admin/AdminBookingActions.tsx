@@ -53,8 +53,12 @@ export function AdminBookingActions(props: Props) {
       };
       if (!response.ok || !result.ok) throw new Error(result.error ?? "Booking update failed.");
       setMessage({
-        ok: true,
-        text: result.returnReminderStatus === "failed"
+        ok: result.returnReminderStatus !== "cancel_failed",
+        text: result.returnReminderStatus === "cancel_failed"
+          ? "The return is saved, but the reminder could not be cancelled. Check the audit trail and retry cancellation."
+          : action === "retry_return_reminder_cancel" && result.returnReminderStatus === "cancelled"
+          ? "Return reminder cancelled."
+          : result.returnReminderStatus === "failed"
           ? "Booking updated, but the return reminder needs to be retried."
           : "Booking updated.",
       });
@@ -131,6 +135,19 @@ export function AdminBookingActions(props: Props) {
       </>}
 
       {props.status === "completed" && <p className="text-sm text-green-400">Return is complete. Deposit outcome: {props.depositStatus.replaceAll("_", " ")}.</p>}
+      {["return_inspection", "completed"].includes(props.status) && (
+        <>
+          {["scheduled", "cancel_failed"].includes(props.returnReminderStatus ?? "") && (
+            <div className="space-y-3">
+              <p role="alert" className="text-sm text-error">The return reminder still needs to be cancelled.</p>
+              <button disabled={busy !== null} onClick={() => act("retry_return_reminder_cancel")} className={secondaryClass}>
+                {busy === "retry_return_reminder_cancel" ? "Cancelling…" : "Retry Reminder Cancellation"}
+              </button>
+            </div>
+          )}
+          {props.returnReminderStatus === "cancelled" && <p className="text-sm text-green-400">Return reminder cancelled.</p>}
+        </>
+      )}
       {message && <p role="status" className={`text-sm ${message.ok ? "text-green-400" : "text-error"}`}>{message.text}</p>}
     </section>
   );

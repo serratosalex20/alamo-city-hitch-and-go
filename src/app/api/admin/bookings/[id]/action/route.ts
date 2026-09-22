@@ -14,6 +14,7 @@ const Body = z.object({
     "request_deposit",
     "mark_picked_up",
     "retry_return_reminder",
+    "retry_return_reminder_cancel",
     "mark_returned",
     "release_deposit",
     "retain_deposit",

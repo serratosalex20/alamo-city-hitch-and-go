@@ -17,6 +17,7 @@ export type AdminBookingAction =
   | "request_deposit"
   | "mark_picked_up"
   | "retry_return_reminder"
+  | "retry_return_reminder_cancel"
   | "mark_returned"
   | "release_deposit"
   | "retain_deposit";
@@ -100,12 +101,13 @@ async function ensureReturnReminder(booking: Booking, actor: string) {
 }
 
 async function cancelPendingReturnReminder(booking: Booking, actor: string) {
-  if (!booking.returnReminderEmailId || booking.returnReminderStatus !== "scheduled") {
+  if (!booking.returnReminderEmailId ||
+      !["scheduled", "cancel_failed"].includes(booking.returnReminderStatus ?? "")) {
     return booking;
   }
   try {
     const result = await cancelReturnReminderEmail(booking.returnReminderEmailId);
-    if (!result.cancelled) return booking;
+    if (!result.cancelled) throw new Error("Return reminder cancellation is not configured.");
     const now = new Date().toISOString();
     return updateBooking(
       booking.id,
@@ -239,6 +241,9 @@ export async function performAdminBookingAction({
     case "retry_return_reminder":
       assertState(booking, ["active"], "Return reminder");
       return ensureReturnReminder(booking, actor);
+    case "retry_return_reminder_cancel":
+      assertState(booking, ["return_inspection", "completed"], "Reminder cancellation");
+      return cancelPendingReturnReminder(booking, actor);
     case "mark_returned": {
       assertState(booking, ["active"], "Return");
       const returned = await updateBooking(
