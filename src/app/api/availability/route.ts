@@ -4,9 +4,38 @@ import { trailers } from "@/lib/data/trailers";
 import { buildRentalSchedule } from "@/lib/booking/schedule";
 import {
   checkBookingAvailability,
+  getPickupAvailability,
   isPersistenceReady,
 } from "@/lib/booking/repository";
-import { scheduleSchema } from "@/lib/booking/validation";
+import { rentalDurationSchema, scheduleSchema } from "@/lib/booking/validation";
+
+const calendarSchema = z.object({
+  trailerId: z.string().trim().min(1),
+  duration: rentalDurationSchema,
+  month: z.string().regex(/^[1-9]\d{3}-(0[1-9]|1[0-2])$/),
+});
+
+export async function GET(request: Request) {
+  const input = calendarSchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
+  if (!input.success) {
+    return NextResponse.json({ ok: false, error: "Choose a trailer, rental duration, and valid calendar month." }, { status: 400 });
+  }
+  const { trailerId, duration, month } = input.data;
+  const trailer = trailers.find(item => item.id === trailerId);
+  if (!trailer || trailer.status !== "available") {
+    return NextResponse.json({ ok: false, error: "This trailer is not currently bookable." }, { status: 400 });
+  }
+  if (!isPersistenceReady()) {
+    return NextResponse.json({ ok: false, error: "Online scheduling is temporarily unavailable." }, { status: 503 });
+  }
+  try {
+    const checkedAtMs = Date.now();
+    const days = await getPickupAvailability(trailerId, month, duration, trailer.inventoryCount + trailer.virtualBoost, checkedAtMs);
+    return NextResponse.json({ ok: true, days, checkedAtMs }, { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return NextResponse.json({ ok: false, error: "We could not load available pickups. Please try again." }, { status: 503 });
+  }
+}
 
 export async function POST(request: Request) {
   let input: z.infer<typeof scheduleSchema>;

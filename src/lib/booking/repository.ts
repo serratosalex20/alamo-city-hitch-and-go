@@ -1,7 +1,8 @@
 import { getFirestoreAdmin } from "@/lib/firebase/admin";
 import { bookingCollection, hasFirebase, isDemoEnvironment } from "@/lib/env";
-import { hasConflict, MIN_BUFFER_MIN } from "@/lib/booking/availability";
-import type { Booking, BookingAuditEvent } from "@/types/models";
+import { hasInventoryCapacity } from "@/lib/booking/availability";
+import { buildRentalSchedule, localPickupToUtc, pickupMonthDates, PICKUP_TIME_OPTIONS, type PickupDay } from "@/lib/booking/schedule";
+import type { Booking, BookingAuditEvent, RentalDuration } from "@/types/models";
 
 const ACTIVE_CONFLICT_STATUSES = new Set<Booking["status"]>([
   "pending_payment",
@@ -75,35 +76,57 @@ export async function checkBookingAvailability(
   endTimeMs: number,
   capacity: number,
 ): Promise<boolean> {
-  const bookings = await listAllBookings();
+  const bookings = await listTrailerBookings(trailerId);
   const nowMs = Date.now();
-  const overlapping = bookings.filter(
-    (booking) =>
-      booking.trailerId === trailerId &&
-      currentlyBlocksInventory(booking, nowMs) &&
-      hasConflict(
-        { startMs: startTimeMs, endMs: endTimeMs },
-        [{ startMs: booking.startTimeMs, endMs: booking.endTimeMs }],
-        MIN_BUFFER_MIN,
-      ),
+  return hasInventoryCapacity(
+    { startMs: startTimeMs, endMs: endTimeMs },
+    blockingIntervals(bookings, trailerId, nowMs),
+    capacity,
   );
-  return overlapping.length < capacity;
+}
+
+function blockingIntervals(bookings: Booking[], trailerId: string, nowMs: number) {
+  return bookings
+    .filter(booking => booking.trailerId === trailerId && currentlyBlocksInventory(booking, nowMs))
+    .map(booking => ({ startMs: booking.startTimeMs, endMs: booking.endTimeMs }));
+}
+
+async function listTrailerBookings(trailerId: string): Promise<Booking[]> {
+  if (!hasFirebase) {
+    if (!isDemoEnvironment) throw new BookingPersistenceError("Booking storage is not configured.");
+    return Array.from(demoBookings().values()).filter(booking => booking.trailerId === trailerId);
+  }
+  const db = getFirestoreAdmin();
+  if (!db) throw new BookingPersistenceError("Booking storage failed to initialize.");
+  const snapshot = await db.collection(bookingCollection).where("trailerId", "==", trailerId).get();
+  return snapshot.docs.map(doc => doc.data() as Booking);
+}
+
+/** Read inventory once per month, returning only selectable slots, never customer data. */
+export async function getPickupAvailability(
+  trailerId: string, month: string, duration: RentalDuration, capacity: number, nowMs = Date.now(),
+): Promise<PickupDay[]> {
+  const dates = pickupMonthDates(month);
+  const intervals = blockingIntervals(await listTrailerBookings(trailerId), trailerId, nowMs);
+  return dates.map(date => ({
+    date,
+    times: PICKUP_TIME_OPTIONS.flatMap(option => {
+      if (localPickupToUtc(date, option.value).getTime() <= nowMs) return [];
+      const schedule = buildRentalSchedule(date, option.value, duration, nowMs);
+      return hasInventoryCapacity({ startMs: schedule.startTimeMs, endMs: schedule.endTimeMs }, intervals, capacity)
+        ? [{ ...option, startTimeMs: schedule.startTimeMs }]
+        : [];
+    }),
+  }));
 }
 
 function assertNoConflict(candidate: Booking, existing: Booking[], capacity: number) {
   const nowMs = Date.now();
-  const overlapping = existing.filter(
-    (booking) =>
-      booking.id !== candidate.id &&
-      booking.trailerId === candidate.trailerId &&
-      currentlyBlocksInventory(booking, nowMs) &&
-      hasConflict(
-        { startMs: candidate.startTimeMs, endMs: candidate.endTimeMs },
-        [{ startMs: booking.startTimeMs, endMs: booking.endTimeMs }],
-        MIN_BUFFER_MIN,
-      ),
-  );
-  if (overlapping.length >= capacity) {
+  if (!hasInventoryCapacity(
+    { startMs: candidate.startTimeMs, endMs: candidate.endTimeMs },
+    blockingIntervals(existing.filter(booking => booking.id !== candidate.id), candidate.trailerId, nowMs),
+    capacity,
+  )) {
     throw new BookingConflictError(
       "That trailer was just booked for the selected time. Choose another schedule.",
     );

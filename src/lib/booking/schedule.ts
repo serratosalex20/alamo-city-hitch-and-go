@@ -22,6 +22,15 @@ export interface PickupTimeOption {
   label: string;
 }
 
+export interface AvailablePickupTime extends PickupTimeOption {
+  startTimeMs: number;
+}
+
+export interface PickupDay {
+  date: string;
+  times: AvailablePickupTime[];
+}
+
 function pickupTimeLabel(hour: number, minute: number): string {
   const period = hour >= 12 ? "PM" : "AM";
   const displayHour = hour % 12 || 12;
@@ -51,17 +60,21 @@ export const PICKUP_TIME_OPTIONS: readonly PickupTimeOption[] = Array.from(
   },
 );
 
-function partsAt(timestamp: number, timeZone: string): DateTimeParts {
-  const values = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  })
-    .formatToParts(new Date(timestamp))
+export const PICKUP_HOURS_DESCRIPTION = `Central Time · pickups every ${PICKUP_INTERVAL_MINUTES} minutes from ${PICKUP_TIME_OPTIONS[0].label} to ${PICKUP_TIME_OPTIONS.at(-1)!.label}.`;
+
+// Reuse the formatter when checking every slot in a calendar month.
+const businessDateTimeFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: BUSINESS_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+function partsAt(timestamp: number): DateTimeParts {
+  const values = businessDateTimeFormatter.formatToParts(new Date(timestamp))
     .reduce<Record<string, number>>((result, part) => {
       if (part.type !== "literal") result[part.type] = Number(part.value);
       return result;
@@ -97,7 +110,7 @@ export function localPickupToUtc(date: string, time: string): Date {
     desired.minute % PICKUP_INTERVAL_MINUTES !== 0
   ) {
     throw new Error(
-      "Pickup times are available every 30 minutes from 6:00 AM to 9:30 PM.",
+      `Pickup times are available every ${PICKUP_INTERVAL_MINUTES} minutes from ${PICKUP_TIME_OPTIONS[0].label} to ${PICKUP_TIME_OPTIONS.at(-1)!.label}.`,
     );
   }
 
@@ -112,7 +125,7 @@ export function localPickupToUtc(date: string, time: string): Date {
 
   // Two passes handle DST offsets without adding another date library.
   for (let pass = 0; pass < 2; pass += 1) {
-    const actual = partsAt(candidate, BUSINESS_TIME_ZONE);
+    const actual = partsAt(candidate);
     const actualAsUtc = Date.UTC(
       actual.year,
       actual.month - 1,
@@ -123,7 +136,7 @@ export function localPickupToUtc(date: string, time: string): Date {
     candidate += desiredAsUtc - actualAsUtc;
   }
 
-  const roundTrip = partsAt(candidate, BUSINESS_TIME_ZONE);
+  const roundTrip = partsAt(candidate);
   if (Object.keys(desired).some((key) => roundTrip[key as keyof DateTimeParts] !== desired[key as keyof DateTimeParts])) {
     throw new Error("That local pickup time is not available. Choose another time.");
   }
@@ -160,4 +173,14 @@ export function formatBusinessDate(timestampMs: number): string {
   const value = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((part) => part.type === type)?.value ?? "";
   return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
+/** A bounded month of calendar dates; never normalize invalid months silently. */
+export function pickupMonthDates(month: string): string[] {
+  if (!/^[1-9]\d{3}-(0[1-9]|1[0-2])$/.test(month)) {
+    throw new Error("Choose a valid calendar month.");
+  }
+  const [year, monthNumber] = month.split("-").map(Number);
+  const count = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+  return Array.from({ length: count }, (_, index) => `${month}-${String(index + 1).padStart(2, "0")}`);
 }
