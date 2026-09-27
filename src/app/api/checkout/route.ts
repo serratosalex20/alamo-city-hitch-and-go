@@ -1,321 +1,187 @@
-import { getSession } from "@/lib/auth/session";
-import { listBookingsForEmail } from "@/lib/booking/repository";
-import { reuseDocuments } from "@/lib/customers/reuse-documents";
-import { paidBookings } from "@/lib/customers/returning";
-import { MARKETING_CONSENT_TEXT } from "@/lib/customers/profile";
-import { hashCheckoutProof, newCheckoutProof, readCheckoutProof, saveCheckoutProof, hasCheckoutProof } from "@/lib/auth/checkout-proof";
-import { randomUUID } from "node:crypto";
+/**
+ * POST /api/checkout
+ *
+ * Creates two Stripe PaymentIntents for a booking:
+ *   1. Rental + tax — capture_method: 'automatic', confirmed by the client
+ *      with stripe.js when the customer submits the card form.
+ *   2. Security deposit — capture_method: 'manual', pre-authorized only.
+ *      Captured later by admin if there's damage; canceled to release
+ *      the hold otherwise. Matches rental agreement §5.2.
+ *
+ * Stub mode (no STRIPE_SECRET_KEY): returns synthetic intent IDs and a
+ * fake client secret so the booking wizard's StepPayment can complete
+ * its happy path without a live Stripe account.
+ *
+ * Auth: this route is intentionally NOT session-protected — checkout is
+ * a pre-account event. The booking's email is the identity, and the
+ * confirmation step fires /api/auth/send-link to give the user dashboard
+ * access via magic link.
+ */
+
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { calculatePrice, formatUsd } from "@/lib/booking/pricing";
-import {
-  CHECKOUT_HOLD_MINUTES,
-  buildRentalSchedule,
-} from "@/lib/booking/schedule";
-import {
-  BookingConflictError,
-  BookingPersistenceError,
-  createBookingHold,
-  getBooking,
-  updateBooking,
-} from "@/lib/booking/repository";
-import { checkoutSchema } from "@/lib/booking/validation";
 import { trailers } from "@/lib/data/trailers";
-import { contactBookingOnly, isDemoEnvironment, isProductionBookingReady, stripePublishableKey } from "@/lib/env";
 import { getStripe, hasStripe } from "@/lib/stripe/server";
-import type { Booking } from "@/types/models";
+// Sprint 3.3 — RentalDuration is no longer imported; Zod enum carries the type.
+// Sprint 3.4 — "threeDays" retired in favor of "oneWeek" per the pricing
+// restructure; keep this enum in lock-step with the RentalDuration union
+// in src/types/models.ts.
+const Body = z.object({
+  trailerId: z.string().min(1, "Missing trailerId"),
+  duration: z.enum(["halfDay", "fullDay", "oneWeek", "twoWeeks"]),
+  email: z.string().email("Enter a valid email address."),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+});
 
-function displayQuote(quote: ReturnType<typeof calculatePrice>) {
-  return {
-    rental: formatUsd(quote.rentalCents),
-    deposit: formatUsd(quote.depositCents),
-    tax: formatUsd(quote.taxCents),
-    total: formatUsd(quote.checkoutTotalCents),
+interface CheckoutResponse {
+  ok: true;
+  mode: "stub" | "real";
+  rental: { paymentIntentId: string; clientSecret: string; amountCents: number };
+  deposit: { paymentIntentId: string; clientSecret: string; amountCents: number };
+  display: {
+    rental: string;
+    deposit: string;
+    tax: string;
+    total: string;
   };
 }
 
 export async function POST(request: Request) {
-  if (contactBookingOnly) return NextResponse.json(
-    { ok: false, error: "Please call or text us to book your trailer.", bookingUrl: "/book" },
-    { status: 503 },
-  );
-  let input: z.infer<typeof checkoutSchema>;
+  // ─── Parse + validate ───
+  let body: z.infer<typeof Body>;
   try {
-    input = checkoutSchema.parse(await request.json());
-  } catch (error) {
-    const message = error instanceof z.ZodError ? error.issues[0]?.message : "Invalid checkout.";
+    body = Body.parse(await request.json());
+  } catch (err) {
+    const message =
+      err instanceof z.ZodError ? err.issues[0]?.message : "Invalid request body.";
     return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }
 
-  if (!isDemoEnvironment && !isProductionBookingReady) {
+  // ─── Refuse non-bookable trailers (server-side enforcement) ───
+  // The UI already hides/disables booking CTAs for "coming_soon" units
+  // (fleet cards, /rates, detail pages), but the API must enforce it
+  // too — a stale link, browser history, or direct POST could otherwise
+  // start a paid booking for a trailer that isn't in the yard.
+  const requested = trailers.find((t) => t.id === body.trailerId);
+  if (!requested || (requested.status !== "available" && requested.status !== "rented")) {
     return NextResponse.json(
-      { ok: false, error: "Online checkout is temporarily unavailable. Please call us to book." },
-      { status: 503 },
-    );
-  }
-
-  const trailer = trailers.find((item) => item.id === input.trailerId);
-  if (!trailer || trailer.status !== "available") {
-    return NextResponse.json(
-      { ok: false, error: "This trailer is not currently available to book." },
+      { ok: false, error: "This trailer isn't available for booking yet." },
       { status: 400 },
     );
   }
 
+  // ─── Compute prices server-side (never trust the client) ───
+  let quote;
   try {
-    const quote = calculatePrice(input.trailerId, input.duration);
-    const schedule = buildRentalSchedule(input.date, input.time, input.duration);
-    const now = new Date();
-    const checkoutExpires = new Date(now.getTime() + CHECKOUT_HOLD_MINUTES * 60 * 1000);
-    const bookingId = input.checkoutKey;
-    const proof = await readCheckoutProof(bookingId) ?? newCheckoutProof();
-    const booking: Booking = {
-      id: bookingId,
-      schemaVersion: 2,
-      checkoutKey: input.checkoutKey,
-      checkoutAccessHash: hashCheckoutProof(proof),
-      customerEmail: input.email,
-      customer: {
-        firstName: input.firstName,
-        lastName: input.lastName,
-        phone: input.phone,
-        address: input.address,
-        referralSource: input.referralSource,
-        ...(input.referralDetail ? { referralDetail: input.referralDetail } : {}),
-      },
-      towVehicle: input.towVehicle,
-      trailerId: trailer.id,
-      trailerName: trailer.name,
-      unitId: `${trailer.slug.toUpperCase()}-01`,
-      status: "pending_payment",
-      fulfillmentType: "pickup",
-      duration: input.duration,
-      ...schedule,
-      checkoutExpiresAt: checkoutExpires.toISOString(),
-      checkoutExpiresAtMs: checkoutExpires.getTime(),
-      policiesAcceptedAt: now.toISOString(),
-      emailMarketingOptIn: input.emailMarketingOptIn,
-      emailMarketingConsentAt: now.toISOString(),
-      emailMarketingConsentText: MARKETING_CONSENT_TEXT,
-      extensions: [],
-      rentalSubtotal: quote.rentalCents,
-      taxAmount: quote.taxCents,
-      rentalTotal: quote.totalCents,
-      depositAmount: quote.depositCents,
-      depositCollectedAtCheckout: true,
-      paymentStatus: "pending",
-      depositStatus: "not_requested",
-      agreementStatus: "not_started",
-      identityStatus: "not_started",
-      insuranceStatus: "not_uploaded",
-      preInspectionPhotos: [],
-      postInspectionPhotos: [],
-      auditTrail: [
-        {
-          action: "checkout_hold_created",
-          actor: input.email,
-          createdAt: now.toISOString(),
-          createdAtMs: now.getTime(),
-        },
-      ],
-      createdAt: now.toISOString(),
-      createdAtMs: now.getTime(),
-      updatedAt: now.toISOString(),
-      updatedAtMs: now.getTime(),
-    };
-
-    const session = await getSession();
-    if (session && !session.bookingId && session.email.toLowerCase() === input.email) {
-      const history = await listBookingsForEmail(session.email);
-      if (paidBookings(session.email, history).length) {
-        booking.customer.referralSource = "previous_customer";
-        delete booking.customer.referralDetail;
-      }
-      await reuseDocuments(booking, history);
-    }
-
-    const held = await createBookingHold(
-      booking,
-      trailer.inventoryCount + trailer.virtualBoost,
+    // Sprint 3.3 — Zod enum infers RentalDuration exactly; no cast needed.
+    quote = calculatePrice(body.trailerId, body.duration);
+  } catch (err) {
+    return NextResponse.json(
+      { ok: false, error: err instanceof Error ? err.message : "Pricing failed." },
+      { status: 400 },
     );
+  }
 
-    await saveCheckoutProof(held.id, proof);
-
-    if (!hasStripe) {
-      if (!isDemoEnvironment) throw new Error("Stripe is not configured.");
-      const paymentIntentId = held.rentalPaymentIntentId ?? `pi_demo_${randomUUID()}`;
-      if (!held.rentalPaymentIntentId) {
-        await updateBooking(
-          held.id,
-          { rentalPaymentIntentId: paymentIntentId },
-          { action: "demo_payment_initialized", actor: "development-demo" },
-        );
-      }
-      return NextResponse.json({
-        ok: true,
-        mode: "demo" as const,
-        bookingId: held.id,
-        rental: {
-          paymentIntentId,
-          clientSecret: "",
-          amountCents: quote.checkoutTotalCents,
-        },
-        display: displayQuote(quote),
-        checkoutExpiresAt: held.checkoutExpiresAt,
-      });
-    }
-
-    const stripe = getStripe();
-    if (!stripe || !stripePublishableKey) throw new Error("Stripe failed to initialize.");
-
-    let customerId = held.stripeCustomerId;
-    if (!customerId) {
-      const existingCustomers = await stripe.customers.list({ email: input.email, limit: 1 });
-      const customer =
-        existingCustomers.data[0] ??
-        (await stripe.customers.create(
-          {
-            email: input.email,
-            name: `${input.firstName} ${input.lastName}`,
-            phone: input.phone,
-            address: {
-              line1: input.address.street,
-              city: input.address.city,
-              state: input.address.state,
-              postal_code: input.address.zip,
-              country: "US",
-            },
-            metadata: { latestBookingId: held.id },
-          },
-          { idempotencyKey: `customer-${held.id}` },
-        ));
-      customerId = customer.id;
-    }
-
-    const rental = held.rentalPaymentIntentId
-      ? await stripe.paymentIntents.retrieve(held.rentalPaymentIntentId)
-      : await stripe.paymentIntents.create(
-          {
-            amount: quote.checkoutTotalCents,
-            currency: "usd",
-            customer: customerId,
-            payment_method_types: ["card"],
-            setup_future_usage: "off_session",
-            receipt_email: input.email,
-            description: `${trailer.name} — ${input.duration} rental and refundable deposit`,
-            metadata: {
-              bookingId: held.id,
-              trailerId: trailer.id,
-              duration: input.duration,
-              kind: "rental",
-              depositCollectedAtCheckout: "true",
-            },
-          },
-          { idempotencyKey: `rental-${held.id}` },
-        );
-
-    if (rental.amount !== quote.checkoutTotalCents || rental.currency !== "usd") {
-      throw new BookingConflictError("The payment amount changed. Return to review and restart checkout.");
-    }
-
-    await updateBooking(
-      held.id,
-      {
-        stripeCustomerId: customerId,
-        rentalPaymentIntentId: rental.id,
-      },
-      { action: "rental_payment_initialized", actor: input.email },
-    );
-
-    return NextResponse.json({
+  // ─── Stub mode: synthesize ───
+  if (!hasStripe) {
+    const stubId = `pi_stub_${Date.now().toString(36)}`;
+    const response: CheckoutResponse = {
       ok: true,
-      mode: "real" as const,
-      bookingId: held.id,
-      publishableKey: stripePublishableKey,
+      mode: "stub",
+      rental: {
+        paymentIntentId: `${stubId}_rental`,
+        clientSecret: `${stubId}_rental_secret_stub`,
+        amountCents: quote.totalCents,
+      },
+      deposit: {
+        paymentIntentId: `${stubId}_deposit`,
+        clientSecret: `${stubId}_deposit_secret_stub`,
+        amountCents: quote.depositCents,
+      },
+      display: {
+        rental: formatUsd(quote.rentalCents),
+        deposit: formatUsd(quote.depositCents),
+        tax: formatUsd(quote.taxCents),
+        total: formatUsd(quote.totalCents),
+      },
+    };
+    console.log(
+      `[checkout] STUB MODE — booking ${body.email} ` +
+        `→ rental=${response.display.rental} deposit=${response.display.deposit}`,
+    );
+    return NextResponse.json(response);
+  }
+
+  // ─── Real mode ───
+  const stripe = getStripe();
+  if (!stripe) {
+    // Belt-and-suspenders: hasStripe was true but getStripe returned null.
+    return NextResponse.json(
+      { ok: false, error: "Stripe is configured but failed to initialize." },
+      { status: 500 },
+    );
+  }
+
+  try {
+    // Find or create a Stripe Customer keyed by email so repeat renters
+    // accumulate history under one record.
+    const existing = await stripe.customers.list({ email: body.email, limit: 1 });
+    const customer =
+      existing.data[0] ??
+      (await stripe.customers.create({
+        email: body.email,
+        name: `${body.firstName} ${body.lastName}`,
+        metadata: { trailerId: body.trailerId },
+      }));
+
+    const rental = await stripe.paymentIntents.create({
+      amount: quote.totalCents,
+      currency: "usd",
+      customer: customer.id,
+      capture_method: "automatic",
+      description: `Trailer rental (${body.duration}) — ${body.trailerId}`,
+      metadata: { trailerId: body.trailerId, duration: body.duration, kind: "rental" },
+    });
+
+    const deposit = await stripe.paymentIntents.create({
+      amount: quote.depositCents,
+      currency: "usd",
+      customer: customer.id,
+      capture_method: "manual",
+      description: `Security deposit (hold) — ${body.trailerId}`,
+      metadata: { trailerId: body.trailerId, kind: "deposit" },
+    });
+
+    const response: CheckoutResponse = {
+      ok: true,
+      mode: "real",
       rental: {
         paymentIntentId: rental.id,
         clientSecret: rental.client_secret ?? "",
-        amountCents: quote.checkoutTotalCents,
+        amountCents: quote.totalCents,
       },
-      display: displayQuote(quote),
-      checkoutExpiresAt: held.checkoutExpiresAt,
-    });
-  } catch (error) {
-    const status =
-      error instanceof BookingConflictError ? 409 : error instanceof BookingPersistenceError ? 503 : 502;
-    console.error("[checkout]", error);
+      deposit: {
+        paymentIntentId: deposit.id,
+        clientSecret: deposit.client_secret ?? "",
+        amountCents: quote.depositCents,
+      },
+      display: {
+        rental: formatUsd(quote.rentalCents),
+        deposit: formatUsd(quote.depositCents),
+        tax: formatUsd(quote.taxCents),
+        total: formatUsd(quote.totalCents),
+      },
+    };
+    return NextResponse.json(response);
+  } catch (err) {
+    console.error("[checkout] Stripe error:", err);
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Checkout failed." },
-      { status },
-    );
-  }
-}
-
-const releaseCheckoutSchema = z.object({
-  checkoutKey: z.string().uuid("Invalid checkout."),
-});
-
-export async function DELETE(request: Request) {
-  let checkoutKey: string;
-  try {
-    checkoutKey = releaseCheckoutSchema.parse(await request.json()).checkoutKey;
-  } catch (error) {
-    const message = error instanceof z.ZodError ? error.issues[0]?.message : "Invalid checkout.";
-    return NextResponse.json({ ok: false, error: message }, { status: 400 });
-  }
-
-  try {
-    const booking = await getBooking(checkoutKey);
-    if (!booking) return NextResponse.json({ ok: true });
-    if (!(await hasCheckoutProof(booking))) {
-      return NextResponse.json({ ok: false, error: "Not authorized." }, { status: 403 });
-    }
-    if (
-      booking.checkoutKey !== checkoutKey ||
-      booking.status !== "pending_payment" ||
-      booking.paymentStatus !== "pending"
-    ) {
-      return NextResponse.json(
-        { ok: false, error: "This checkout can no longer be changed." },
-        { status: 409 },
-      );
-    }
-
-    if (hasStripe && booking.rentalPaymentIntentId) {
-      const stripe = getStripe();
-      if (!stripe) throw new Error("Stripe failed to initialize.");
-      const paymentIntent = await stripe.paymentIntents.retrieve(booking.rentalPaymentIntentId);
-      if (paymentIntent.status === "succeeded" || paymentIntent.status === "processing") {
-        return NextResponse.json(
-          { ok: false, error: "Payment is already processing and the checkout cannot be edited." },
-          { status: 409 },
-        );
-      }
-      if (paymentIntent.status !== "canceled") {
-        await stripe.paymentIntents.cancel(
-          booking.rentalPaymentIntentId,
-          {},
-          { idempotencyKey: `checkout-release-${booking.id}` },
-        );
-      }
-    }
-
-    const now = new Date();
-    await updateBooking(
-      booking.id,
       {
-        status: "cancelled",
-        paymentStatus: "failed",
-        checkoutExpiresAt: now.toISOString(),
-        checkoutExpiresAtMs: now.getTime(),
+        ok: false,
+        error: err instanceof Error ? err.message : "Payment setup failed.",
       },
-      { action: "checkout_hold_released", actor: booking.customerEmail },
-    );
-    return NextResponse.json({ ok: true });
-  } catch (error) {
-    console.error("[checkout-release]", error);
-    return NextResponse.json(
-      { ok: false, error: "We could not release this checkout. Please try again." },
       { status: 502 },
     );
   }

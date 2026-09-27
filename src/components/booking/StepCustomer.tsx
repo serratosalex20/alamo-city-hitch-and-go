@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import type { BookingFormData } from "@/app/book/page";
 import type { ReferralSource } from "@/types/models";
 
 interface Props {
-  returningCustomer?: boolean;
   formData: BookingFormData;
   updateForm: (updates: Partial<BookingFormData>) => void;
   onNext: () => void;
@@ -24,44 +22,19 @@ const referralOptions: { value: ReferralSource; label: string }[] = [
 const inputClass =
   "w-full bg-surface-container-low text-on-surface font-body py-4 px-5 ghost-border focus:border-b-2 focus:border-primary-action outline-none transition-all placeholder:text-on-surface-variant/40";
 
-export function StepCustomer({ formData, updateForm, onNext, onBack, returningCustomer = false }: Props) {
-  const [editing, setEditing] = useState(false);
+export function StepCustomer({ formData, updateForm, onNext, onBack }: Props) {
   const showDetailInput =
     formData.referralSource === "referral" ||
     formData.referralSource === "other";
 
   const isValid =
-    formData.firstName.trim().length > 0 &&
-    formData.lastName.trim().length > 0 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim()) &&
-    formData.phone.replace(/\D/g, "").length >= 10 &&
-    formData.address.street.trim().length >= 3 &&
-    formData.address.city.trim().length >= 2 &&
-    /^[A-Za-z]{2}$/.test(formData.address.state.trim()) &&
-    /^\d{5}(?:-\d{4})?$/.test(formData.address.zip.trim()) &&
-    /^(19|20)\d{2}$/.test(formData.towVehicle.year.trim()) &&
-    formData.towVehicle.make.trim().length >= 2 &&
-    formData.towVehicle.model.trim().length > 0;
-
-  if (returningCustomer && !editing && isValid) {
-    return <div>
-      <h2 className="text-3xl font-headline font-bold uppercase mb-4">Confirm Your Details</h2>
-      <p className="mb-6 text-on-surface-variant">Welcome back. Confirm these details for this rental, or edit anything that has changed.</p>
-      <div className="bg-surface-container p-6 space-y-4">
-        <p>{formData.firstName} {formData.lastName}</p>
-        <p>{formData.email}<br />{formData.phone}</p>
-        <p>{formData.address.street}<br />{formData.address.city}, {formData.address.state} {formData.address.zip}</p>
-        <p>Tow vehicle: {formData.towVehicle.year} {formData.towVehicle.make} {formData.towVehicle.model}{formData.towVehicle.plate ? ` · ${formData.towVehicle.plate}` : ""}</p>
-        <p>How did you hear about us? Previous customer</p>
-      </div>
-      <p className="my-6 text-sm text-on-surface-variant">We’ll reuse approved insurance and verified ID when they’re still valid for this rental. You’ll sign a new rental agreement.</p>
-      <div className="flex flex-wrap gap-4 mt-8">
-        <button type="button" onClick={onBack} className="bg-surface-container-highest px-6 py-4">Back</button>
-        <button type="button" onClick={() => setEditing(true)} className="bg-surface-container-highest px-6 py-4">Edit Details</button>
-        <button type="button" onClick={onNext} className="bg-primary-action text-white px-6 py-4 font-bold">Confirm Details &amp; Review Booking</button>
-      </div>
-    </div>;
-  }
+    formData.firstName &&
+    formData.lastName &&
+    formData.email &&
+    formData.phone &&
+    formData.address.street &&
+    formData.address.city &&
+    formData.address.zip;
 
   return (
     <div>
@@ -246,70 +219,6 @@ export function StepCustomer({ formData, updateForm, onNext, onBack, returningCu
           </div>
         </div>
 
-        <fieldset className="bg-surface-container-low p-5 ghost-border">
-          <legend className="px-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-            Tow Vehicle
-          </legend>
-          <p className="mb-5 text-sm text-on-surface-variant">
-            Enter the vehicle that will pick up the trailer. We verify hitch and towing compatibility before release.
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <label htmlFor="tow-year" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
-                Year <span className="text-error" aria-hidden="true">*</span>
-              </label>
-              <input
-                id="tow-year"
-                inputMode="numeric"
-                pattern="(19|20)[0-9]{2}"
-                required
-                value={formData.towVehicle.year}
-                onChange={(event) => updateForm({ towVehicle: { ...formData.towVehicle, year: event.target.value } })}
-                className={inputClass}
-                placeholder="2022"
-              />
-            </div>
-            <div>
-              <label htmlFor="tow-make" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
-                Make <span className="text-error" aria-hidden="true">*</span>
-              </label>
-              <input
-                id="tow-make"
-                required
-                value={formData.towVehicle.make}
-                onChange={(event) => updateForm({ towVehicle: { ...formData.towVehicle, make: event.target.value } })}
-                className={inputClass}
-                placeholder="Ford"
-              />
-            </div>
-            <div>
-              <label htmlFor="tow-model" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
-                Model <span className="text-error" aria-hidden="true">*</span>
-              </label>
-              <input
-                id="tow-model"
-                required
-                value={formData.towVehicle.model}
-                onChange={(event) => updateForm({ towVehicle: { ...formData.towVehicle, model: event.target.value } })}
-                className={inputClass}
-                placeholder="F-150"
-              />
-            </div>
-            <div>
-              <label htmlFor="tow-plate" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
-                Plate
-              </label>
-              <input
-                id="tow-plate"
-                value={formData.towVehicle.plate}
-                onChange={(event) => updateForm({ towVehicle: { ...formData.towVehicle, plate: event.target.value } })}
-                className={inputClass}
-                placeholder="Optional"
-              />
-            </div>
-          </div>
-        </fieldset>
-
         {/* Referral Source */}
         <div>
           <label
@@ -318,7 +227,7 @@ export function StepCustomer({ formData, updateForm, onNext, onBack, returningCu
           >
             How did you hear about us?
           </label>
-          {returningCustomer ? <p className={inputClass}>Previous customer</p> : <select
+          <select
             id="booking-referral"
             value={formData.referralSource}
             onChange={(e) =>
@@ -334,11 +243,11 @@ export function StepCustomer({ formData, updateForm, onNext, onBack, returningCu
                 {opt.label}
               </option>
             ))}
-          </select>}
+          </select>
         </div>
 
         {/* Dynamic detail input for Referral / Other */}
-        {!returningCustomer && showDetailInput && (
+        {showDetailInput && (
           <div>
             <label
               htmlFor="booking-referral-detail"

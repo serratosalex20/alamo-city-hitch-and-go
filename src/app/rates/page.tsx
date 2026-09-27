@@ -1,4 +1,3 @@
-import { BookingCTA } from "@/components/marketing/BookingExperience";
 /**
  * /rates — public pricing transparency page.
  *
@@ -46,7 +45,7 @@ export default function RatesPage() {
           <p className="text-xl text-on-surface-variant font-light leading-relaxed max-w-2xl">
             Pick a trailer, pick a block, see the total. No quote forms. No
             mileage surprises. The price you see is the price you pay, plus
-            Texas motor vehicle rental tax on the rental fee and a refundable deposit charged at checkout.
+            Texas sales tax on the rental fee and a refundable deposit hold.
           </p>
         </header>
 
@@ -127,8 +126,7 @@ export default function RatesPage() {
                       </div>
                       <div className="text-[10px] text-on-surface-variant mt-2 leading-tight">
                         + {formatUsd(quote.taxCents)} tax<br />
-                        + {formatUsd(quote.depositCents)} refundable deposit<br />
-                        = {formatUsd(quote.checkoutTotalCents)} due at checkout
+                        = {formatUsd(quote.totalCents)} total
                       </div>
                     </div>
                   );
@@ -138,16 +136,16 @@ export default function RatesPage() {
               {/* CTA strip */}
               <div className="p-6 md:p-8 flex items-center justify-between gap-4 flex-wrap">
                 <p className="text-on-surface-variant text-xs uppercase tracking-widest font-headline font-bold">
-                  Refundable $200 deposit charged at checkout • Refunded after return inspection
+                  All blocks include the deposit hold • Released after return inspection
                 </p>
                 {trailer.status === "available" || trailer.status === "rented" ? (
-                  <BookingCTA
+                  <Link
                     href={`/book?trailer=${trailer.slug}`}
                     className="inline-flex items-center gap-2 bg-primary-action text-white px-6 py-3 min-h-[44px] font-headline font-bold uppercase tracking-widest text-sm hover:brightness-110 transition-all"
                   >
                     Book This Trailer
                     <Icon name="arrow_forward" className="text-sm" />
-                  </BookingCTA>
+                  </Link>
                 ) : (
                   // Mirrors TrailerCard + the detail page: coming-soon units
                   // render an inert, visibly-disabled control so nobody
@@ -195,10 +193,10 @@ export default function RatesPage() {
             </div>
             <div>
               <div className="font-headline uppercase tracking-widest text-xs font-bold text-primary mb-2">
-                Local Support
+                24/7 Support
               </div>
               <p className="text-on-surface-variant text-sm font-light leading-relaxed">
-                Call or text our local team for help with pickup, return, or an extension request.
+                Real person, reachable the whole time the trailer is out. Industrial reliability includes the people attached to it.
               </p>
             </div>
           </div>
@@ -207,15 +205,15 @@ export default function RatesPage() {
         {/* Fine print */}
         <section className="mt-12 text-xs text-on-surface-variant font-light leading-relaxed space-y-2">
           <p>
-            <strong className="text-on-surface">Texas motor vehicle rental tax (10% for contracts of 1–30 days)</strong> applies
-            to the rental fee only. The refundable $200 deposit is charged at checkout,
-            with the same deposit amount across every trailer in the fleet.
+            <strong className="text-on-surface">Texas sales tax (Bexar County combined, 8.25%)</strong> applies
+            to the rental fee only. Refundable $200 deposit is a pre-authorization hold on your card, not a
+            charge — the same amount across every trailer in the fleet.
           </p>
           <p>
             <strong className="text-on-surface">Mid-rental extensions</strong> are billed in the same block
             sizes as the original rental — Half Day, Full Day, 1 Week, or 2 Weeks — so you extend by one
             more block at a time. Approved extensions still cost materially less than the $100 flat late-return
-            fee. Call or text us before your scheduled return time to request an extension.
+            fee. Request from your dashboard before your scheduled return time.
           </p>
           <p>
             <strong className="text-on-surface">2-Week block ships with a free day.</strong> The published
@@ -224,7 +222,8 @@ export default function RatesPage() {
           </p>
           <p>
             Full terms in our <Link href="/terms" className="text-primary hover:underline">rental agreement</Link>.
-            Questions? <Link href="/book" className="text-primary hover:underline">Contact our team to book</Link>.
+            Questions? See <Link href="/book" className="text-primary hover:underline">the booking flow</Link> or
+            reach support.
           </p>
         </section>
       </main>

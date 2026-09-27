@@ -29,7 +29,6 @@ function SignInInner() {
   const router = useRouter();
   const search = useSearchParams();
   const initialError = search.get("error");
-  const next = search.get("next") ?? undefined;
 
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -46,7 +45,7 @@ function SignInInner() {
       const response = await fetch("/api/auth/send-link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, next }),
+        body: JSON.stringify({ email }),
       });
       const data = (await response.json()) as { ok: boolean; error?: string; devLink?: string };
 
@@ -56,7 +55,6 @@ function SignInInner() {
       }
 
       const qs = new URLSearchParams({ email });
-      if (next) qs.set("next", next);
       if (data.devLink) qs.set("devLink", data.devLink);
       router.push(`/sign-in/sent?${qs.toString()}`);
     } catch (err) {

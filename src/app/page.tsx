@@ -7,7 +7,7 @@ import { TrustBlock } from "@/components/marketing/TrustBlock";
 import { FAQ } from "@/components/marketing/FAQ";
 import { Footer } from "@/components/marketing/Footer";
 // LocalBusiness JSON-LD must advertise the branded domain. See lib/env.ts.
-import { siteUrl as appUrl, contactBookingOnly, supportPhone } from "@/lib/env";
+import { siteUrl as appUrl } from "@/lib/env";
 
 /**
  * LocalBusiness schema for organic search rich results.
@@ -29,7 +29,6 @@ const jsonLd = {
   description:
     "San Antonio trailer rentals. Industrial-grade enclosed cargo, utility, and dump trailers, available in Half Day, Full Day, 1 Week, or 2 Weeks (15-day) blocks.",
   url: appUrl,
-  telephone: supportPhone,
   address: {
     "@type": "PostalAddress",
     addressLocality: "San Antonio",
@@ -63,14 +62,14 @@ const jsonLd = {
     "Cibolo",
     "Bexar County, TX",
   ],
-  ...(contactBookingOnly ? {} : { openingHoursSpecification: {
+  openingHoursSpecification: {
     "@type": "OpeningHoursSpecification",
     dayOfWeek: [
       "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
     ],
     opens: "06:00",
     closes: "22:00",
-  } }),
+  },
   priceRange: "$$",
 };
 

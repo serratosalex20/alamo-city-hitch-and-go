@@ -1,17 +1,21 @@
 /**
- * Server-side Firebase initialization for booking persistence and document storage.
- * Authentication uses the application email-link/session implementation; Firebase
- * Auth must not be imported here because every booking route loads this module.
+ * Server-side Firebase Admin initialization.
+ *
+ * Used in API routes for:
+ *   - Generating sign-in links (server-side magic-link generation)
+ *   - Verifying ID tokens after magic-link callback
+ *   - Minting and verifying session cookies
+ *
+ * In STUB mode, `getFirebaseAdmin()` returns null and the auth API
+ * routes synthesize fake links + tokens for local dev.
  */
 
 import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
-import { getFirestore, type Firestore } from "firebase-admin/firestore";
-import { getStorage } from "firebase-admin/storage";
+import { getAuth, type Auth } from "firebase-admin/auth";
 import {
   firebaseAdminProjectId,
   firebaseAdminClientEmail,
   firebaseAdminPrivateKey,
-  firebaseStorageBucket,
   hasFirebase,
 } from "@/lib/env";
 
@@ -31,22 +35,17 @@ function getApp(): App | null {
         clientEmail: firebaseAdminClientEmail,
         privateKey: firebaseAdminPrivateKey,
       }),
-      storageBucket: firebaseStorageBucket,
     });
   return cachedApp;
 }
 
-/** Returns Firestore for server-side booking persistence. */
-export function getFirestoreAdmin(): Firestore | null {
+/**
+ * Returns the Firebase Admin Auth instance, or null in stub mode.
+ * Server-only — never import this from a Client Component.
+ */
+export function getFirebaseAdmin(): Auth | null {
   const app = getApp();
-  return app ? getFirestore(app) : null;
-}
-
-/** Returns the private Firebase Storage bucket used for customer documents. */
-export function getStorageBucket() {
-  const app = getApp();
-  if (!app || !firebaseStorageBucket) return null;
-  return getStorage(app).bucket(firebaseStorageBucket);
+  return app ? getAuth(app) : null;
 }
 
 export { hasFirebase };

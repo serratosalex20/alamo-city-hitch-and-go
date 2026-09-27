@@ -64,10 +64,10 @@ export default function FleetPage() {
                 <Icon name="arrow_forward" className="text-sm" />
               </a>
               <a
-                href="/book"
+                href="/locations"
                 className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-10 py-5 min-h-[44px] font-headline font-bold uppercase tracking-widest transition-all flex items-center"
               >
-                CONTACT OUR TEAM
+                OUR LOCATIONS
               </a>
             </div>
           </div>

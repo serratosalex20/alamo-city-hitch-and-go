@@ -17,19 +17,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createToken } from "@/lib/auth/session";
-import { appUrl, isDemoEnvironment, contactBookingOnly } from "@/lib/env";
-import { hasEmail, sendAccessLinkEmail } from "@/lib/email/server";
+import { appUrl } from "@/lib/env";
 
 const Body = z.object({
   email: z.string().email("Enter a valid email address."),
-  next: z.string().max(500).optional(),
 });
 
 export async function POST(request: Request) {
-  if (contactBookingOnly) return NextResponse.json(
-    { ok: false, error: "Please call or text our team for booking assistance.", bookingUrl: "/book" },
-    { status: 503 },
-  );
   let parsed: z.infer<typeof Body>;
   try {
     const json = await request.json();
@@ -40,29 +34,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }
 
-  if (!hasEmail && !isDemoEnvironment) {
-    return NextResponse.json(
-      { ok: false, error: "Email sign-in is temporarily unavailable." },
-      { status: 503 },
-    );
-  }
-
-  const token = createToken(parsed.email, "link", parsed.next);
+  const token = createToken(parsed.email, "link");
   const link = `${appUrl}/api/auth/callback?token=${encodeURIComponent(token)}`;
 
-  if (hasEmail) {
-    try {
-      await sendAccessLinkEmail({ to: parsed.email, link });
-    } catch (error) {
-      console.error("[auth-email]", error);
-      return NextResponse.json({ ok: false, error: "Could not send the sign-in email." }, { status: 502 });
-    }
-  } else {
-    console.log(`[auth-demo] Magic link for ${parsed.email}: ${link}`);
-  }
+  // "Send" the email — for now, log it.
+  // Sprint 3 wires this to a transactional email provider (Resend / SendGrid).
+  console.log(
+    `[auth] Magic link for ${parsed.email}: ${link}\n` +
+      `(Sprint 2 stub — production must email this via a transactional provider.)`,
+  );
 
+  const isDev = process.env.NODE_ENV !== "production";
   return NextResponse.json({
     ok: true,
-    ...(isDemoEnvironment ? { devLink: link } : {}),
+    ...(isDev ? { devLink: link } : {}),
   });
 }

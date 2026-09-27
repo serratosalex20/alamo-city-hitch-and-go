@@ -1,4 +1,3 @@
-import { BookingCTA } from "@/components/marketing/BookingExperience";
 /**
  * /fleet/[slug] — per-trailer detail page.
  *
@@ -334,13 +333,13 @@ export default async function TrailerDetailPage({ params }: PageProps) {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3">
               {isBookable ? (
-                <BookingCTA
+                <Link
                   href={`/book?trailer=${trailer.slug}`}
                   className="flex-1 inline-flex items-center justify-center gap-3 bg-primary-action text-white px-6 py-4 min-h-[44px] font-headline font-bold uppercase tracking-widest text-base hover:brightness-110 transition-all"
                 >
                   Rent This Trailer
                   <Icon name="arrow_forward" className="text-base" />
-                </BookingCTA>
+                </Link>
               ) : (
                 <div className="flex-1 inline-flex items-center justify-center gap-3 bg-surface-container border border-outline-variant/15 text-on-surface-variant px-6 py-4 min-h-[44px] font-headline font-bold uppercase tracking-widest text-base">
                   {trailer.badge ?? "Coming Soon"}
@@ -501,7 +500,7 @@ export default async function TrailerDetailPage({ params }: PageProps) {
             })}
           </div>
           <p className="text-on-surface-variant text-sm font-light leading-relaxed mt-6 max-w-3xl">
-            All rates in USD. Texas motor vehicle rental tax (10% for contracts of 1–30 days) applies to
+            All rates in USD. Texas sales tax (Bexar County, 8.25%) applies to
             the rental fee. Refundable ${trailer.deposit} deposit is a
             pre-authorization hold on your card, not a charge.
           </p>
@@ -558,18 +557,18 @@ export default async function TrailerDetailPage({ params }: PageProps) {
           </h2>
           <p className="text-on-surface-variant text-base font-light max-w-xl mx-auto mb-8 leading-relaxed">
             {isBookable
-              ? "Tell us your dates. We’ll confirm availability and help arrange pickup."
+              ? "Book online in 60 seconds. Same-day pickup if it's in the yard."
               : "This trailer isn't in the yard yet — check back soon or browse what's available now."}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {isBookable ? (
-              <BookingCTA
+              <Link
                 href={`/book?trailer=${trailer.slug}`}
                 className="inline-flex items-center justify-center gap-3 bg-primary-action text-white px-10 py-4 min-h-[44px] font-headline font-bold uppercase tracking-widest text-base hover:brightness-110 transition-all"
               >
                 Rent This Trailer
                 <Icon name="arrow_forward" className="text-base" />
-              </BookingCTA>
+              </Link>
             ) : (
               <Link
                 href="/fleet"

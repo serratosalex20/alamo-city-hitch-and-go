@@ -1,4 +1,3 @@
-import { BookingCTA } from "@/components/marketing/BookingExperience";
 /**
  * /about — Owner story, mission, vision, who we serve.
  *
@@ -53,7 +52,7 @@ const audiences: ServedAudience[] = [
   {
     title: "Contractors & Trades",
     detail:
-      "Hauling tools, materials, or jobsite leftovers. Clean trailers and straightforward booking — fewer interruptions to your day.",
+      "Hauling tools, materials, or jobsite leftovers. Trailers stay clean and the booking takes 60 seconds — fewer interruptions to your day.",
   },
   {
     title: "Landscapers & Yard Pros",
@@ -147,7 +146,8 @@ export default function AboutPage() {
           </h1>
           <p className="text-xl text-on-surface-variant font-light leading-relaxed max-w-2xl">
             We rent the trailers we&apos;d want to rent. Clean equipment,
-            transparent prices, and a local team to help you get on the road.
+            transparent prices, and a checkout that takes 60 seconds — not 60
+            minutes of phone tag.
           </p>
         </header>
 
@@ -296,7 +296,7 @@ export default function AboutPage() {
             Ready to Pull &amp; Go?
           </h2>
           <p className="text-on-surface-variant text-base font-light max-w-xl mx-auto mb-8 leading-relaxed">
-            Tell us what you need and when. We’ll help you arrange your rental.
+            Book online in 60 seconds. Same-day pickup if it&apos;s in the yard.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
@@ -306,12 +306,12 @@ export default function AboutPage() {
               Browse The Fleet
               <Icon name="arrow_forward" className="text-base" />
             </Link>
-            <BookingCTA
+            <Link
               href="/book"
               className="inline-flex items-center justify-center bg-white/5 border border-white/10 text-white px-10 py-4 min-h-[44px] font-headline font-bold uppercase tracking-widest text-base hover:bg-white/10 transition-all"
             >
               Start a Booking
-            </BookingCTA>
+            </Link>
           </div>
         </section>
       </main>

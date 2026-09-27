@@ -7,8 +7,9 @@
 
 import { NextResponse } from "next/server";
 import { clearSessionCookie } from "@/lib/auth/session";
+import { appUrl } from "@/lib/env";
 
-export async function POST(request: Request) {
+export async function POST() {
   await clearSessionCookie();
-  return NextResponse.redirect(new URL("/", request.url), { status: 303 });
+  return NextResponse.redirect(new URL("/", appUrl), { status: 303 });
 }

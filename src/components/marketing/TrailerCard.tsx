@@ -1,7 +1,5 @@
 "use client";
 
-import { BookingCTA } from "@/components/marketing/BookingExperience";
-
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
@@ -86,13 +84,14 @@ export function TrailerCard({ trailer }: TrailerCardProps) {
             else renders as an inert, visibly-disabled control so nobody
             clicks through to book a trailer we can't hand over. */}
         {isBookable ? (
-          <BookingCTA
+          <Link
             href={`/book?trailer=${trailer.slug}`}
+            aria-label={`Rent the ${trailer.name} — $${trailer.pricing.fullDay} per day`}
             className="w-full min-h-[44px] bg-white/5 group-hover:bg-primary-action group-hover:text-white text-white py-4 font-headline font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/5"
           >
             RENT THIS TRAILER
             <Icon name="add_shopping_cart" className="text-sm" />
-          </BookingCTA>
+          </Link>
         ) : (
           <div
             aria-disabled="true"

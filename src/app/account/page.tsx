@@ -1,64 +1,127 @@
-import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
-import type { Metadata } from "next";
 import { Icon } from "@/components/ui/Icon";
 import { ActiveRental } from "@/components/dashboard/ActiveRental";
 import { DocumentList } from "@/components/dashboard/DocumentList";
 import { BottomNav } from "@/components/dashboard/BottomNav";
-import { BookingInstructions } from "@/components/account/BookingInstructions";
-import { RefreshBookingStatus } from "@/components/account/RefreshBookingStatus";
 import { getSession } from "@/lib/auth/session";
-import { isAdminEmail } from "@/lib/auth/authorization";
-import { listBookingsForEmail } from "@/lib/booking/repository";
-import { selectDashboardBooking } from "@/lib/booking/dashboard";
-import { pickupAddress, pickupInstructions, supportPhone, supportEmail } from "@/lib/env";
+import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Hauler Command", description: "Your rental, remaining time, documents, and pickup or return instructions.", robots: { index: false, follow: false } };
+export const metadata: Metadata = {
+  title: "Fleet Command",
+  description: "Manage your active trailer rental, extend time, and access your documents.",
+  // Sprint 3.4 — audit SW-09 + PG-ACCT-01: signed-in dashboard is a
+  // private surface; keep it out of the index. Middleware already
+  // gates access, this prevents accidental SERP exposure.
+  robots: { index: false, follow: false },
+};
 
-export default async function AccountPage({ searchParams }: { searchParams: Promise<{ booking?: string }> }) {
+export default async function AccountPage() {
+  // Middleware already enforces a cookie is present, but verify the
+  // signature here in the Node runtime where node:crypto is available.
+  // Belt-and-suspenders: defense in depth against a forged cookie shape
+  // that passes the Edge middleware check.
   const session = await getSession();
-  if (!session) redirect("/sign-in?next=%2Faccount");
-  if (session.bookingId) redirect("/sign-in?next=%2Faccount");
-  const bookings = await listBookingsForEmail(session.email);
-  const selected = (await searchParams).booking;
-  const booking = selectDashboardBooking(session.email, bookings, selected);
-  const admin = isAdminEmail(session.email);
-  // Dynamic server request time; used for an identical first client render.
-  // eslint-disable-next-line react-hooks/purity
-  const nowMs = Date.now();
-  const approved = booking && ["confirmed", "deposit_action_required", "ready_for_pickup", "active", "return_inspection", "completed"].includes(booking.status);
-  const contact = approved && pickupAddress ? { pickupAddress, pickupInstructions, supportPhone, supportEmail } : null;
-  const phone = supportPhone.replace(/[^+\d]/g, "");
-  return <>
-    <RefreshBookingStatus />
-    <header className="bg-background fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-6 py-3 border-b border-white/5 shadow-2xl" role="banner">
-      <div className="flex items-center gap-2">
-        <details className="relative"><summary aria-label="Open navigation menu" className="min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer list-none"><Icon name="menu" className="text-primary" /></summary>
-          <nav aria-label="Hauler Command menu" className="absolute top-full left-0 w-64 bg-surface-container-high p-3 rounded-lg shadow-xl border border-white/10">
-            <Link href="/account" className="block p-3 min-h-[44px]">Hauler Command</Link><Link href="/account/bookings" className="block p-3 min-h-[44px]">My Bookings</Link><Link href="/book" className="block p-3 min-h-[44px]">Book a Trailer</Link>{admin && <Link href="/admin" className="block p-3 min-h-[44px]">Owner Console</Link>}
-          </nav>
-        </details>
-        <Link href="/account" className="text-xl sm:text-3xl font-bold tracking-wider text-white uppercase font-teko">HAULER_COMMAND</Link>
-      </div>
-      <Link href="/account/bookings#profile" className="min-h-[44px] px-3 shrink-0 rounded-lg border border-white/10 bg-surface-container-high flex items-center justify-center gap-2"><Icon name="person" /><span className="text-xs font-bold">Profile</span></Link>
-    </header>
-    <main id="main-content" className="pt-24 px-5 space-y-7 max-w-lg mx-auto pb-28">
-      <div><p className="text-xs font-bold tracking-[0.15em] text-on-surface-variant uppercase">Alamo City Hitch &amp; Go</p><h1 className="text-3xl font-headline font-bold uppercase mt-1">Hauler Command</h1></div>
-      {booking ? <>
-        <ActiveRental key={booking.id} bookingId={booking.id} trailerName={booking.trailerName} unitId={booking.unitId} status={booking.status} startTime={booking.startTime} endTime={booking.endTime} nowMs={nowMs} supportPhone={supportPhone} />
-        {bookings.length > 1 && <p className="text-xs text-on-surface-variant">Viewing booking {booking.id.slice(0, 8).toUpperCase()}. <Link href="/account/bookings" className="text-primary underline">Choose another booking</Link></p>}
-        {approved && <BookingInstructions key={`instructions-${booking.id}`} status={booking.status} endTime={booking.endTime} contact={contact} nowMs={nowMs} />}
-        <DocumentList key={`documents-${booking.id}`} bookingId={booking.id} signedAvailable={booking.agreementStatus === "signed" && !!booking.docusignEnvelopeId} />
-      </> : <section className="bg-surface-container-high rounded-lg p-6"><h2 className="text-xl font-bold">Ready for your next rental?</h2><p className="text-on-surface-variant mt-3">Your account stays available between bookings, with your saved details ready for next time.</p><Link href="/book" className="block text-center mt-5 min-h-[44px] px-4 py-3 bg-primary-action font-bold uppercase">Book a Trailer</Link></section>}
-      <section className="bg-surface-container-low rounded-lg border border-white/5 p-5" aria-label="Account session">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div className="min-w-0"><p className="text-[10px] uppercase tracking-widest text-on-surface-variant">Signed In As</p><p className="text-sm font-bold break-all">{session.email}</p></div><form action="/api/auth/logout" method="POST"><button className="min-h-[44px] px-4 py-3 bg-surface-container-high text-xs font-bold uppercase">Sign Out</button></form></div>
-      </section>
-      {contact && <section className="rounded-lg overflow-hidden border border-white/10 bg-surface-container" aria-label="Rental location">
-        <iframe title="Pickup and return location map" loading="lazy" referrerPolicy="no-referrer" src={`https://maps.google.com/maps?q=${encodeURIComponent(contact.pickupAddress)}&output=embed`} className="w-full h-48 border-0 grayscale hover:grayscale-0" />
-        <div className="p-4 text-sm"><h2 className="font-bold uppercase flex gap-2 items-center"><Icon name="location_on" className="text-primary" />Rental Location</h2><p className="mt-2 text-on-surface-variant">{contact.pickupAddress}</p><a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(contact.pickupAddress)}`} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 min-h-[44px] py-3 text-primary underline">Get Directions</a></div>
-      </section>}
-      <section id="support" className="scroll-mt-24 rounded-lg p-5 bg-surface-container-low border border-white/5"><h2 className="font-bold uppercase">Need Help?</h2><div className="flex flex-wrap gap-3 mt-3"><a href={`tel:${phone}`} className="min-h-[44px] p-3 bg-surface-container-high">Call {supportPhone}</a><a href={`mailto:${supportEmail}`} className="min-h-[44px] p-3 bg-surface-container-high">Email Us</a></div></section>
-    </main>
-    <BottomNav />
-  </>;
+  if (!session) {
+    redirect("/sign-in?error=invalid-or-expired");
+  }
+  return (
+    <>
+      {/* TopAppBar */}
+      <header
+        className="bg-background fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 border-b border-white/5 backdrop-blur-md shadow-[0px_20px_40px_rgba(0,0,0,0.25)]"
+        role="banner"
+      >
+        <div className="flex items-center gap-3">
+          <button
+            aria-label="Open navigation menu"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <Icon name="menu" className="text-primary-container" />
+          </button>
+          <span className="text-3xl font-bold tracking-widest text-white uppercase font-teko">
+            HAULER_COMMAND
+          </span>
+        </div>
+        <div className="w-10 h-10 rounded-lg overflow-hidden border border-white/10">
+          <Image
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeIibQ_F8hOa8U-HrDqH_n2KWIh4TBHQr_6HZhHYVNOjW4iWj2avuQJhgxr6GCEyqFvwcYg3z9-2GfFYl0f9ux4ktpsgayMiawgztY57e67gfReWk1EmVE8BtDIphybFlXgoRSaTpFtObgSW6jwxABWKYgNLl3HImWHSYb8HvoiDZbIyYf4pG48AyCY_1pq_1O8gbi0_eAZLOMRK4O-uz3NHMBTrPZV0v8FHaT6gP2ID-Ihf33XbZnwwj4_1YEFzGgE7VHs304VtU"
+            alt="User profile photo"
+            width={40}
+            height={40}
+            className="object-cover"
+          />
+        </div>
+      </header>
+
+      <main id="main-content" className="pt-24 px-5 space-y-8 max-w-md mx-auto pb-28">
+        {/* Welcome */}
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-bold tracking-[0.2em] text-on-surface-variant uppercase">
+            ALAMO CITY HITCH &amp; GO CO.
+          </span>
+          <h1 className="text-3xl font-bold tracking-tight text-white uppercase italic font-headline">
+            FLEET COMMAND
+          </h1>
+        </div>
+
+        {/* Active Rental */}
+        <ActiveRental
+          trailerName="8.5' × 20' Enclosed Trailer"
+          unitId="#TX-20E-001"
+          hoursRemaining={18}
+          totalHours={24}
+        />
+
+        {/* Documents */}
+        <DocumentList />
+
+        {/* Security Status */}
+        <section
+          className="bg-surface-container-low rounded-lg border border-white/5 p-5"
+          aria-label="Account session"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" aria-hidden="true" />
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+                  Signed In As
+                </p>
+                <p className="text-sm font-bold text-white truncate">{session.email}</p>
+              </div>
+            </div>
+            <form action="/api/auth/logout" method="POST">
+              <button
+                type="submit"
+                className="min-h-[44px] px-4 py-2 bg-surface-container-high text-on-surface-variant hover:text-white hover:bg-surface-bright transition-colors font-headline font-bold tracking-widest uppercase text-xs"
+              >
+                Sign Out
+              </button>
+            </form>
+          </div>
+        </section>
+
+        {/* Map Preview */}
+        <div className="rounded-lg overflow-hidden h-32 relative grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+          <Image
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiX1wus2YyPxIkCrUffggEjpc24ch97ZiGD5bevb4Lxea4nY_l05xEcspo5AIPRxldzh78EfdisVXn28Pm-OFf71lCjVdk4PNcAWJpRlf5oN6m99oBFA4d7X9sK8BZE0YJUh026Yi34mlrXnePsoNE4QW04KG663kqNIX8Tl0Oroc376F_JXKdc47eV7C3XoGUzMD2qDzPdWuzMtmdFjzvWTBa5Jrk2WN3g0J27MKOxxLqzvMqen1dtaEkCaIljOZfQX0_KOXUSfw"
+            alt="Map showing Alamo City Hitch and Go rental location in San Antonio, Texas"
+            fill
+            sizes="(max-width: 768px) 100vw, 448px"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+          <div className="absolute bottom-3 left-3 flex items-center gap-2">
+            <Icon name="location_on" className="text-xs text-primary-container" />
+            <span className="text-[10px] font-bold text-white tracking-widest uppercase">
+              Rental Location: San Antonio, TX
+            </span>
+          </div>
+        </div>
+      </main>
+
+      <BottomNav />
+    </>
+  );
 }

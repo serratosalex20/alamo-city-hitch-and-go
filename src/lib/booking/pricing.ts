@@ -6,12 +6,10 @@
  * integer cents on the PaymentIntent — this module converts at the
  * boundary so the rest of the app never touches floats.
  *
- * Texas motor vehicle rental tax is computed on the rental fee only
- * (the refundable deposit is itemized separately). The Texas
- * Comptroller publishes a 10% rate for rental contracts of 1–30 days;
- * every rental duration currently sold by this site falls in that range.
- * The owner should confirm registration, exemptions, and reporting with
- * their tax professional before accepting live bookings.
+ * Texas state sales tax is computed at TAX_RATE on the rental fee only
+ * (deposits are refundable holds, not taxable revenue). The 8.25% rate
+ * is Bexar County's combined state + local sales tax — owner should
+ * verify with their tax accountant before going live.
  *
  * Sprint 3.4 — Pricing & Block Restructure (replaces Sprint 3.3):
  *   - 3-day block retired; replaced by a 1-week block per owner direction.
@@ -26,10 +24,11 @@
  *     1 Week / 2 Weeks) rather than 4-hour micro-blocks. See Sprint 3.4b.
  */
 
-import type { Booking, RentalDuration, Trailer } from "@/types/models";
+import type { RentalDuration, Trailer } from "@/types/models";
 import { trailers } from "@/lib/data/trailers";
 
-export const MOTOR_VEHICLE_RENTAL_TAX_RATE = 0.1;
+// TODO(owner): confirm with tax accountant — Bexar County combined rate.
+const TAX_RATE = 0.0825;
 
 /**
  * Hours per rental-duration key. Used to compute
@@ -87,10 +86,9 @@ export interface PriceQuote {
   trailerId: string;
   duration: RentalDuration;
   rentalCents: number; // charged immediately
-  depositCents: number; // refundable charge at checkout
+  depositCents: number; // pre-authorized, captured later if damages
   taxCents: number; // computed on rental only
-  totalCents: number; // rental + tax, excluding refundable deposit
-  checkoutTotalCents: number; // rental + tax + refundable deposit
+  totalCents: number; // rentalCents + taxCents (NOT deposit — that's a hold)
 }
 
 function getTrailer(trailerId: string): Trailer {
@@ -112,7 +110,7 @@ export function calculatePrice(
   const rentalDollars = trailer.pricing[duration];
   const rentalCents = Math.round(rentalDollars * 100);
   const depositCents = Math.round(trailer.deposit * 100);
-  const taxCents = Math.round(rentalCents * MOTOR_VEHICLE_RENTAL_TAX_RATE);
+  const taxCents = Math.round(rentalCents * TAX_RATE);
   const totalCents = rentalCents + taxCents;
 
   return {
@@ -122,7 +120,6 @@ export function calculatePrice(
     depositCents,
     taxCents,
     totalCents,
-    checkoutTotalCents: totalCents + depositCents,
   };
 }
 
@@ -133,9 +130,4 @@ export function formatUsd(cents: number): string {
     currency: "USD",
     minimumFractionDigits: 2,
   }).format(cents / 100);
-}
-
-/** Original checkout charge; legacy rentals collected their deposit separately. */
-export function bookingCheckoutTotal(booking: Pick<Booking, "rentalTotal" | "depositAmount" | "depositCollectedAtCheckout">): number {
-  return booking.rentalTotal + (booking.depositCollectedAtCheckout ? booking.depositAmount : 0);
 }
