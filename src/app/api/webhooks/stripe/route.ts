@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { stripeWebhookSecret } from "@/lib/env";
+import { isLiveDeployment, stripeWebhookSecret } from "@/lib/env";
 import { getStripe, hasStripe } from "@/lib/stripe/server";
 import { findBookingByPaymentIntent } from "@/lib/booking/repository";
 import {
@@ -29,6 +29,11 @@ export async function POST(request: Request) {
       { ok: false, error: error instanceof Error ? error.message : "Invalid Stripe signature." },
       { status: 400 },
     );
+  }
+
+  // A misconfigured test webhook must never update the live booking collection.
+  if (isLiveDeployment && !event.livemode) {
+    return NextResponse.json({ ok: false, error: "Live bookings require a live Stripe event." }, { status: 400 });
   }
 
   try {

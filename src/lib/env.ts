@@ -1,3 +1,5 @@
+import { hasLiveProviderConfiguration } from "./booking/provider-mode";
+
 /**
  * Typed environment variable reader.
  *
@@ -184,9 +186,19 @@ export const hasDocuSign = Boolean(
 
 export const hasEmail = Boolean(resendApiKey);
 
-/** Every dependency required before the site is allowed to accept a live payment. */
+/** Vercel Preview also uses NODE_ENV=production, so use the deployment target. */
+export const isLiveDeployment = read("VERCEL_ENV") === "production";
+const providerModeReady = !isLiveDeployment || hasLiveProviderConfiguration({
+  stripeSecretKey,
+  stripePublishableKey,
+  docusignOauthBaseUrl,
+  docusignBaseUrl,
+});
+
+/** Configuration prerequisites; provider credentials must also be verified before launch. */
 export const isProductionBookingReady = Boolean(
-  hasFirebase &&
+  providerModeReady &&
+    hasFirebase &&
     firebaseStorageBucket &&
     hasStripe &&
     stripePublishableKey &&
