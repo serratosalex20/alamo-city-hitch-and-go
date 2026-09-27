@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Book a Trailer Online",
+  title: "Book a Trailer",
   description:
-    "Reserve your San Antonio trailer rental online in minutes. Enclosed cargo trailers and dump trailers. Half Day, Full Day, 1 Week, or 2 Weeks (15 days) blocks. Same-day pickup. Pull & Go.",
+    "Reserve an enclosed or utility trailer in San Antonio. Contact Alamo City Hitch & Go for available dates, rental rates, and pickup arrangements.",
 };
 
 export default function BookLayout({ children }: { children: React.ReactNode }) {

@@ -26,6 +26,8 @@ export interface Trailer {
   name: string;
   type: TrailerType;
   slug: string;
+  vin?: string;
+  licensePlate?: string;
   description: string;
   imageUrl: string;
   images: string[]; // front-quarter, rear-quarter, interior/deck
@@ -70,6 +72,7 @@ export interface Trailer {
 
 export type UserRole = "customer" | "admin";
 export type ReferralSource =
+  | "previous_customer"
   | "business_card"
   | "referral"
   | "website"
@@ -103,11 +106,59 @@ export interface User {
 export type BookingStatus =
   | "pending_payment"
   | "pending_signature"
-  | "pending_verification"
+  | "pending_identity"
+  | "pending_insurance"
+  | "under_review"
   | "confirmed"
+  | "deposit_action_required"
+  | "ready_for_pickup"
   | "active"
+  | "return_inspection"
   | "completed"
+  | "rejected"
   | "cancelled";
+
+export type PaymentStatus = "pending" | "succeeded" | "failed" | "refunded";
+export type AgreementStatus = "not_started" | "sent" | "signed" | "declined";
+export type IdentityStatus =
+  | "not_started"
+  | "pending"
+  | "verified"
+  | "requires_input"
+  | "canceled";
+export type InsuranceStatus =
+  | "not_uploaded"
+  | "uploaded"
+  | "approved"
+  | "resubmit_requested"
+  | "rejected";
+export type DepositMethod = "authorization" | "refundable_charge";
+export type DepositStatus =
+  | "not_requested"
+  | "requires_action"
+  | "authorized"
+  | "charged"
+  | "partially_captured"
+  | "captured"
+  | "released"
+  | "failed";
+
+export type ReturnReminderStatus =
+  | "scheduled"
+  | "sent_immediately"
+  | "cancelled"
+  | "not_configured"
+  | "failed"
+  | "cancel_failed";
+
+export interface BookingAuditEvent {
+  action: string;
+  actor: string;
+  note?: string;
+  amountCents?: number;
+  createdAt: string;
+  createdAtMs: number;
+}
 
 /**
  * Sprint 3.4 — semantic duration keys instead of hour numbers.
@@ -128,38 +179,109 @@ export type RentalDuration = "halfDay" | "fullDay" | "oneWeek" | "twoWeeks";
 
 export interface Booking {
   id: string;
-  userId: string;
+  schemaVersion: 2;
+  checkoutKey: string;
+  checkoutAccessHash?: string; // browser capability digest; never the cookie value
+  userId?: string;
+  customerEmail: string;
+  customer: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    address: {
+      street: string;
+      city: string;
+      state: string;
+      zip: string;
+    };
+    referralSource: ReferralSource;
+    referralDetail?: string;
+  };
+  towVehicle: {
+    year: string;
+    make: string;
+    model: string;
+    plate?: string;
+  };
   trailerId: string;
   trailerName: string;       // denormalized for dashboard display
   unitId: string;            // e.g. "#TX-48092-B"
   status: BookingStatus;
+  fulfillmentType: "pickup";
   duration: RentalDuration;
   startTime: string;         // ISO datetime
   endTime: string;           // ISO datetime (recalculated on extensions)
+  startTimeMs: number;
+  endTimeMs: number;
+  checkoutExpiresAt: string;
+  checkoutExpiresAtMs: number;
+  documentsDueAt?: string;
+  documentsDueAtMs?: number;
+  policiesAcceptedAt: string;
+  emailMarketingOptIn?: boolean;
+  emailMarketingConsentAt?: string;
+  emailMarketingConsentText?: string;
   extensions: Extension[];
+  rentalSubtotal: number;    // cents
+  taxAmount: number;         // cents
   rentalTotal: number;       // cents
+  depositCollectedAtCheckout?: boolean; // absent for legacy separate deposits
+  depositResolutionAmount?: number; // immutable retained amount once settlement starts
   depositAmount: number;     // cents
   // Stripe
+  paymentStatus: PaymentStatus;
+  stripeCustomerId?: string;
+  stripePaymentMethodId?: string;
   rentalPaymentIntentId?: string;
   depositPaymentIntentId?: string;  // auth & capture (manual capture)
-  depositCaptured: boolean;
-  depositReleased: boolean;
+  depositMethod?: DepositMethod;
+  depositStatus: DepositStatus;
+  depositCaptureBefore?: string;
+  depositCaptureBeforeMs?: number;
+  depositAmountRetained?: number;
   // DocuSign
   docusignEnvelopeId?: string;
-  agreementSigned: boolean;
+  supersededAgreementEnvelopeIds?: string[];
+  agreementStatus: AgreementStatus;
   agreementSignedAt?: string;
-  // AI Verification
-  idDocumentUrl?: string;
-  addressDocumentUrl?: string;
-  idVerified: boolean;
-  addressVerified: boolean;
-  nameMatchScore?: number;
+  // Stripe Identity — raw ID images are not stored in this application.
+  stripeIdentitySessionId?: string;
+  identityStatus: IdentityStatus;
+  identityVerifiedAt?: string;
+  identityExpiresAt?: string;
+  identityVerificationSourceId?: string;
+  identitySourceBookingId?: string;
+  insuranceSourceBookingId?: string;
+  // Insurance
+  insuranceStatus: InsuranceStatus;
+  insuranceStoragePath?: string;
+  insuranceFileName?: string;
+  insuranceMimeType?: string;
+  insuranceCarrier?: string;
+  insurancePolicyNumber?: string;
+  insurancePolicyholder?: string;
+  insuranceExpiresAt?: string;
   // Admin
   preInspectionPhotos: string[];
   postInspectionPhotos: string[];
   adminNotes?: string;
+  reviewNote?: string;
+  confirmedAt?: string;
+  pickupReadyEmailId?: string;
+  pickupReadyEmailSentAt?: string;
+  pickedUpAt?: string;
+  returnedAt?: string;
+  returnedAtMs?: number;
+  returnReminderEmailId?: string;
+  returnReminderScheduledAt?: string;
+  returnReminderStatus?: ReturnReminderStatus;
+  returnReminderCancelledAt?: string;
+  depositResolvedAt?: string;
+  auditTrail: BookingAuditEvent[];
   createdAt: string;
+  createdAtMs: number;
   updatedAt: string;
+  updatedAtMs: number;
 }
 
 // ─── Extension ──────────────────────────────────────────
@@ -200,7 +322,7 @@ export type DocumentType =
   | "rental_agreement"
   | "rules_guidelines"
   | "drivers_license"
-  | "proof_of_address"
+  | "insurance"
   | "pre_inspection"
   | "post_inspection";
 

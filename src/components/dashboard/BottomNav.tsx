@@ -5,8 +5,8 @@ import { Icon } from "@/components/ui/Icon";
 
 const navItems = [
   { icon: "local_shipping", label: "Fleet", href: "/fleet", active: false },
-  { icon: "calendar_today", label: "Rentals", href: "/account", active: false },
-  { icon: "build", label: "Support", href: "/support", active: false },
+  { icon: "calendar_today", label: "Rentals", href: "/account/bookings", active: false },
+  { icon: "build", label: "Support", href: "/account#support", active: false },
   { icon: "person", label: "Account", href: "/account", active: true },
 ];
 

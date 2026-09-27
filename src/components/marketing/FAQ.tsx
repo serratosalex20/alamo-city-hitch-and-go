@@ -36,7 +36,7 @@ const faqs: FAQ[] = [
   {
     question: "How long can I rent a trailer?",
     answer:
-      "Rentals come in four block sizes: Half Day (12 hours), Full Day (24 hours), 1 Week (7 days), or 2 Weeks (15 calendar days — we include one free day). Pick the block that matches your job. If you need more time mid-rental, extensions are billed in the same block sizes — Half Day, Full Day, 1 Week, or 2 Weeks — so you extend by one more block, not micro-billable hours. Request through your customer dashboard before your scheduled return time so you don't trigger the late fee.",
+      "Rentals come in four block sizes: Half Day (12 hours), Full Day (24 hours), 1 Week (7 days), or 2 Weeks (15 calendar days — we include one free day). Pick the block that matches your job. If you need more time mid-rental, extensions are billed in the same block sizes — Half Day, Full Day, 1 Week, or 2 Weeks — so you extend by one more block, not micro-billable hours. Call or text us before your scheduled return time so you don't trigger the late fee.",
   },
   {
     question: "Do I need insurance to rent a trailer?",
@@ -46,22 +46,22 @@ const faqs: FAQ[] = [
   {
     question: "Is the security deposit charged to my card?",
     answer:
-      "No. The deposit is a $200 refundable pre-authorization hold, not a charge — the same amount across every trailer in the fleet. It releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning, fuel replacement, or overtime is owed, we capture only the amount due and release the remainder.",
+      "The refundable $200 deposit is charged at checkout along with the rental fee and tax. After the trailer is returned and inspected, we initiate a clean-return release or refund within 24 hours; your bank may take additional time to update the balance. If documented damage, cleaning, a missing lock or key, or overtime is owed, we retain only the supported amount and release or refund the remainder.",
   },
   {
     question: "How much does a trailer rental cost in San Antonio?",
     answer:
-      "Block rates start at $75 for a Half Day (12 hours) on our 6.5'×12' utility trailer, or $100 for a Full Day and $600 for 1 Week. The 8.5'×20' enclosed runs $90 for a Half Day, $150 for a Full Day, $900 for 1 Week, and $1,680 for 2 Weeks — and every 2-Week block ships with one free day baked in (15 calendar days, not 14). See the full price matrix on our rates page — every block of every trailer is priced openly, no quote forms or hidden fees. Texas sales tax (Bexar County combined, 8.25%) applies to the rental fee.",
+      "Block rates start at $75 for a Half Day (12 hours) on our 6.5'×12' utility trailer, or $100 for a Full Day and $600 for 1 Week. The 8.5'×20' enclosed runs $90 for a Half Day, $150 for a Full Day, $900 for 1 Week, and $1,680 for 2 Weeks — and every 2-Week block ships with one free day baked in (15 calendar days, not 14). See the full price matrix on our rates page — every block of every trailer is priced openly, no quote forms or hidden fees. Texas motor vehicle rental tax (10% for contracts of 1–30 days) applies to the rental fee.",
   },
   {
     question: "What if I'm late returning the trailer?",
     answer:
-      "A flat $100 late fee applies if the trailer comes back after the scheduled return time without an approved extension. That's materially more than the per-block extension rate — request the extension in advance through your dashboard. After roughly 24 hours overdue with no contact, the trailer is treated as abandoned and law enforcement may be notified.",
+      "A flat $100 late fee applies if the trailer comes back after the scheduled return time without an approved extension. That's materially more than the per-block extension rate — request the extension in advance by calling or texting us. After roughly 24 hours overdue with no contact, the trailer is treated as abandoned and law enforcement may be notified.",
   },
   {
     question: "Is there a cleaning fee?",
     answer:
-      "Only if the trailer is returned uncleaned — meaning trash, mud, debris, manure, paint splatter, or any soiling that requires more than about 15 minutes of cleanup. The flat cleaning fee is $100 and is captured from your deposit hold. Sweep the deck and clear any obvious mess before return and you're set.",
+      "Only if the trailer is returned uncleaned — meaning trash, mud, debris, manure, paint splatter, or any soiling that requires more than about 15 minutes of cleanup. The flat cleaning fee is $100 and is deducted from your refundable deposit. Sweep the deck and clear any obvious mess before return and you're set.",
   },
   {
     question: "Can I take the trailer outside of Texas?",
@@ -125,7 +125,7 @@ export function FAQ() {
         </h2>
         <p className="text-lg text-on-surface-variant font-light leading-relaxed max-w-2xl">
           The things people ask before their first booking. Anything missing,
-          shoot us a note from the booking flow and we&apos;ll add it here.
+          call or text our team and we’ll help.
         </p>
       </div>
 

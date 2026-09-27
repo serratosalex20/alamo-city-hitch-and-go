@@ -1,3 +1,4 @@
+import { BookingCTA } from "@/components/marketing/BookingExperience";
 /**
  * /terms — public rental terms summary.
  *
@@ -14,7 +15,6 @@
  * the final binding language.
  */
 
-import Link from "next/link";
 import type { Metadata } from "next";
 import { Navbar } from "@/components/marketing/Navbar";
 import { Footer } from "@/components/marketing/Footer";
@@ -41,12 +41,12 @@ const sections: Section[] = [
   {
     heading: "Payment",
     body:
-      "The rental fee is charged at booking. Texas sales tax (Bexar County combined, 8.25%) applies to the rental fee only. Your card on file must be in your legal name as shown on the driver's license you present at pickup.",
+      "The rental fee is charged at booking. Texas motor vehicle rental tax (10% for contracts of 1–30 days) applies to the rental fee. Your card on file must be in your legal name as shown on the driver's license you present at pickup.",
   },
   {
     heading: "Refundable Deposit",
     body:
-      "Every rental requires a $200 refundable deposit hold — the same amount across every trailer in the fleet. It is a pre-authorization on your card, not a charge. The hold releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning ($100 flat), or unpaid overtime is owed, we capture only the amount due and release the remainder.",
+      "Every rental requires a $200 security deposit. The refundable deposit is charged at checkout along with the rental fee and tax. After return and inspection, we initiate the release or refund within 24 hours when nothing is owed; your bank may take additional time to update your available balance. If documented damage, cleaning ($100 flat), or unpaid overtime is owed, we retain only the supported amount and release or refund the remainder.",
   },
   {
     heading: "Insurance",
@@ -76,7 +76,7 @@ const sections: Section[] = [
   {
     heading: "Damage, Loss & Inspection",
     body:
-      "We inspect with you at pickup and document the trailer's condition on a joint inspection report. We re-inspect within two business days of return. Damage, loss, missing accessories, or excessive soiling that wasn't there at pickup is documented with photographs and billed at commercially reasonable rates.",
+      "We inspect with you at pickup and document the trailer's condition on a joint inspection report. The supplied trailer lock and key are included accessories and must be returned. We complete the return review within 24 hours. Damage, loss, missing accessories, or excessive soiling that wasn't there at pickup is documented with photographs and billed at commercially reasonable rates. If the supplied lock or key is lost or damaged, its documented replacement cost may be deducted from the deposit; the full deposit is not automatically forfeited.",
   },
   {
     heading: "Governing Law & Venue",
@@ -168,13 +168,13 @@ export default function TermsPage() {
             You&apos;ll see the full binding agreement at booking. Sign once,
             pull, go.
           </p>
-          <Link
+          <BookingCTA
             href="/book"
             className="inline-flex items-center gap-3 bg-primary-action text-white px-10 py-4 min-h-[44px] font-headline font-bold uppercase tracking-widest text-base hover:brightness-110 transition-all"
           >
             Start a Booking
             <Icon name="arrow_forward" className="text-base" />
-          </Link>
+          </BookingCTA>
         </section>
       </main>
       <Footer />

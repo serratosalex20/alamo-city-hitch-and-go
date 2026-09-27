@@ -3,7 +3,8 @@ import { Space_Grotesk, Inter, Teko, Oswald } from "next/font/google";
 // metadataBase drives canonical tags AND the absolute og:image/twitter:image
 // URLs on every route — it must be the branded domain, not the deployment
 // host. See the siteUrl doc comment in lib/env.ts.
-import { siteUrl as appUrl } from "@/lib/env";
+import { siteUrl as appUrl, contactBookingOnly, supportPhone } from "@/lib/env";
+import { BookingExperienceProvider } from "@/components/marketing/BookingExperience";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -36,7 +37,7 @@ const oswald = Oswald({
 
 export const metadata: Metadata = {
   title: {
-    default: "Alamo City Hitch & Go — San Antonio's Top-Rated Trailer Rentals",
+    default: "Alamo City Hitch & Go — San Antonio Trailer Rentals",
     template: "%s — Alamo City Hitch & Go",
   },
   description:
@@ -113,6 +114,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
+        {/* Material Symbols is an icon font, not a page text font. */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
@@ -124,7 +127,7 @@ export default function RootLayout({
         <a href="#main-content" className="skip-to-content">
           Skip to main content
         </a>
-        {children}
+        <BookingExperienceProvider contactOnly={contactBookingOnly} phone={supportPhone}>{children}</BookingExperienceProvider>
       </body>
     </html>
   );

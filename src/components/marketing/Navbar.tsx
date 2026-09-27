@@ -33,6 +33,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BookingCTA, useBookingExperience } from "./BookingExperience";
 import { Icon } from "@/components/ui/Icon";
 
 const navLinks = [
@@ -43,11 +44,13 @@ const navLinks = [
 ];
 
 export function Navbar() {
+  const { contactOnly } = useBookingExperience();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sessionEmail, setSessionEmail] = useState<string | null | undefined>(undefined);
   const pathname = usePathname();
 
   useEffect(() => {
+    if (contactOnly) return;
     let cancelled = false;
     fetch("/api/auth/me", { cache: "no-store" })
       .then((r) => r.json())
@@ -60,7 +63,7 @@ export function Navbar() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [contactOnly]);
 
   return (
     <header
@@ -113,7 +116,7 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           {/* Session-aware Sign In / Account (desktop only). Hidden while
               loading to avoid a "Sign In" -> "Account" flash. */}
-          {sessionEmail === null && (
+          {!contactOnly && sessionEmail === null && (
             <Link
               href="/sign-in"
               className="hidden md:flex min-h-[44px] items-center px-3 font-headline tracking-[0.15em] uppercase text-xs font-medium text-on-surface-variant hover:text-white transition-colors"
@@ -121,7 +124,7 @@ export function Navbar() {
               Sign In
             </Link>
           )}
-          {typeof sessionEmail === "string" && (
+          {!contactOnly && typeof sessionEmail === "string" && (
             <Link
               href="/account"
               className="hidden md:flex min-h-[44px] items-center gap-1.5 px-3 font-headline tracking-[0.15em] uppercase text-xs font-medium text-on-surface-variant hover:text-white transition-colors"
@@ -133,12 +136,12 @@ export function Navbar() {
           )}
 
           {/* Primary CTA — rounded-full pill in Alamo Crimson */}
-          <Link
+          <BookingCTA
             href="/book"
             className="bg-primary-action text-white px-5 py-2.5 rounded-full font-headline font-bold tracking-[0.15em] uppercase text-xs hover:brightness-110 active:scale-[0.97] transition-all min-h-[40px] inline-flex items-center whitespace-nowrap"
           >
             Rent Now
-          </Link>
+          </BookingCTA>
 
           {/* Mobile menu toggle */}
           <button
@@ -179,7 +182,7 @@ export function Navbar() {
               </Link>
             );
           })}
-          {sessionEmail === null && (
+          {!contactOnly && sessionEmail === null && (
             <Link
               href="/sign-in"
               role="menuitem"
@@ -189,7 +192,7 @@ export function Navbar() {
               Sign In
             </Link>
           )}
-          {typeof sessionEmail === "string" && (
+          {!contactOnly && typeof sessionEmail === "string" && (
             <Link
               href="/account"
               role="menuitem"

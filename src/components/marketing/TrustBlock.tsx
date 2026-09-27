@@ -1,3 +1,4 @@
+import { BookingCTA } from "@/components/marketing/BookingExperience";
 /**
  * TrustBlock — "Why a new local beats the chain"
  *
@@ -21,7 +22,6 @@
  * Server Component on purpose: pure static markup, zero JS shipped.
  */
 
-import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 
 interface Promise {
@@ -47,13 +47,13 @@ const promises: Promise[] = [
     icon: "support_agent",
     heading: "Owner-Level Attention, Every Rental",
     body:
-      "You're not customer #4,212 at a national chain. Small operation, local owner, accountable to every transaction. Reach a real person 24/7 the entire time the trailer is out.",
+      "You're not customer #4,212 at a national chain. Small operation, local owner, accountable to every transaction. Call or text our team for help with your rental.",
   },
   {
     icon: "request_quote",
     heading: "What You See Is What You Pay",
     body:
-      "Flat block pricing on the rates page. Texas sales tax called out. Refundable deposit is a hold, not a charge. No mileage roulette, no fuel-fill gotchas.",
+      "Flat block pricing on the rates page. Texas motor vehicle rental tax called out. Refundable deposit is charged at checkout. No mileage roulette, no fuel-fill gotchas.",
   },
 ];
 
@@ -113,13 +113,13 @@ export function TrustBlock() {
           In the meantime: you&apos;re reading transparent pricing on the same
           page that holds the rental agreement &mdash; not a sales letter.
         </p>
-        <Link
+        <BookingCTA
           href="/book"
           className="inline-flex items-center gap-3 bg-primary-action text-white px-8 py-3 min-h-[44px] font-headline font-bold uppercase tracking-widest text-sm hover:brightness-110 transition-all flex-shrink-0"
         >
           Be Our Next Booking
           <Icon name="arrow_forward" className="text-sm" />
-        </Link>
+        </BookingCTA>
       </div>
     </section>
   );

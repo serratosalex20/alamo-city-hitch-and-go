@@ -22,6 +22,23 @@ export const firebaseAdminPrivateKey = read("FIREBASE_ADMIN_PRIVATE_KEY")?.repla
   /\\n/g,
   "\n",
 );
+export const firebaseStorageBucket =
+  read("FIREBASE_STORAGE_BUCKET") ?? read("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
+
+function resourceNamespace(name: string, fallback: string): string {
+  const value = read(name) ?? fallback;
+  if (!/^[A-Za-z0-9_-]+$/.test(value)) {
+    throw new Error(`${name} may contain only letters, numbers, underscores, and hyphens.`);
+  }
+  return value;
+}
+
+// Preview deployments can share a Firebase project without sharing customer data.
+export const bookingCollection = resourceNamespace("BOOKING_COLLECTION", "bookings");
+export const bookingStoragePrefix = resourceNamespace(
+  "BOOKING_STORAGE_PREFIX",
+  "bookings",
+);
 
 // ─── Firebase (client-side SDK) ──────────────────────────
 export const firebasePublicConfig = {
@@ -38,13 +55,67 @@ export const stripeSecretKey = read("STRIPE_SECRET_KEY");
 export const stripePublishableKey = read("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY");
 export const stripeWebhookSecret = read("STRIPE_WEBHOOK_SECRET");
 
+// ─── DocuSign ───────────────────────────────────────────
+export const docusignIntegrationKey = read("DOCUSIGN_INTEGRATION_KEY");
+export const docusignUserId = read("DOCUSIGN_USER_ID");
+export const docusignAccountId = read("DOCUSIGN_ACCOUNT_ID");
+export const docusignTemplateId = read("DOCUSIGN_TEMPLATE_ID");
+export const docusignSignerRole = read("DOCUSIGN_SIGNER_ROLE") ?? "Renter";
+export const docusignRsaPrivateKey = read("DOCUSIGN_RSA_PRIVATE_KEY")?.replace(
+  /\\n/g,
+  "\n",
+);
+export const docusignOauthBaseUrl =
+  read("DOCUSIGN_OAUTH_BASE_URL") ?? "https://account-d.docusign.com";
+export const docusignBaseUrl =
+  read("DOCUSIGN_BASE_URL") ?? "https://demo.docusign.net/restapi";
+
+// ─── Email ──────────────────────────────────────────────
+export const resendApiKey = read("RESEND_API_KEY");
+export const emailFrom =
+  read("EMAIL_FROM") ?? "Alamo City Hitch & Go <booking@alamocityhitchandgo.com>";
+export const supportEmail =
+  read("SUPPORT_EMAIL") ?? "alamocityhitchandgo@gmail.com";
+export const supportPhone = read("SUPPORT_PHONE") ?? "210-269-3467";
+
+// ─── Pickup operations ──────────────────────────────────
+// Kept server-side so the exact handoff location is disclosed only after approval.
+export const pickupAddress = read("PICKUP_ADDRESS");
+export const pickupInstructions =
+  read("PICKUP_INSTRUCTIONS") ??
+  "Arrive at your scheduled time and wait for the representative before connecting or moving the trailer.";
+
+// ─── Owner access ───────────────────────────────────────
+export const adminEmails = new Set(
+  (read("ADMIN_EMAILS") ?? "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean),
+);
+
 // ─── App ─────────────────────────────────────────────────
 /**
  * Runtime origin of THIS deployment. Env-driven on purpose: auth
  * redirects and magic-link callbacks must resolve against whatever
  * host actually served the request, so preview deployments work.
  */
-export const appUrl = read("NEXT_PUBLIC_APP_URL") ?? "http://localhost:3000";
+export function resolveAppUrl(
+  configuredUrl: string | undefined,
+  vercelDeploymentHost: string | undefined,
+): string {
+  const candidate = configuredUrl ??
+    (vercelDeploymentHost ? `https://${vercelDeploymentHost}` : "http://localhost:3000");
+  try {
+    return new URL(candidate).origin;
+  } catch {
+    throw new Error("NEXT_PUBLIC_APP_URL must be a valid absolute URL.");
+  }
+}
+
+export const appUrl = resolveAppUrl(
+  read("NEXT_PUBLIC_APP_URL"),
+  read("VERCEL_URL"),
+);
 
 /**
  * Canonical public origin of the business. Deliberately NOT env-driven.
@@ -77,7 +148,7 @@ export const siteUrl = "https://www.alamocityhitchandgo.com";
 const DEV_FALLBACK_SECRET =
   "dev-only-fallback-secret-do-not-use-in-production-rotate-via-AUTH_SECRET";
 export const authSecret = read("AUTH_SECRET") ?? DEV_FALLBACK_SECRET;
-export const hasProductionAuthSecret = read("AUTH_SECRET") !== undefined;
+export const hasProductionAuthSecret = authSecret !== DEV_FALLBACK_SECRET && authSecret.length >= 32;
 
 // ─── Mode gates ──────────────────────────────────────────
 /**
@@ -102,3 +173,37 @@ export const hasFirebaseClient = Boolean(
  * the /api/webhooks/stripe route).
  */
 export const hasStripe = Boolean(stripeSecretKey);
+
+export const hasDocuSign = Boolean(
+  docusignIntegrationKey &&
+    docusignUserId &&
+    docusignAccountId &&
+    docusignTemplateId &&
+    docusignRsaPrivateKey,
+);
+
+export const hasEmail = Boolean(resendApiKey);
+
+/** Every dependency required before the site is allowed to accept a live payment. */
+export const isProductionBookingReady = Boolean(
+  hasFirebase &&
+    firebaseStorageBucket &&
+    hasStripe &&
+    stripePublishableKey &&
+    stripeWebhookSecret &&
+    hasDocuSign &&
+    hasEmail &&
+    hasProductionAuthSecret &&
+    adminEmails.size > 0 &&
+    pickupAddress &&
+    pickupInstructions,
+);
+
+/** Development-only adapters are never allowed to create a production booking. */
+export const isDemoEnvironment = process.env.NODE_ENV !== "production";
+
+/** Production opens with call/text reservations. Online checkout needs an explicit opt-in. */
+export const contactBookingOnly =
+  read("BOOKING_MODE") === "contact" ||
+  (read("VERCEL_ENV") === "production" && read("BOOKING_MODE") !== "online") ||
+  (!isDemoEnvironment && !isProductionBookingReady);

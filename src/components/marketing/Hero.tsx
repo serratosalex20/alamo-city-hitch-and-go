@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { HeroBookingActions } from "./BookingExperience";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { Icon } from "@/components/ui/Icon";
 
@@ -24,7 +24,7 @@ export function Hero() {
           >
             SAN ANTONIO&apos;S <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4444] via-[#DC2626] to-[#7F1D1D]">
-              TOP-RATED
+              HEAVY-DUTY
             </span>{" "}
             <br />
             TRAILER RENTALS
@@ -34,11 +34,7 @@ export function Hero() {
         {/* Trust Badge */}
         <div className="col-span-12 lg:col-span-4 flex lg:justify-end items-start pt-4">
           <GlassPanel className="p-6 flex flex-col items-center gap-2">
-            <div className="flex gap-1 text-[#F59E0B]" aria-label="5 out of 5 stars" role="img">
-              {[...Array(5)].map((_, i) => (
-                <Icon key={i} name="star" filled className="text-xl" />
-              ))}
-            </div>
+            <Icon name="local_shipping" className="text-primary text-3xl" />
             <span className="font-headline font-bold text-xl uppercase tracking-tighter">
               Local &amp; Reliable
             </span>
@@ -55,21 +51,7 @@ export function Hero() {
             simplicity.{" "}
             <span className="text-on-surface font-bold">Pull &amp; Go.</span>
           </p>
-          <div className="flex flex-col sm:flex-row gap-6">
-            <Link
-              href="/book"
-              className="bg-primary-action text-white hover:brightness-110 transition-all duration-300 font-headline font-black tracking-widest uppercase px-10 py-5 text-lg flex items-center justify-center gap-3 active:scale-95 min-h-[44px]"
-            >
-              Book Your Trailer
-              <Icon name="arrow_forward" />
-            </Link>
-            <Link
-              href="/fleet"
-              className="bg-surface-container-highest text-on-surface hover:bg-surface-bright transition-colors font-headline font-bold tracking-widest uppercase border-b-2 border-outline-variant px-10 py-5 text-lg flex items-center justify-center gap-3 min-h-[44px]"
-            >
-              View Fleet
-            </Link>
-          </div>
+          <HeroBookingActions />
         </div>
 
         {/* Hero Image — Asymmetric Overlap */}

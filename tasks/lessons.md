@@ -17,6 +17,12 @@ Each entry:
 
 ## Entries
 
+### 2026-09-04 — Preview Environment Is Part of the Booking Product
+- **Context:** The completed booking code passed local tests, but the first owner-run Vercel preview smoke test stopped at Check Availability.
+- **Mistake:** Treated the successful preview build as sufficient without proving that Preview-scoped Firebase and the remaining sandbox integrations were configured.
+- **Correction:** The recording showed `/api/availability` returning the deliberate 503 launch gate before customer details or payment.
+- **Rule:** A booking release is not ready when only the code builds. Verify every deployment environment from UI → API → persistence → payment → documents → owner operations, and explicitly inspect environment-variable scope before calling a preview usable.
+
 ### 2026-04-12 — UI/UX Audit Findings
 - **Context:** Building initial components (Navbar, forms, dashboard)
 - **Mistake:** Shipped without a11y fundamentals — no skip-link, no focus-visible, no htmlFor/id on form labels, no aria-hidden on decorative icons, no prefers-reduced-motion, download buttons at 32x32 (below 44px touch minimum), no mobile nav, progress bar missing role="progressbar"

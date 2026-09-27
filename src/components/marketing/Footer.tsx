@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { ContactActions } from "./BookingExperience";
+import { supportPhone } from "@/lib/env";
 
 /**
  * Footer — minimal site chrome.
@@ -19,6 +21,7 @@ const footerLinks = [
   { label: "Rates", href: "/rates" },
   { label: "About", href: "/about" },
   { label: "Terms", href: "/terms" },
+  { label: "Privacy", href: "/privacy" },
   { label: "Book", href: "/book" },
 ];
 
@@ -41,6 +44,8 @@ export function Footer() {
             &copy; {new Date().getFullYear()} Alamo City Hitch &amp; Go Co LLC
           </span>
         </div>
+
+        <div className="text-center"><p className="text-lg font-bold mb-3">{supportPhone}</p><ContactActions compact /></div>
 
         {/* Nav */}
         <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-6 md:gap-8">

@@ -5,7 +5,7 @@ const features = [
     icon: "speed",
     title: "Rapid Pickup",
     description:
-      "Skip the paperwork. Our digital-first booking gets you on the road in under 5 minutes.",
+      "Arrange your pickup with our team so you know what to bring and when to arrive.",
     borderColor: "border-secondary",
     iconColor: "text-secondary",
   },
@@ -19,9 +19,9 @@ const features = [
   },
   {
     icon: "support_agent",
-    title: "24/7 Support",
+    title: "Local Support",
     description:
-      "Roadside assistance and hauling experts on standby for every mile of your journey.",
+      "Call or text our team for help with your rental, pickup, or return.",
     borderColor: "border-tertiary",
     iconColor: "text-tertiary",
   },
