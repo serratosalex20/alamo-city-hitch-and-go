@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PickupDatePicker } from "@/components/booking/PickupDatePicker";
+import { PickupTimePicker } from "@/components/booking/PickupTimePicker";
 import type { BookingFormData } from "@/app/book/page";
 import type { RentalDuration } from "@/types/models";
 import { ALL_DURATIONS, DURATION_LABELS } from "@/lib/booking/pricing";
@@ -156,24 +157,13 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           >
             Pickup Time <span className="text-error" aria-hidden="true">*</span>
           </label>
-          <select
-            id="booking-time"
-            required
-            disabled={!formData.date || calendarLoading || timeOptions.length === 0}
+          <PickupTimePicker
             value={selectedTimeAvailable ? formData.time : ""}
-            onChange={(e) => { updateForm({ time: e.target.value }); setError(null); }}
-            aria-describedby="booking-time-help"
-            className="w-full bg-surface-container-low text-on-surface font-body py-4 px-5 ghost-border focus:border-b-2 focus:border-primary-action outline-none transition-all"
-          >
-            <option value="" disabled>
-              {calendarLoading ? "Checking available times…" : !formData.date ? "Choose a date first" : timeOptions.length === 0 ? "No available times — choose another date" : "Choose a pickup time"}
-            </option>
-            {timeOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            options={timeOptions}
+            disabled={!formData.date || calendarLoading || timeOptions.length === 0}
+            onChange={time => { updateForm({ time }); setError(null); }}
+            placeholder={calendarLoading ? "Checking available times…" : !formData.date ? "Choose a date first" : timeOptions.length === 0 ? "No available times — choose another date" : "Choose a pickup time"}
+          />
           <p
             id="booking-time-help"
             className="mt-2 text-xs text-on-surface-variant"
