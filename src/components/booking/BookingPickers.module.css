@@ -1,0 +1,27 @@
+.panel {
+  animation: reveal 150ms ease-out;
+  transform-origin: top;
+  color-scheme: dark;
+}
+
+.scrollArea {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: #9b1c1c #181c23;
+}
+
+.scrollArea::-webkit-scrollbar { width: 8px; }
+.scrollArea::-webkit-scrollbar-track { background: #181c23; }
+.scrollArea::-webkit-scrollbar-thumb { background: #9b1c1c; border-radius: 8px; }
+
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+  .scrollArea { scroll-behavior: auto; }
+}

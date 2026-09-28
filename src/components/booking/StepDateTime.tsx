@@ -1,8 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { PickupDatePicker } from "@/components/booking/PickupDatePicker";
+import { PickupTimePicker } from "@/components/booking/PickupTimePicker";
 import type { BookingFormData } from "@/app/book/page";
 import type { RentalDuration } from "@/types/models";
 import { ALL_DURATIONS, DURATION_LABELS } from "@/lib/booking/pricing";
+import { formatBusinessDate, localPickupToUtc, PICKUP_HOURS_DESCRIPTION, PICKUP_TIME_OPTIONS } from "@/lib/booking/schedule";
 
 interface Props {
   formData: BookingFormData;
@@ -22,7 +26,18 @@ const durationDescriptions: Record<RentalDuration, string> = {
 };
 
 export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
-  const today = new Date().toISOString().split("T")[0];
+  const [clock, setClock] = useState(() => Date.now());
+  const today = formatBusinessDate(clock);
+  const [month, setMonth] = useState(() => (formData.date || today).slice(0, 7));
+  const timeOptions = formData.date ? PICKUP_TIME_OPTIONS.filter(option => localPickupToUtc(formData.date, option.value).getTime() > clock) : [];
+  const selectedTimeAvailable = timeOptions.some(option => option.value === formData.time);
+
+  useEffect(() => {
+    const refresh = () => setClock(Date.now());
+    const timer = window.setInterval(refresh, 30_000);
+    window.addEventListener("focus", refresh);
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", refresh); };
+  }, []);
 
   return (
     <div>
@@ -42,14 +57,12 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           >
             Pickup Date <span className="text-error" aria-hidden="true">*</span>
           </label>
-          <input
-            id="booking-date"
-            type="date"
-            required
-            min={today}
+          <PickupDatePicker
             value={formData.date}
-            onChange={(e) => updateForm({ date: e.target.value })}
-            className="w-full bg-surface-container-low text-on-surface font-body py-4 px-5 ghost-border focus:border-b-2 focus:border-primary-action outline-none transition-all"
+            month={month}
+            today={today}
+            onMonthChange={setMonth}
+            onChange={date => updateForm({ date, time: "" })}
           />
         </div>
 
@@ -61,14 +74,14 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           >
             Pickup Time <span className="text-error" aria-hidden="true">*</span>
           </label>
-          <input
-            id="booking-time"
-            type="time"
-            required
+          <PickupTimePicker
             value={formData.time}
-            onChange={(e) => updateForm({ time: e.target.value })}
-            className="w-full bg-surface-container-low text-on-surface font-body py-4 px-5 ghost-border focus:border-b-2 focus:border-primary-action outline-none transition-all"
+            options={timeOptions}
+            disabled={!formData.date}
+            placeholder={!formData.date ? "Choose a date first" : timeOptions.length === 0 ? "No pickup times left — choose another date" : "Choose a pickup time"}
+            onChange={time => updateForm({ time })}
           />
+          <p id="booking-time-help" className="mt-2 text-xs text-on-surface-variant">{PICKUP_HOURS_DESCRIPTION}</p>
         </div>
 
         {/* Duration */}
@@ -112,7 +125,7 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
         </button>
         <button
           onClick={onNext}
-          disabled={!formData.date || !formData.time}
+          disabled={!formData.date || !selectedTimeAvailable}
           className="flex-1 min-h-[44px] bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 transition-all active:scale-[0.98]"
         >
           Continue
