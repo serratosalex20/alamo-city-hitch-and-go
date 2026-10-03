@@ -306,6 +306,7 @@ test("owner approval requires the review state and complete documents", async ()
   fixture.agreementStatus = "signed";
   fixture.identityStatus = "verified";
   fixture.insuranceStatus = "uploaded";
+  Object.assign(fixture, { trailerId: "trailer-004", rentalPaymentIntentId: "pi_owner_review", insuranceStoragePath: "test/proof.pdf", insuranceCarrier: "Test", insurancePolicyholder: "Test Renter", insurancePolicyNumber: "POL-1", insuranceExpiresAt: "2031-01-01", startTime: "2030-10-10T15:00:00.000Z", startTimeMs: Date.parse("2030-10-10T15:00:00.000Z"), endTime: "2030-10-11T15:00:00.000Z", endTimeMs: Date.parse("2030-10-11T15:00:00.000Z") });
   await createBookingHold(fixture, 1);
   const approved = await performAdminBookingAction({
     bookingId: fixture.id,

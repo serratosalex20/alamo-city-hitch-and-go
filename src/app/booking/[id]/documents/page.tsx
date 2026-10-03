@@ -1,3 +1,4 @@
+import { reconcileBookingConfirmation } from "@/lib/booking/workflow";
 import { DocumentList } from "@/components/dashboard/DocumentList";
 import { BookingInstructions } from "@/components/account/BookingInstructions";
 import { RefreshBookingStatus } from "@/components/account/RefreshBookingStatus";
@@ -33,7 +34,12 @@ export default async function BookingDocumentsPage({ params, searchParams }: { p
   const { id } = await params;
   const authorized = await getCustomerBooking(id);
   if (!authorized) redirect(`/sign-in?next=${encodeURIComponent(`/booking/${id}/documents`)}`);
-  const { booking, session } = authorized;
+  const { session } = authorized;
+  let booking = authorized.booking;
+  if (booking.status === "under_review" || (booking.status === "ready_for_pickup" && !booking.pickupReadyEmailId)) {
+    try { booking = await reconcileBookingConfirmation(booking.id); }
+    catch { console.error("[booking-confirmation] Status or notification will retry on refresh."); }
+  }
   // Request-time server snapshot; authorization reads cookies on every request.
   // eslint-disable-next-line react-hooks/purity
   const nowMs = Date.now();
@@ -62,7 +68,7 @@ export default async function BookingDocumentsPage({ params, searchParams }: { p
             {bookingHeading(booking.status)}
           </h1>
           <p className="max-w-2xl text-on-surface-variant">
-            {booking.status === "active" ? "Your trailer has been picked up. Review your return time and instructions below." : booking.status === "completed" ? "Your rental is complete. Visit your command center to view your bookings or book again." : confirmed ? "Your reservation has been approved. Review your booking details and instructions below." : booking.status === "under_review" ? "Payment and documents received. The owner is reviewing your reservation." : "Payment received. Complete each required item below; your reservation is confirmed after owner approval."}
+            {booking.status === "active" ? "Your trailer has been picked up. Review your return time and instructions below." : booking.status === "completed" ? "Your rental is complete. Visit your command center to view your bookings or book again." : confirmed ? "Your reservation is confirmed. Review your booking details and instructions below." : booking.status === "under_review" ? "Payment and documents received. We’re checking your booking requirements." : "Payment received. Complete the required steps below. Your booking confirms automatically when all requirements pass."}
           </p>
         </div>
 
@@ -90,6 +96,7 @@ export default async function BookingDocumentsPage({ params, searchParams }: { p
           insurancePolicyholder={booking.insurancePolicyholder}
           hasInsuranceFile={!!booking.insuranceStoragePath && booking.insuranceStatus !== "resubmit_requested"}
           bookingStatus={booking.status}
+          confirmationIssue={booking.automaticConfirmationIssue}
           depositStatus={booking.depositStatus}
           depositMethod={booking.depositMethod}
           depositAmount={booking.depositAmount}

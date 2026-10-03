@@ -1,5 +1,6 @@
+import { canCompleteDocuments } from "@/lib/booking/confirmation-policy";
 import { nextDocumentStatus } from "@/lib/customers/returning";
-import { notifyDocumentReview } from "@/lib/booking/workflow";
+import { reconcileBookingConfirmation } from "@/lib/booking/workflow";
 import { NextResponse } from "next/server";
 import { getCustomerBooking } from "@/lib/auth/authorization";
 import { updateBooking } from "@/lib/booking/repository";
@@ -19,8 +20,11 @@ export async function POST(
     return NextResponse.json({ ok: false, error: "Complete payment first." }, { status: 409 });
   }
   if (booking.identityStatus === "verified") {
+    await reconcileBookingConfirmation(id);
     return NextResponse.json({ ok: true, mode: "complete" as const });
   }
+
+  if (!canCompleteDocuments(booking)) return NextResponse.json({ ok: false, error: "This booking is no longer accepting documents." }, { status: 409 });
 
   if (!hasStripe) {
     if (!isDemoEnvironment) {
@@ -28,10 +32,11 @@ export async function POST(
     }
     const updated = await updateBooking(
       id,
-      { identityStatus: "verified", identityVerifiedAt: new Date().toISOString(), status: nextDocumentStatus({ ...booking, identityStatus: "verified" }) },
+      current => ({ identityStatus: "verified", identityVerifiedAt: new Date().toISOString(), status: nextDocumentStatus({ ...current, identityStatus: "verified" }) }),
       { action: "demo_identity_verified", actor: session.email },
+      canCompleteDocuments,
     );
-    await notifyDocumentReview(updated);
+    await reconcileBookingConfirmation(updated.id);
     return NextResponse.json({ ok: true, mode: "demo" as const });
   }
 
@@ -55,10 +60,15 @@ export async function POST(
           },
           { idempotencyKey: `identity-${id}` },
         );
+    if (verification.status === "verified" && booking.stripeIdentitySessionId === verification.id) {
+      await syncIdentityVerificationSession(verification);
+      return NextResponse.json({ ok: true, mode: "complete" as const });
+    }
     await updateBooking(
       id,
       { stripeIdentitySessionId: verification.id, identityStatus: "pending" },
       { action: "identity_verification_started", actor: session.email },
+      current => canCompleteDocuments(current) && current.identityStatus !== "verified",
     );
     return NextResponse.json({
       ok: true,

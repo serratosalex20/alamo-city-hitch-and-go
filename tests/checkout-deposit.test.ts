@@ -106,7 +106,7 @@ await t.test("upfront deposit does not bypass document verification; owner insur
   await markRentalPaymentSucceeded(intent);
   await updateBooking(fixture.id, { status: "under_review", insuranceStatus: "uploaded" });
   await assert.rejects(performAdminBookingAction({ bookingId: fixture.id, action: "approve", actor: "owner" }), /must all be complete/);
-  await updateBooking(fixture.id, { agreementStatus: "signed", identityStatus: "verified" });
+  await updateBooking(fixture.id, { agreementStatus: "signed", identityStatus: "verified", insuranceStoragePath: "test/proof.pdf", insuranceCarrier: "Test", insurancePolicyholder: "Test Renter", insurancePolicyNumber: "POL-1", insuranceExpiresAt: "2031-01-01", startTime: "2030-10-15T15:00:00.000Z", startTimeMs: Date.parse("2030-10-15T15:00:00.000Z"), endTime: "2030-10-16T15:00:00.000Z", endTimeMs: Date.parse("2030-10-16T15:00:00.000Z") });
   const approved = await performAdminBookingAction({ bookingId: fixture.id, action: "approve", actor: "owner" });
   assert.equal(approved.insuranceStatus, "approved");
   assert.equal(approved.status, "ready_for_pickup");

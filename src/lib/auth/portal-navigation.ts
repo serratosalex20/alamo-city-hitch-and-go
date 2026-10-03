@@ -17,5 +17,5 @@ export function bookingHeading(status: BookingStatus) {
   if (status === "cancelled") return "Booking Cancelled";
   if (status === "rejected") return "Booking Not Approved";
   if (portalStatuses.includes(status)) return "Reservation Confirmed";
-  return status === "under_review" ? "Under Owner Review" : "Complete Your Booking";
+  return status === "under_review" ? "Confirmation Pending" : "Complete Your Booking";
 }

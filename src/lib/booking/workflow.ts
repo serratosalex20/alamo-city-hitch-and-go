@@ -1,3 +1,6 @@
+import { canCompleteDocuments } from "./confirmation-policy";
+import { confirmQualifiedBooking } from "./repository";
+import { notifyReadyForPickup } from "@/lib/stripe/deposits";
 import { nextDocumentStatus } from "@/lib/customers/returning";
 import { sendOwnerReviewEmail } from "@/lib/email/server";
 import type { Booking } from "@/types/models";
@@ -44,13 +47,13 @@ export async function markRentalPaymentSucceeded(
   if (booking.paymentStatus === "succeeded") {
     // Reconcile an older partial write without entering the refund path or resetting document/rental state.
     if (booking.pickupRequestId)
-      return completeRentalPaymentRecord({
+      await completeRentalPaymentRecord({
         bookingId,
         paymentIntentId: paymentIntent.id,
         capacity: bookingCapacity(booking.trailerId),
         updates: {},
       });
-    return booking;
+    return reconcileBookingConfirmation(bookingId);
   }
   if (booking.paymentStatus === "refunded") {
     throw new RentalPaymentRefundedError(
@@ -68,7 +71,7 @@ export async function markRentalPaymentSucceeded(
       : paymentIntent.payment_method?.id;
 
   try {
-    return await completeRentalPaymentRecord({
+    await completeRentalPaymentRecord({
       bookingId,
       paymentIntentId: paymentIntent.id,
       capacity: bookingCapacity(booking.trailerId),
@@ -121,17 +124,18 @@ export async function markRentalPaymentSucceeded(
       "The checkout hold expired or the time became unavailable. Your payment was refunded automatically.",
     );
   }
+  return reconcileBookingConfirmation(bookingId);
 }
 
 export async function markDemoRentalPaymentSucceeded(bookingId: string) {
   const booking = await getBooking(bookingId);
   if (!booking) throw new Error("Booking not found.");
-  if (booking.paymentStatus === "succeeded") return booking;
+  if (booking.paymentStatus === "succeeded") return reconcileBookingConfirmation(bookingId);
   const now = new Date();
   const due = new Date(
     now.getTime() + DOCUMENT_DEADLINE_HOURS * 60 * 60 * 1000,
   );
-  return completeRentalPaymentRecord({
+  await completeRentalPaymentRecord({
     bookingId,
     paymentIntentId: booking.rentalPaymentIntentId ?? `pi_demo_${bookingId}`,
     capacity: bookingCapacity(booking.trailerId),
@@ -152,6 +156,7 @@ export async function markDemoRentalPaymentSucceeded(bookingId: string) {
       documentsDueAtMs: due.getTime(),
     },
   });
+  return reconcileBookingConfirmation(bookingId);
 }
 
 export async function markPaymentIntentFailed(
@@ -251,31 +256,36 @@ export async function syncIdentityVerificationSession(
   const booking = await getBooking(bookingId);
   if (!booking || booking.stripeIdentitySessionId !== verification.id)
     return null;
+  if (booking.identityStatus === "verified") return reconcileBookingConfirmation(booking.id);
   if (verification.status === "verified") {
-    if (booking.identityStatus === "verified") return booking;
-    const updated = await updateBooking(
+    await updateBooking(
       bookingId,
-      {
+      current => ({
         identityStatus: "verified",
         identityVerifiedAt: new Date().toISOString(),
-        status: nextDocumentStatus({ ...booking, identityStatus: "verified" }),
-      },
+        status: nextDocumentStatus({ ...current, identityStatus: "verified" }),
+      }),
       { action: "identity_verified", actor: "stripe" },
+      current => canCompleteDocuments(current) && current.stripeIdentitySessionId === verification.id && current.identityStatus !== "verified",
     );
-    await notifyDocumentReview(updated);
-    return updated;
+    return reconcileBookingConfirmation(bookingId);
   }
-  if (
-    verification.status === "requires_input" ||
-    verification.status === "canceled"
-  ) {
-    if (booking.identityStatus === verification.status) return booking;
+  if (verification.status === "requires_input" || verification.status === "canceled") {
+    const status = verification.status;
     return updateBooking(
       bookingId,
-      { identityStatus: verification.status },
-      { action: `identity_${verification.status}`, actor: "stripe" },
+      current => ({ identityStatus: status, status: nextDocumentStatus({ ...current, identityStatus: status }) }),
+      { action: `identity_${status}`, actor: "stripe" },
+      current => canCompleteDocuments(current) && current.stripeIdentitySessionId === verification.id && current.identityStatus !== "verified" && current.identityStatus !== status,
     );
   }
+  return booking;
+}
+
+export async function reconcileBookingConfirmation(id: string) {
+  const booking = await confirmQualifiedBooking(id);
+  if (booking.status === "ready_for_pickup") return notifyReadyForPickup(booking);
+  await notifyDocumentReview(booking);
   return booking;
 }
 
@@ -295,15 +305,21 @@ export async function completeAgreement(
   actor: string,
   signedAt = new Date().toISOString(),
 ) {
-  const updated = await updateBooking(
+  await updateBooking(
     booking.id,
-    {
+    current => ({
       agreementStatus: "signed",
       agreementSignedAt: signedAt,
-      status: nextDocumentStatus({ ...booking, agreementStatus: "signed" }),
-    },
+      status: nextDocumentStatus({ ...current, agreementStatus: "signed" }),
+    }),
     { action: "agreement_signed", actor },
+    current => canCompleteDocuments(current) && current.agreementStatus !== "signed" &&
+      current.docusignEnvelopeId === booking.docusignEnvelopeId &&
+      current.insuranceStoragePath === booking.insuranceStoragePath &&
+      current.insurancePolicyNumber === booking.insurancePolicyNumber &&
+      current.insuranceExpiresAt === booking.insuranceExpiresAt &&
+      current.insuranceCarrier === booking.insuranceCarrier &&
+      current.insurancePolicyholder === booking.insurancePolicyholder,
   );
-  await notifyDocumentReview(updated);
-  return updated;
+  return reconcileBookingConfirmation(booking.id);
 }

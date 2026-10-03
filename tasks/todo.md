@@ -1,5 +1,15 @@
 # Alamo City Hitch & Go Co — Build Plan
 
+## Active — Automatic booking confirmation (2026-10-03)
+
+User selected step 1: qualified ordinary bookings confirm themselves. Preview only.
+- [x] Add regression tests for qualifying bookings, incomplete/expired documents, outside-hours approval binding, callback replays, and cancellation races.
+- [x] Reconcile fresh booking state atomically after document/payment updates; accept submitted proof without claiming insurer verification; preserve explicit owner exceptions and pickup/return inspections.
+- [x] Update renter messages and returning-document reuse.
+- [ ] Run tests, typecheck, lint, build, review, and publish the tested Preview.
+
+
+
 **Started:** 2026-04-08
 **Stack:** Next.js 16 (App Router) + TypeScript + Tailwind CSS 4 + Firebase (Auth, Firestore, Storage) + Stripe (Auth/Capture) + DocuSign + Google Gemini Vision
 **Design system:** Industrial Editorial — source of truth `src/app/globals.css`

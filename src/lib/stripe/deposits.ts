@@ -19,6 +19,7 @@ function captureDeadline(paymentIntent: Stripe.PaymentIntent) {
 }
 
 export async function notifyReadyForPickup(booking: Booking) {
+  booking = await getBooking(booking.id) ?? booking;
   if (booking.status !== "ready_for_pickup" || booking.pickupReadyEmailId) return booking;
   const delivery = await sendReadyForPickupEmail(booking);
   if (!delivery.sent || !delivery.emailId || booking.pickupReadyEmailId === delivery.emailId) {
@@ -31,6 +32,7 @@ export async function notifyReadyForPickup(booking: Booking) {
       pickupReadyEmailSentAt: new Date().toISOString(),
     },
     { action: "pickup_instructions_emailed", actor: "system" },
+    current => current.status === "ready_for_pickup" && !current.pickupReadyEmailId,
   );
 }
 

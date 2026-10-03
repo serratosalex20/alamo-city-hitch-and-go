@@ -139,6 +139,7 @@ export type IdentityStatus =
 export type InsuranceStatus =
   | "not_uploaded"
   | "uploaded"
+  | "accepted" // automated acceptance of submitted proof, not insurer verification
   | "approved"
   | "resubmit_requested"
   | "rejected";
@@ -278,6 +279,7 @@ export interface Booking {
   adminNotes?: string;
   reviewNote?: string;
   confirmedAt?: string;
+  automaticConfirmationIssue?: string;
   pickupReadyEmailId?: string;
   pickupReadyEmailSentAt?: string;
   pickedUpAt?: string;

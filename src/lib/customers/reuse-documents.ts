@@ -11,7 +11,7 @@ export async function reuseDocuments(target: Booking, history: Booking[]) {
   const insurance = previous.find(b => sameRenter(b, target) && b.insuranceStoragePath);
   if (insurance && reusableInsurance(insurance, target, returnDate)) {
     Object.assign(target, {
-      insuranceStatus: "uploaded", // Owner reviews applicability for this rental.
+      insuranceStatus: "uploaded", // Recheck validity for this rental before automatic acceptance.
       insuranceSourceBookingId: insurance.id,
       insuranceStoragePath: insurance.insuranceStoragePath,
       insuranceExpiresAt: insurance.insuranceExpiresAt,

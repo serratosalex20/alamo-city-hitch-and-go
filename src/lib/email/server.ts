@@ -192,11 +192,11 @@ export async function sendOwnerReviewEmail(booking: Booking) {
       from: emailFrom,
       to: recipients,
       replyTo: booking.customerEmail,
-      subject: `Booking ready for review — ${booking.customer.firstName} ${booking.customer.lastName}`,
+      subject: `Booking needs attention — ${booking.customer.firstName} ${booking.customer.lastName}`,
       html: bookingEmailShell({
-        heading: "Booking ready for owner review",
+        heading: "Booking needs attention",
         body: `
-          <p style="line-height:1.6;color:#d4d4d4">Payment, agreement, identity verification, and insurance submission are complete.</p>
+          <p style="line-height:1.6;color:#d4d4d4">${escapeHtml(booking.automaticConfirmationIssue ?? "Payment and documents are submitted. This booking needs review before confirmation.")}</p>
           <p style="line-height:1.6;color:#d4d4d4"><strong>Renter:</strong> ${escapeHtml(`${booking.customer.firstName} ${booking.customer.lastName}`)}<br><strong>Trailer:</strong> ${escapeHtml(booking.trailerName)}<br><strong>Pickup:</strong> ${escapeHtml(dateTimeFormatter.format(new Date(booking.startTime)))}</p>`,
         buttonLabel: "Review booking",
         buttonUrl: `${appUrl}/admin/bookings/${booking.id}`,

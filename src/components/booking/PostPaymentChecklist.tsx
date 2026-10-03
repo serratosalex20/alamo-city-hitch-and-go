@@ -18,6 +18,7 @@ interface Props {
   insuranceStatus: InsuranceStatus;
   defaultPolicyholder: string;
   bookingStatus: BookingStatus;
+  confirmationIssue?: string;
   depositStatus: DepositStatus;
   depositMethod?: DepositMethod;
   depositAmount: number;
@@ -41,6 +42,7 @@ export function PostPaymentChecklist(props: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [signing, setSigning] = useState<{ url: string; integrationKey: string } | null>(null);
+  const [editingInsurance, setEditingInsurance] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function syncStatus(kind: "agreement" | "identity") {
@@ -67,6 +69,27 @@ export function PostPaymentChecklist(props: Props) {
         .catch(() => setError("Could not refresh document status."));
     }
   }, [props.bookingId, router]);
+
+  // DocuSign completion can arrive after the short return-callback retry window.
+  useEffect(() => {
+    if (props.agreementStatus !== "sent") return;
+    let stopped = false;
+    let pending = false;
+    const refreshAgreement = async () => {
+      if (stopped || pending || document.visibilityState !== "visible") return;
+      pending = true;
+      try {
+        const response = await fetch(`/api/bookings/${props.bookingId}/agreement`, { cache: "no-store" });
+        const result = response.ok ? await response.json() : null;
+        if (!stopped && result?.status === "signed") router.refresh();
+      } catch { /* Retry on the next interval; the saved booking is unchanged. */ }
+      finally { pending = false; }
+    };
+    const timer = window.setInterval(refreshAgreement, 10000);
+    window.addEventListener("focus", refreshAgreement);
+    void refreshAgreement();
+    return () => { stopped = true; window.clearInterval(timer); window.removeEventListener("focus", refreshAgreement); };
+  }, [props.agreementStatus, props.bookingId, router]);
 
   async function startAgreement() {
     setBusy("agreement");
@@ -124,6 +147,7 @@ export function PostPaymentChecklist(props: Props) {
       });
       const result = (await response.json()) as { ok: boolean; error?: string };
       if (!response.ok || !result.ok) throw new Error(result.error ?? "Insurance upload failed.");
+      setEditingInsurance(false);
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Insurance upload failed.");
@@ -134,7 +158,7 @@ export function PostPaymentChecklist(props: Props) {
 
   const agreementComplete = props.agreementStatus === "signed";
   const identityComplete = props.identityStatus === "verified";
-  const insuranceComplete = (props.insuranceStatus === "uploaded" || props.insuranceStatus === "approved") && (!!props.insurancePolicyNumber || agreementComplete);
+  const insuranceComplete = ["uploaded", "accepted", "approved"].includes(props.insuranceStatus) && (!!props.insurancePolicyNumber || agreementComplete);
   const reviewComplete = ["confirmed", "deposit_action_required", "ready_for_pickup", "active", "return_inspection", "completed"].includes(props.bookingStatus);
   const depositComplete = ["authorized", "charged", "partially_captured", "captured", "released"].includes(props.depositStatus);
   const inputClass = "w-full bg-surface-container-high px-4 py-3 text-on-surface ghost-border outline-none focus:border-b-2 focus:border-primary-action";
@@ -161,11 +185,14 @@ export function PostPaymentChecklist(props: Props) {
           <h2 id="insurance-step" className="font-headline text-xl font-bold uppercase">2. Current Insurance</h2>
           <StatusBadge complete={insuranceComplete} label={identityComplete ? "Required" : "Locked"} />
         </div>
-        {insuranceComplete ? (
-          <p className="text-sm text-on-surface-variant">Insurance received: {props.insuranceCarrier}{props.insurancePolicyNumber ? ` · Policy ${props.insurancePolicyNumber}` : ""}{props.insuranceExpiresAt ? ` · Expires ${props.insuranceExpiresAt}` : ""}. The owner will review it with your booking.</p>
+        {insuranceComplete && !editingInsurance ? (
+          <div><p className="text-sm text-on-surface-variant">Insurance received: {props.insuranceCarrier}{props.insurancePolicyNumber ? ` · Policy ${props.insurancePolicyNumber}` : ""}{props.insuranceExpiresAt ? ` · Expires ${props.insuranceExpiresAt}` : ""}. Keep your proof available for pickup.</p>
+          {!reviewComplete && identityComplete && ["pending_insurance", "pending_signature", "under_review"].includes(props.bookingStatus) && <button type="button" onClick={() => setEditingInsurance(true)} className="min-h-[44px] text-primary underline">Update insurance</button>}
+          </div>
         ) : (
           <form onSubmit={uploadInsurance} className="space-y-4">
-            <p className="text-sm text-on-surface-variant">Upload a clear photo or PDF. The policy must remain current through your return date.</p>
+            <p className="text-sm text-on-surface-variant">Upload a clear photo or PDF. The policy must remain current through your return date. Use the policyholder name shown in your renter details.</p>
+            {editingInsurance && <p className="text-sm text-on-surface-variant">Changing policy details requires a current document and a new signature.</p>}
             <div className="grid gap-4 md:grid-cols-2">
               <div><label htmlFor="insurance-carrier" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Insurance Company</label><input id="insurance-carrier" name="carrier" defaultValue={props.insuranceCarrier} required disabled={!identityComplete} className={inputClass} /></div>
               <div><label htmlFor="insurance-policyholder" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Policyholder</label><input id="insurance-policyholder" name="policyholder" required disabled={!identityComplete} defaultValue={props.insurancePolicyholder ?? props.defaultPolicyholder} className={inputClass} /></div>
@@ -177,6 +204,7 @@ export function PostPaymentChecklist(props: Props) {
             <button type="submit" disabled={!identityComplete || busy !== null} className="min-h-[44px] bg-primary-action px-6 py-3 font-headline font-bold uppercase tracking-widest text-white disabled:opacity-40">
               {busy === "insurance" ? "Saving…" : props.hasInsuranceFile ? "Confirm Insurance Details" : "Save Insurance & Continue"}
             </button>
+            {editingInsurance && <button type="button" onClick={() => setEditingInsurance(false)} className="min-h-[44px] px-4 underline">Cancel changes</button>}
           </form>
         )}
       </section>
@@ -200,7 +228,7 @@ export function PostPaymentChecklist(props: Props) {
       {props.bookingStatus === "under_review" && agreementComplete && identityComplete && insuranceComplete && (
         <div className="flex items-start gap-3 border-l-4 border-primary bg-primary/10 px-5 py-4">
           <Icon name="schedule" className="text-primary" />
-          <p className="text-sm text-on-surface-variant">Everything has been submitted. Your reservation is under owner review; it is not ready for pickup until you receive confirmation.</p>
+          <p className="text-sm text-on-surface-variant">{props.confirmationIssue ?? "Everything has been submitted. Your booking will confirm automatically when all requirements pass."} Please wait for confirmation before pickup.</p>
         </div>
       )}
 

@@ -1,3 +1,4 @@
+import { canCompleteDocuments } from "@/lib/booking/confirmation-policy";
 import { insuranceTabUpdates } from "./insurance-tabs";
 import { updateBooking } from "@/lib/booking/repository";
 import { bookingCheckoutTotal } from "@/lib/booking/pricing";
@@ -167,7 +168,16 @@ export async function createEmbeddedSigningSession(booking: Booking, origin = ne
       },
     );
     envelopeId = created.envelopeId;
-    if (envelopeId) await updateBooking(booking.id, { docusignEnvelopeId: envelopeId });
+    if (envelopeId) await updateBooking(booking.id, { docusignEnvelopeId: envelopeId }, undefined, current => {
+      if (!canCompleteDocuments(current) || current.agreementStatus === "signed" ||
+          current.identityStatus !== "verified" || !["uploaded", "accepted", "approved"].includes(current.insuranceStatus) ||
+          current.docusignEnvelopeId !== booking.docusignEnvelopeId || current.insuranceStoragePath !== booking.insuranceStoragePath ||
+          current.insurancePolicyNumber !== booking.insurancePolicyNumber || current.insuranceExpiresAt !== booking.insuranceExpiresAt ||
+          current.insuranceCarrier !== booking.insuranceCarrier || current.insurancePolicyholder !== booking.insurancePolicyholder) {
+        throw new Error("Your booking changed. Refresh before signing.");
+      }
+      return true;
+    });
   }
   if (!envelopeId) throw new Error("DocuSign did not return an envelope ID.");
   const envelopePath = `/v2.1/accounts/${encodeURIComponent(docusignAccountId)}/envelopes/${encodeURIComponent(envelopeId)}`;

@@ -191,3 +191,32 @@ test("schedule exposes only a secondary request trigger and a closed optional di
   assert.equal((html.match(/id="booking-time"/g) || []).length, 1);
   assert.equal((html.match(/id="request-time"/g) || []).length, 0);
 });
+
+test("a renter can correct submitted insurance while confirmation is pending", async () => {
+  const { Window } = await import("happy-dom");
+  const window = new Window();
+  Object.assign(globalThis, { window, document: window.document, HTMLElement: window.HTMLElement, Node: window.Node, IS_REACT_ACT_ENVIRONMENT: true });
+  const { createRoot } = await import("react-dom/client");
+  const { AppRouterContext } = await import("next/dist/shared/lib/app-router-context.shared-runtime");
+  const { PostPaymentChecklist } = await import("../src/components/booking/PostPaymentChecklist");
+  const host = window.document.createElement("div");
+  window.document.body.append(host);
+  const root = createRoot(host as unknown as HTMLElement);
+  const render = async (bookingStatus: "under_review" | "ready_for_pickup") => React.act(async () => root.render(React.createElement(AppRouterContext.Provider, { value: { refresh() {} } as never }, React.createElement(PostPaymentChecklist, { bookingId: "insurance-correction", customerName: "Test Renter", defaultPolicyholder: "Test Renter", agreementStatus: "signed", identityStatus: "verified", insuranceStatus: "uploaded", bookingStatus, depositStatus: "charged", depositAmount: 20000, insurancePolicyNumber: "POL-1", insurancePolicyholder: "Test Rentr", hasInsuranceFile: true }))));
+  try {
+    await render("under_review");
+    assert.equal(host.querySelector('form'), null);
+    const edit = Array.from(host.querySelectorAll("button")).find(b => b.textContent === "Update insurance")!;
+    assert.ok(edit);
+    await React.act(async () => edit.dispatchEvent(new window.MouseEvent("click", { bubbles: true })));
+    assert.ok(host.querySelector('form input[name="policyholder"]'));
+    const cancel = Array.from(host.querySelectorAll("button")).find(b => b.textContent === "Cancel changes")!;
+    await React.act(async () => cancel.dispatchEvent(new window.MouseEvent("click", { bubbles: true })));
+    assert.equal(host.querySelector('form'), null);
+    await render("ready_for_pickup");
+    assert.equal(Array.from(host.querySelectorAll("button")).some(b => b.textContent === "Update insurance"), false);
+  } finally {
+    await React.act(async () => root.unmount());
+    await window.happyDOM.close();
+  }
+});

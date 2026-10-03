@@ -1,4 +1,5 @@
-import { completeAgreement } from "@/lib/booking/workflow";
+import { canCompleteDocuments } from "@/lib/booking/confirmation-policy";
+import { completeAgreement, reconcileBookingConfirmation } from "@/lib/booking/workflow";
 import { NextResponse } from "next/server";
 import { getCustomerBooking } from "@/lib/auth/authorization";
 import { updateBooking } from "@/lib/booking/repository";
@@ -21,10 +22,15 @@ export async function POST(
     return NextResponse.json({ ok: false, error: "Rental payment is required first." }, { status: 409 });
   }
   if (booking.agreementStatus === "signed") {
+    await reconcileBookingConfirmation(id);
     return NextResponse.json({ ok: true, mode: "complete" as const });
   }
 
-  if (booking.identityStatus !== "verified" || !["uploaded", "approved"].includes(booking.insuranceStatus) || !booking.insurancePolicyNumber?.trim()) {
+  if (!canCompleteDocuments(booking)) {
+    return NextResponse.json({ ok: false, error: "This booking is no longer accepting documents." }, { status: 409 });
+  }
+
+  if (booking.identityStatus !== "verified" || !["uploaded", "accepted", "approved"].includes(booking.insuranceStatus) || !booking.insurancePolicyNumber?.trim()) {
     return NextResponse.json({ ok: false, error: "Complete identity verification and insurance details first." }, { status: 409 });
   }
 
@@ -45,6 +51,15 @@ export async function POST(
       id,
       { docusignEnvelopeId: signing.envelopeId, agreementStatus: "sent" },
       { action: "agreement_sent", actor: session.email },
+      current => {
+        if (!canCompleteDocuments(current) || current.agreementStatus === "signed" || current.docusignEnvelopeId !== signing.envelopeId ||
+            current.insuranceStoragePath !== booking.insuranceStoragePath || current.insurancePolicyNumber !== booking.insurancePolicyNumber ||
+            current.insuranceExpiresAt !== booking.insuranceExpiresAt || current.insuranceCarrier !== booking.insuranceCarrier ||
+            current.insurancePolicyholder !== booking.insurancePolicyholder || current.insuranceStatus !== booking.insuranceStatus) {
+          throw new Error("Your booking changed. Refresh before signing.");
+        }
+        return true;
+      },
     );
     return NextResponse.json({ ok: true, mode: "real" as const, url: signing.url, integrationKey: signing.integrationKey });
   } catch (error) {
@@ -65,6 +80,7 @@ export async function GET(
   if (!authorized) return NextResponse.json({ ok: false, error: "Not authorized." }, { status: 403 });
   const { booking, session } = authorized;
   if (booking.agreementStatus === "signed") {
+    await reconcileBookingConfirmation(id);
     return NextResponse.json({ ok: true, status: "signed" });
   }
   if (!booking.docusignEnvelopeId || !hasDocuSign) {

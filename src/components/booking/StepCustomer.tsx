@@ -54,7 +54,7 @@ export function StepCustomer({ formData, updateForm, onNext, onBack, returningCu
         <p>Tow vehicle: {formData.towVehicle.year} {formData.towVehicle.make} {formData.towVehicle.model}{formData.towVehicle.plate ? ` · ${formData.towVehicle.plate}` : ""}</p>
         <p>How did you hear about us? Previous customer</p>
       </div>
-      <p className="my-6 text-sm text-on-surface-variant">We’ll reuse approved insurance and verified ID when they’re still valid for this rental. You’ll sign a new rental agreement.</p>
+      <p className="my-6 text-sm text-on-surface-variant">We’ll reuse current insurance details and verified ID when they’re still valid for this rental. You’ll sign a new rental agreement.</p>
       <div className="flex flex-wrap gap-4 mt-8">
         <button type="button" onClick={onBack} className="bg-surface-container-highest px-6 py-4">Back</button>
         <button type="button" onClick={() => setEditing(true)} className="bg-surface-container-highest px-6 py-4">Edit Details</button>

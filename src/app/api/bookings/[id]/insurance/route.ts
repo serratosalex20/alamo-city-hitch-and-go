@@ -6,7 +6,8 @@ import { updateBooking } from "@/lib/booking/repository";
 import { formatBusinessDate } from "@/lib/booking/schedule";
 import { getStorageBucket } from "@/lib/firebase/admin";
 import { bookingStoragePrefix, isDemoEnvironment } from "@/lib/env";
-import { sendOwnerReviewEmail } from "@/lib/email/server";
+import { reconcileBookingConfirmation } from "@/lib/booking/workflow";
+import { canCompleteDocuments } from "@/lib/booking/confirmation-policy";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "application/pdf"]);
@@ -52,6 +53,10 @@ export async function POST(
     if (carrier.length < 2 || policyholder.length < 2) {
       throw new Error("Enter the insurance company and policyholder name.");
     }
+    const normalizeName = (value: string) => value.trim().toLowerCase().replace(/\s+/g, " ");
+    if (normalizeName(policyholder) !== normalizeName(`${booking.customer.firstName} ${booking.customer.lastName}`)) {
+      throw new Error("Enter the policyholder name exactly as shown in your renter details. Contact us if your policy is under a different name.");
+    }
     if (!validThrough(expiresAt, formatBusinessDate(Math.max(booking.endTimeMs, Date.now())))) {
       throw new Error("Insurance must remain current through the scheduled return date.");
     }
@@ -74,7 +79,7 @@ export async function POST(
     }
 
     const policyChanged = carrier !== booking.insuranceCarrier || policyNumber !== booking.insurancePolicyNumber || expiresAt !== booking.insuranceExpiresAt || policyholder !== booking.insurancePolicyholder;
-    const agreementUpdates = booking.agreementStatus === "signed" && policyChanged ? {
+    const agreementUpdates = ["signed", "sent"].includes(booking.agreementStatus) && policyChanged ? {
       agreementStatus: "not_started" as const,
       agreementSignedAt: undefined,
       docusignEnvelopeId: undefined,
@@ -95,12 +100,18 @@ export async function POST(
         status: nextDocumentStatus({ ...booking, ...agreementUpdates, insuranceStatus: "uploaded", insurancePolicyNumber: policyNumber }),
       },
       { action: bucket ? "insurance_uploaded" : "demo_insurance_uploaded", actor: session.email },
+      current => {
+        if (!canCompleteDocuments(current) || current.identityStatus !== "verified" ||
+            current.agreementStatus !== booking.agreementStatus || current.docusignEnvelopeId !== booking.docusignEnvelopeId ||
+            current.insuranceStatus !== booking.insuranceStatus || current.insuranceStoragePath !== booking.insuranceStoragePath ||
+            current.insurancePolicyNumber !== booking.insurancePolicyNumber || current.insuranceExpiresAt !== booking.insuranceExpiresAt ||
+            current.insurancePolicyholder !== booking.insurancePolicyholder || current.insuranceCarrier !== booking.insuranceCarrier) {
+          throw new Error("Your booking changed during upload. Refresh and try again.");
+        }
+        return true;
+      },
     );
-    try {
-      if (updated.status === "under_review") await sendOwnerReviewEmail(updated);
-    } catch (error) {
-      console.error(`[booking-email:owner-review:${updated.id}]`, error);
-    }
+    await reconcileBookingConfirmation(updated.id);
     return NextResponse.json({ ok: true, status: updated.insuranceStatus });
   } catch (error) {
     return NextResponse.json(

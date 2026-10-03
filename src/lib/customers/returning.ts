@@ -31,13 +31,13 @@ export function validThrough(expiration: string | undefined, returnDate: string)
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === expiration && expiration >= returnDate;
 }
 export function reusableInsurance(source: Booking, target: Booking, returnDate: string) {
-  return sameRenter(source, target) && source.insuranceStatus === "approved" && !!source.insuranceStoragePath &&
+  return sameRenter(source, target) && ["accepted", "approved"].includes(source.insuranceStatus) && !!source.insuranceStoragePath &&
     validThrough(source.insuranceExpiresAt, returnDate) && !!source.towVehicle && !!target.towVehicle &&
     (["year", "make", "model", "plate"] as const).every(key => normalize(source.towVehicle![key] ?? "") === normalize(target.towVehicle![key] ?? ""));
 }
 export function nextDocumentStatus(booking: Pick<Booking, "identityStatus" | "insuranceStatus" | "agreementStatus" | "insurancePolicyNumber">): BookingStatus {
   if (booking.identityStatus !== "verified") return "pending_identity";
-  if (!["uploaded", "approved"].includes(booking.insuranceStatus)) return "pending_insurance";
+  if (!["uploaded", "accepted", "approved"].includes(booking.insuranceStatus)) return "pending_insurance";
   // Existing signed agreements predate collection of policy numbers in the portal.
   if (booking.agreementStatus === "signed") return "under_review";
   if (!booking.insurancePolicyNumber?.trim()) return "pending_insurance";

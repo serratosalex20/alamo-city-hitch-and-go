@@ -1,5 +1,5 @@
 import { appUrl } from "@/lib/env";
-import { getBooking, updateBooking } from "@/lib/booking/repository";
+import { getBooking, updateBooking, confirmQualifiedBooking } from "@/lib/booking/repository";
 import {
   cancelReturnReminderEmail,
   scheduleReturnReminderEmail,
@@ -159,23 +159,14 @@ export async function performAdminBookingAction({
       if (booking.depositCollectedAtCheckout && booking.depositStatus !== "charged") {
         throw new Error("The refundable checkout deposit must be collected before approval.");
       }
-      const updated = await updateBooking(
-        bookingId,
-        {
-          status: booking.depositCollectedAtCheckout ? "ready_for_pickup" : "confirmed",
-          insuranceStatus: "approved",
-          confirmedAt: now.toISOString(),
-          reviewNote: note?.trim() || undefined,
-        },
-        { action: "booking_approved", actor, note: note?.trim() || undefined },
-      );
+      const updated = await confirmQualifiedBooking(bookingId, { actor, note });
       await emailStatus(updated, {
         subject: "Your trailer reservation is confirmed",
         heading: "Reservation confirmed",
         message: booking.depositCollectedAtCheckout ? "Your documents are approved and your refundable deposit was collected at checkout. Pickup instructions will follow." : "Your documents are approved. We will request the security deposit authorization close to pickup and notify you if your card needs confirmation.",
         event: "booking-approved",
       });
-      return booking.depositCollectedAtCheckout ? notifyReadyForPickup(updated) : updated;
+      return updated.status === "ready_for_pickup" ? notifyReadyForPickup(updated) : updated;
     }
     case "request_insurance_resubmission": {
       assertState(booking, ["under_review"], "Insurance resubmission");
@@ -184,6 +175,10 @@ export async function performAdminBookingAction({
         bookingId,
         { status: "pending_insurance", insuranceStatus: "resubmit_requested", reviewNote: reason },
         { action: "insurance_resubmission_requested", actor, note: reason },
+        current => {
+          if (current.status !== booking.status) throw new Error("The booking changed. Refresh before reviewing it.");
+          return true;
+        },
       );
       await emailStatus(updated, {
         subject: "Please update your insurance document",
@@ -200,6 +195,10 @@ export async function performAdminBookingAction({
         bookingId,
         { status: "rejected", insuranceStatus: "rejected", reviewNote: reason },
         { action: "booking_rejected", actor, note: reason },
+        current => {
+          if (current.status !== booking.status) throw new Error("The booking changed. Refresh before reviewing it.");
+          return true;
+        },
       );
       await emailStatus(updated, {
         subject: "Update on your trailer booking",
@@ -211,7 +210,7 @@ export async function performAdminBookingAction({
     }
     case "request_deposit": {
       assertState(booking, ["confirmed", "deposit_action_required"], "Deposit request");
-      if (booking.insuranceStatus !== "approved") throw new Error("Approve the insurance document first.");
+      if (!["accepted", "approved"].includes(booking.insuranceStatus)) throw new Error("Approve the insurance document first.");
       if (booking.startTimeMs - now.getTime() > DEPOSIT_REQUEST_WINDOW_MS) {
         throw new Error("Request the deposit no more than 48 hours before pickup so the card authorization does not expire.");
       }
