@@ -32,11 +32,13 @@ test("calendar omits past pickups and permits only operating-hour slots in Centr
   assert.deepEqual(days.find(d => d.date === "2026-09-22")?.times, []);
   const today = days.find(d => d.date === "2026-09-23")!;
   assert.equal(today.times[0].value, "14:30");
-  assert.equal(today.times.at(-1)?.value, "21:30");
+  assert.equal(today.times.at(-1)?.value, "18:00");
   assert.ok(today.times.every(t => t.startTimeMs > now));
-  assert.equal(days.find(d => d.date === "2026-09-24")?.times[0].value, "06:00");
+  assert.equal(days.find(d => d.date === "2026-09-24")?.times[0].value, "08:00");
 
-  const afterClosing = await repository.getPickupAvailability("empty", "2026-09", "fullDay", 1, Date.parse("2026-09-24T03:00:00Z"));
+  const beforeClosing = await repository.getPickupAvailability("empty", "2026-09", "fullDay", 1, Date.parse("2026-09-23T22:59:00Z"));
+  assert.deepEqual(beforeClosing.find(d => d.date === "2026-09-23")?.times.map(t => t.value), ["18:00"]);
+  const afterClosing = await repository.getPickupAvailability("empty", "2026-09", "fullDay", 1, Date.parse("2026-09-23T23:00:00Z"));
   assert.deepEqual(afterClosing.find(d => d.date === "2026-09-23")?.times, []);
 });
 
@@ -58,19 +60,33 @@ test("cancelled/completed rentals and expired holds do not hide slots; unexpired
     const id = `calendar-${status}`;
     await repository.createBookingHold(fixture(id, { status, checkoutExpiresAtMs: now - 1 }), 1);
     const days = await repository.getPickupAvailability(id, "2026-09", "fullDay", 1, now);
-    assert.equal(days.find(d => d.date === "2026-09-24")?.times[0].value, "06:00");
+    assert.equal(days.find(d => d.date === "2026-09-24")?.times[0].value, "08:00");
   }
   await repository.createBookingHold(fixture("calendar-live-hold", { status: "pending_payment" }), 1);
   const blocked = await repository.getPickupAvailability("calendar-live-hold", "2026-09", "fullDay", 1, now);
   assert.deepEqual(blocked.find(d => d.date === "2026-09-24")?.times, []);
   const spareUnit = await repository.getPickupAvailability("calendar-live-hold", "2026-09", "fullDay", 2, now);
-  assert.equal(spareUnit.find(d => d.date === "2026-09-24")?.times[0].value, "06:00");
+  assert.equal(spareUnit.find(d => d.date === "2026-09-24")?.times[0].value, "08:00");
 });
 
 test("winter pickups use Central standard time and invalid calendar months are rejected", async () => {
   const days = await repository.getPickupAvailability("empty", "2026-12", "fullDay", 1, now);
-  assert.equal(days[0].times[0].startTimeMs, Date.parse("2026-12-01T12:00:00Z"));
+  assert.equal(days[0].times[0].startTimeMs, Date.parse("2026-12-01T14:00:00Z"));
+  for (const day of days) {
+    assert.equal(day.times[0].value, "08:00");
+    assert.equal(day.times.at(-1)?.value, "18:00");
+  }
   await assert.rejects(() => repository.getPickupAvailability("empty", "2026-13", "fullDay", 1, now), /month/i);
+});
+
+test("availability requests enforce pickup hours even when submitted outside the picker", async () => {
+  for (const [time, expectedStatus] of [["07:30", 400], ["08:00", 200], ["18:00", 200], ["18:01", 400], ["18:30", 400]] as const) {
+    const response = await route.POST(new Request("https://booking.example/api/availability", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ trailerId: "trailer-002", duration: "fullDay", date: "2099-09-05", time }),
+    }));
+    assert.equal(response.status, expectedStatus, `Unexpected result for pickup at ${time}`);
+  }
 });
 
 test("public calendar exposes only fresh slots, rejects malformed input and unbookable trailers", async () => {

@@ -2,8 +2,8 @@ import { DURATION_HOURS } from "@/lib/booking/pricing";
 import type { RentalDuration } from "@/types/models";
 
 export const BUSINESS_TIME_ZONE = "America/Chicago";
-export const PICKUP_OPEN_HOUR = 6;
-export const PICKUP_CLOSE_HOUR = 22;
+export const PICKUP_OPEN_HOUR = 8;
+export const PICKUP_CLOSE_HOUR = 18;
 export const PICKUP_INTERVAL_MINUTES = 30;
 export const CHECKOUT_HOLD_MINUTES = 15;
 export const DOCUMENT_DEADLINE_HOURS = 24;
@@ -39,14 +39,14 @@ function pickupTimeLabel(hour: number, minute: number): string {
 
 /**
  * Explicit pickup choices keep the mobile UI and server rules in lockstep.
- * The final slot starts 30 minutes before closing so a pickup never begins
- * after the published operating window.
+ * Both boundaries are selectable: daily pickups start at 8 AM and the
+ * last pickup starts at 6 PM, in San Antonio's local time.
  */
 export const PICKUP_TIME_OPTIONS: readonly PickupTimeOption[] = Array.from(
   {
     length:
       ((PICKUP_CLOSE_HOUR - PICKUP_OPEN_HOUR) * 60) /
-      PICKUP_INTERVAL_MINUTES,
+      PICKUP_INTERVAL_MINUTES + 1,
   },
   (_, index) => {
     const totalMinutes =
@@ -60,7 +60,7 @@ export const PICKUP_TIME_OPTIONS: readonly PickupTimeOption[] = Array.from(
   },
 );
 
-export const PICKUP_HOURS_DESCRIPTION = `Central Time · pickups every ${PICKUP_INTERVAL_MINUTES} minutes from ${PICKUP_TIME_OPTIONS[0].label} to ${PICKUP_TIME_OPTIONS.at(-1)!.label}.`;
+export const PICKUP_HOURS_DESCRIPTION = `Daily · Central Time · pickups every ${PICKUP_INTERVAL_MINUTES} minutes from ${PICKUP_TIME_OPTIONS[0].label} to ${PICKUP_TIME_OPTIONS.at(-1)!.label}.`;
 
 // Reuse the formatter when checking every slot in a calendar month.
 const businessDateTimeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -102,13 +102,7 @@ export function localPickupToUtc(date: string, time: string): Date {
     hour: Number(timeMatch[1]),
     minute: Number(timeMatch[2]),
   };
-  if (
-    desired.hour < PICKUP_OPEN_HOUR ||
-    desired.hour >= PICKUP_CLOSE_HOUR ||
-    desired.minute < 0 ||
-    desired.minute > 59 ||
-    desired.minute % PICKUP_INTERVAL_MINUTES !== 0
-  ) {
+  if (!PICKUP_TIME_OPTIONS.some(option => option.value === time)) {
     throw new Error(
       `Pickup times are available every ${PICKUP_INTERVAL_MINUTES} minutes from ${PICKUP_TIME_OPTIONS[0].label} to ${PICKUP_TIME_OPTIONS.at(-1)!.label}.`,
     );

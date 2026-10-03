@@ -92,17 +92,26 @@ test("pricing is calculated in cents and excludes the deposit from rental total"
 test("San Antonio pickup time converts through daylight saving time", () => {
   assert.equal(localPickupToUtc("2026-09-05", "10:00").toISOString(), "2026-09-05T15:00:00.000Z");
   assert.equal(localPickupToUtc("2026-12-05", "10:00").toISOString(), "2026-12-05T16:00:00.000Z");
-  assert.throws(() => localPickupToUtc("2026-03-08", "02:30"), /6:00 AM/);
+  assert.throws(() => localPickupToUtc("2026-03-08", "02:30"), /8:00 AM/);
 });
 
 test("pickup choices use customer-friendly 30-minute operating-hour slots", () => {
-  assert.equal(PICKUP_TIME_OPTIONS.length, 32);
-  assert.deepEqual(PICKUP_TIME_OPTIONS[0], { value: "06:00", label: "6:00 AM" });
-  assert.deepEqual(PICKUP_TIME_OPTIONS.at(-1), { value: "21:30", label: "9:30 PM" });
+  assert.equal(PICKUP_TIME_OPTIONS.length, 21);
+  assert.deepEqual(PICKUP_TIME_OPTIONS[0], { value: "08:00", label: "8:00 AM" });
+  assert.deepEqual(PICKUP_TIME_OPTIONS.at(-1), { value: "18:00", label: "6:00 PM" });
   assert.throws(
     () => localPickupToUtc("2026-09-05", "15:01"),
     /every 30 minutes/,
   );
+});
+
+test("pickup validation includes 8 AM and 6 PM and rejects times outside the daily window", () => {
+  assert.equal(localPickupToUtc("2026-09-05", "08:00").toISOString(), "2026-09-05T13:00:00.000Z");
+  assert.equal(localPickupToUtc("2026-09-05", "18:00").toISOString(), "2026-09-05T23:00:00.000Z");
+  assert.equal(localPickupToUtc("2026-12-05", "18:00").toISOString(), "2026-12-06T00:00:00.000Z");
+  for (const time of ["06:00", "07:30", "07:59", "18:01", "18:30", "21:30", "24:00"]) {
+    assert.throws(() => localPickupToUtc("2026-09-05", time), /Pickup times/);
+  }
 });
 
 test("deployment callbacks use the current Vercel preview origin", () => {

@@ -8,6 +8,7 @@ import { FAQ } from "@/components/marketing/FAQ";
 import { Footer } from "@/components/marketing/Footer";
 // LocalBusiness JSON-LD must advertise the branded domain. See lib/env.ts.
 import { siteUrl as appUrl } from "@/lib/env";
+import { PICKUP_TIME_OPTIONS } from "@/lib/booking/schedule";
 
 /**
  * LocalBusiness schema for organic search rich results.
@@ -67,8 +68,8 @@ const jsonLd = {
     dayOfWeek: [
       "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
     ],
-    opens: "06:00",
-    closes: "22:00",
+    opens: PICKUP_TIME_OPTIONS[0].value,
+    closes: PICKUP_TIME_OPTIONS.at(-1)!.value,
   },
   priceRange: "$$",
 };
