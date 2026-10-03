@@ -32,6 +32,7 @@
   "devDependencies": {
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.5",
+    "happy-dom": "^20.14.5",
     "tsx": "^4.23.13"
   },
   "engines": {

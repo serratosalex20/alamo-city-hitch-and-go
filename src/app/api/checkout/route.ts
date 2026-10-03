@@ -1,9 +1,22 @@
+import {
+  getApprovedPickupRequest,
+  assertRequestMatchesCheckout,
+  pickupCheckoutProof,
+} from "@/lib/pickup-requests/checkout";
+import { buildRequestedSchedule } from "@/lib/pickup-requests/schedule";
+import { PickupRequestError } from "@/lib/pickup-requests/repository";
 import { getSession } from "@/lib/auth/session";
 import { listBookingsForEmail } from "@/lib/booking/repository";
 import { reuseDocuments } from "@/lib/customers/reuse-documents";
 import { paidBookings } from "@/lib/customers/returning";
 import { MARKETING_CONSENT_TEXT } from "@/lib/customers/profile";
-import { hashCheckoutProof, newCheckoutProof, readCheckoutProof, saveCheckoutProof, hasCheckoutProof } from "@/lib/auth/checkout-proof";
+import {
+  hashCheckoutProof,
+  newCheckoutProof,
+  readCheckoutProof,
+  saveCheckoutProof,
+  hasCheckoutProof,
+} from "@/lib/auth/checkout-proof";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -21,7 +34,11 @@ import {
 } from "@/lib/booking/repository";
 import { checkoutSchema } from "@/lib/booking/validation";
 import { trailers } from "@/lib/data/trailers";
-import { isDemoEnvironment, isProductionBookingReady, stripePublishableKey } from "@/lib/env";
+import {
+  isDemoEnvironment,
+  isProductionBookingReady,
+  stripePublishableKey,
+} from "@/lib/env";
 import { getStripe, hasStripe } from "@/lib/stripe/server";
 import type { Booking } from "@/types/models";
 
@@ -39,13 +56,20 @@ export async function POST(request: Request) {
   try {
     input = checkoutSchema.parse(await request.json());
   } catch (error) {
-    const message = error instanceof z.ZodError ? error.issues[0]?.message : "Invalid checkout.";
+    const message =
+      error instanceof z.ZodError
+        ? error.issues[0]?.message
+        : "Invalid checkout.";
     return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }
 
   if (!isDemoEnvironment && !isProductionBookingReady) {
     return NextResponse.json(
-      { ok: false, error: "Online checkout is temporarily unavailable. Please call us to book." },
+      {
+        ok: false,
+        error:
+          "Online checkout is temporarily unavailable. Please call us to book.",
+      },
       { status: 503 },
     );
   }
@@ -60,13 +84,29 @@ export async function POST(request: Request) {
 
   try {
     const quote = calculatePrice(input.trailerId, input.duration);
-    const schedule = buildRentalSchedule(input.date, input.time, input.duration);
+    const session = await getSession();
+    const approved = input.pickupRequestId
+      ? await getApprovedPickupRequest(input.pickupRequestId, session)
+      : null;
+    if (approved) {
+      assertRequestMatchesCheckout(approved, input);
+    }
+    const schedule = input.pickupRequestId
+      ? buildRequestedSchedule(input.date, input.time, input.duration)
+      : buildRentalSchedule(input.date, input.time, input.duration);
     const now = new Date();
-    const checkoutExpires = new Date(now.getTime() + CHECKOUT_HOLD_MINUTES * 60 * 1000);
+    const checkoutExpires = new Date(
+      now.getTime() + CHECKOUT_HOLD_MINUTES * 60 * 1000,
+    );
     const bookingId = input.checkoutKey;
-    const proof = await readCheckoutProof(bookingId) ?? newCheckoutProof();
+    const proof = approved
+      ? pickupCheckoutProof(approved, bookingId)
+      : ((await readCheckoutProof(bookingId)) ?? newCheckoutProof());
     const booking: Booking = {
       id: bookingId,
+      ...(input.pickupRequestId
+        ? { pickupRequestId: input.pickupRequestId }
+        : {}),
       schemaVersion: 2,
       checkoutKey: input.checkoutKey,
       checkoutAccessHash: hashCheckoutProof(proof),
@@ -77,7 +117,9 @@ export async function POST(request: Request) {
         phone: input.phone,
         address: input.address,
         referralSource: input.referralSource,
-        ...(input.referralDetail ? { referralDetail: input.referralDetail } : {}),
+        ...(input.referralDetail
+          ? { referralDetail: input.referralDetail }
+          : {}),
       },
       towVehicle: input.towVehicle,
       trailerId: trailer.id,
@@ -120,8 +162,11 @@ export async function POST(request: Request) {
       updatedAtMs: now.getTime(),
     };
 
-    const session = await getSession();
-    if (session && !session.bookingId && session.email.toLowerCase() === input.email) {
+    if (
+      session &&
+      !session.bookingId &&
+      session.email.toLowerCase() === input.email
+    ) {
       const history = await listBookingsForEmail(session.email);
       if (paidBookings(session.email, history).length) {
         booking.customer.referralSource = "previous_customer";
@@ -139,7 +184,8 @@ export async function POST(request: Request) {
 
     if (!hasStripe) {
       if (!isDemoEnvironment) throw new Error("Stripe is not configured.");
-      const paymentIntentId = held.rentalPaymentIntentId ?? `pi_demo_${randomUUID()}`;
+      const paymentIntentId =
+        held.rentalPaymentIntentId ?? `pi_demo_${randomUUID()}`;
       if (!held.rentalPaymentIntentId) {
         await updateBooking(
           held.id,
@@ -162,11 +208,15 @@ export async function POST(request: Request) {
     }
 
     const stripe = getStripe();
-    if (!stripe || !stripePublishableKey) throw new Error("Stripe failed to initialize.");
+    if (!stripe || !stripePublishableKey)
+      throw new Error("Stripe failed to initialize.");
 
     let customerId = held.stripeCustomerId;
     if (!customerId) {
-      const existingCustomers = await stripe.customers.list({ email: input.email, limit: 1 });
+      const existingCustomers = await stripe.customers.list({
+        email: input.email,
+        limit: 1,
+      });
       const customer =
         existingCustomers.data[0] ??
         (await stripe.customers.create(
@@ -210,8 +260,13 @@ export async function POST(request: Request) {
           { idempotencyKey: `rental-${held.id}` },
         );
 
-    if (rental.amount !== quote.checkoutTotalCents || rental.currency !== "usd") {
-      throw new BookingConflictError("The payment amount changed. Return to review and restart checkout.");
+    if (
+      rental.amount !== quote.checkoutTotalCents ||
+      rental.currency !== "usd"
+    ) {
+      throw new BookingConflictError(
+        "The payment amount changed. Return to review and restart checkout.",
+      );
     }
 
     await updateBooking(
@@ -238,10 +293,19 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     const status =
-      error instanceof BookingConflictError ? 409 : error instanceof BookingPersistenceError ? 503 : 502;
+      error instanceof PickupRequestError
+        ? error.status
+        : error instanceof BookingConflictError
+          ? 409
+          : error instanceof BookingPersistenceError
+            ? 503
+            : 502;
     console.error("[checkout]", error);
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Checkout failed." },
+      {
+        ok: false,
+        error: error instanceof Error ? error.message : "Checkout failed.",
+      },
       { status },
     );
   }
@@ -256,7 +320,10 @@ export async function DELETE(request: Request) {
   try {
     checkoutKey = releaseCheckoutSchema.parse(await request.json()).checkoutKey;
   } catch (error) {
-    const message = error instanceof z.ZodError ? error.issues[0]?.message : "Invalid checkout.";
+    const message =
+      error instanceof z.ZodError
+        ? error.issues[0]?.message
+        : "Invalid checkout.";
     return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }
 
@@ -264,7 +331,10 @@ export async function DELETE(request: Request) {
     const booking = await getBooking(checkoutKey);
     if (!booking) return NextResponse.json({ ok: true });
     if (!(await hasCheckoutProof(booking))) {
-      return NextResponse.json({ ok: false, error: "Not authorized." }, { status: 403 });
+      return NextResponse.json(
+        { ok: false, error: "Not authorized." },
+        { status: 403 },
+      );
     }
     if (
       booking.checkoutKey !== checkoutKey ||
@@ -280,10 +350,19 @@ export async function DELETE(request: Request) {
     if (hasStripe && booking.rentalPaymentIntentId) {
       const stripe = getStripe();
       if (!stripe) throw new Error("Stripe failed to initialize.");
-      const paymentIntent = await stripe.paymentIntents.retrieve(booking.rentalPaymentIntentId);
-      if (paymentIntent.status === "succeeded" || paymentIntent.status === "processing") {
+      const paymentIntent = await stripe.paymentIntents.retrieve(
+        booking.rentalPaymentIntentId,
+      );
+      if (
+        paymentIntent.status === "succeeded" ||
+        paymentIntent.status === "processing"
+      ) {
         return NextResponse.json(
-          { ok: false, error: "Payment is already processing and the checkout cannot be edited." },
+          {
+            ok: false,
+            error:
+              "Payment is already processing and the checkout cannot be edited.",
+          },
           { status: 409 },
         );
       }
@@ -311,7 +390,10 @@ export async function DELETE(request: Request) {
   } catch (error) {
     console.error("[checkout-release]", error);
     return NextResponse.json(
-      { ok: false, error: "We could not release this checkout. Please try again." },
+      {
+        ok: false,
+        error: "We could not release this checkout. Please try again.",
+      },
       { status: 502 },
     );
   }

@@ -20,23 +20,30 @@ function read(name: string): string | undefined {
 export const firebaseAdminProjectId = read("FIREBASE_ADMIN_PROJECT_ID");
 export const firebaseAdminClientEmail = read("FIREBASE_ADMIN_CLIENT_EMAIL");
 // Newlines in the private key arrive as literal "\n" through env vars; restore them.
-export const firebaseAdminPrivateKey = read("FIREBASE_ADMIN_PRIVATE_KEY")?.replace(
-  /\\n/g,
-  "\n",
-);
+export const firebaseAdminPrivateKey = read(
+  "FIREBASE_ADMIN_PRIVATE_KEY",
+)?.replace(/\\n/g, "\n");
 export const firebaseStorageBucket =
-  read("FIREBASE_STORAGE_BUCKET") ?? read("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
+  read("FIREBASE_STORAGE_BUCKET") ??
+  read("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
 
 function resourceNamespace(name: string, fallback: string): string {
   const value = read(name) ?? fallback;
   if (!/^[A-Za-z0-9_-]+$/.test(value)) {
-    throw new Error(`${name} may contain only letters, numbers, underscores, and hyphens.`);
+    throw new Error(
+      `${name} may contain only letters, numbers, underscores, and hyphens.`,
+    );
   }
   return value;
 }
 
 // Preview deployments can share a Firebase project without sharing customer data.
-export const bookingCollection = resourceNamespace("BOOKING_COLLECTION", "bookings");
+export const bookingCollection = resourceNamespace(
+  "BOOKING_COLLECTION",
+  "bookings",
+);
+export const pickupRequestCollection = `${bookingCollection}_pickup_requests`;
+export const pickupRequestRateCollection = `${bookingCollection}_pickup_request_rates`;
 export const bookingStoragePrefix = resourceNamespace(
   "BOOKING_STORAGE_PREFIX",
   "bookings",
@@ -75,7 +82,8 @@ export const docusignBaseUrl =
 // ─── Email ──────────────────────────────────────────────
 export const resendApiKey = read("RESEND_API_KEY");
 export const emailFrom =
-  read("EMAIL_FROM") ?? "Alamo City Hitch & Go <booking@alamocityhitchandgo.com>";
+  read("EMAIL_FROM") ??
+  "Alamo City Hitch & Go <booking@alamocityhitchandgo.com>";
 export const supportEmail =
   read("SUPPORT_EMAIL") ?? "alamocityhitchandgo@gmail.com";
 export const supportPhone = read("SUPPORT_PHONE") ?? "210-269-3467";
@@ -105,8 +113,11 @@ export function resolveAppUrl(
   configuredUrl: string | undefined,
   vercelDeploymentHost: string | undefined,
 ): string {
-  const candidate = configuredUrl ??
-    (vercelDeploymentHost ? `https://${vercelDeploymentHost}` : "http://localhost:3000");
+  const candidate =
+    configuredUrl ??
+    (vercelDeploymentHost
+      ? `https://${vercelDeploymentHost}`
+      : "http://localhost:3000");
   try {
     return new URL(candidate).origin;
   } catch {
@@ -150,7 +161,8 @@ export const siteUrl = "https://www.alamocityhitchandgo.com";
 const DEV_FALLBACK_SECRET =
   "dev-only-fallback-secret-do-not-use-in-production-rotate-via-AUTH_SECRET";
 export const authSecret = read("AUTH_SECRET") ?? DEV_FALLBACK_SECRET;
-export const hasProductionAuthSecret = authSecret !== DEV_FALLBACK_SECRET && authSecret.length >= 32;
+export const hasProductionAuthSecret =
+  authSecret !== DEV_FALLBACK_SECRET && authSecret.length >= 32;
 
 // ─── Mode gates ──────────────────────────────────────────
 /**
@@ -166,7 +178,9 @@ export const hasFirebase = Boolean(
  * Different gate from admin because public keys live in different env vars.
  */
 export const hasFirebaseClient = Boolean(
-  firebasePublicConfig.apiKey && firebasePublicConfig.authDomain && firebasePublicConfig.projectId,
+  firebasePublicConfig.apiKey &&
+    firebasePublicConfig.authDomain &&
+    firebasePublicConfig.projectId,
 );
 
 /**
@@ -188,12 +202,14 @@ export const hasEmail = Boolean(resendApiKey);
 
 /** Vercel Preview also uses NODE_ENV=production, so use the deployment target. */
 export const isLiveDeployment = read("VERCEL_ENV") === "production";
-const providerModeReady = !isLiveDeployment || hasLiveProviderConfiguration({
-  stripeSecretKey,
-  stripePublishableKey,
-  docusignOauthBaseUrl,
-  docusignBaseUrl,
-});
+const providerModeReady =
+  !isLiveDeployment ||
+  hasLiveProviderConfiguration({
+    stripeSecretKey,
+    stripePublishableKey,
+    docusignOauthBaseUrl,
+    docusignBaseUrl,
+  });
 
 /** Configuration prerequisites; provider credentials must also be verified before launch. */
 export const isProductionBookingReady = Boolean(

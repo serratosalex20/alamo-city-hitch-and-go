@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PickupRequestDialog } from "@/components/booking/PickupRequestDialog";
 import { PickupDatePicker } from "@/components/booking/PickupDatePicker";
 import { PickupTimePicker } from "@/components/booking/PickupTimePicker";
 import type { BookingFormData } from "@/app/book/page";
@@ -30,42 +31,84 @@ const durationDescriptions: Record<RentalDuration, string> = {
 };
 
 export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [requestDetails, setRequestDetails] = useState<BookingFormData | null>(
+    null,
+  );
   const [clock, setClock] = useState(() => Date.now());
-  const [month, setMonth] = useState(() => (formData.date || formatBusinessDate(Date.now())).slice(0, 7));
+  const [month, setMonth] = useState(() =>
+    (formData.date || formatBusinessDate(Date.now())).slice(0, 7),
+  );
   const [refresh, setRefresh] = useState(0);
   const [calendar, setCalendar] = useState<{
-    key: string; days: PickupDay[]; checkedAtMs: number; receivedAtMs: number; error?: string;
+    key: string;
+    days: PickupDay[];
+    checkedAtMs: number;
+    receivedAtMs: number;
+    error?: string;
   } | null>(null);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const calendarKey = `${formData.trailerId}:${formData.duration}:${month}`;
   const calendarMatches = calendar?.key === calendarKey;
   const calendarLoading = !calendarMatches;
-  const currentTime = calendar ? calendar.checkedAtMs + Math.max(0, clock - calendar.receivedAtMs) : clock;
+  const currentTime = calendar
+    ? calendar.checkedAtMs + Math.max(0, clock - calendar.receivedAtMs)
+    : clock;
   const today = formatBusinessDate(currentTime);
-  const availableDays = calendarMatches && !calendar.error
-    ? calendar.days.map(day => ({ ...day, times: day.times.filter(time => time.startTimeMs > currentTime) }))
-    : [];
-  const timeOptions = availableDays.find(day => day.date === formData.date)?.times ?? [];
-  const selectedTimeAvailable = timeOptions.some(option => option.value === formData.time);
+  const availableDays =
+    calendarMatches && !calendar.error
+      ? calendar.days.map((day) => ({
+          ...day,
+          times: day.times.filter((time) => time.startTimeMs > currentTime),
+        }))
+      : [];
+  const timeOptions =
+    availableDays.find((day) => day.date === formData.date)?.times ?? [];
+  const selectedTimeAvailable = timeOptions.some(
+    (option) => option.value === formData.time,
+  );
 
   useEffect(() => {
     const controller = new AbortController();
     async function loadCalendar() {
       const receivedAtMs = Date.now();
       try {
-        const query = new URLSearchParams({ trailerId: formData.trailerId, duration: formData.duration, month });
-        const response = await fetch(`/api/availability?${query}`, { cache: "no-store", signal: controller.signal });
+        const query = new URLSearchParams({
+          trailerId: formData.trailerId,
+          duration: formData.duration,
+          month,
+        });
+        const response = await fetch(`/api/availability?${query}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
         const result = await response.json();
-        if (!response.ok || !result.ok) throw new Error(result.error ?? "We could not load available pickups.");
+        if (!response.ok || !result.ok)
+          throw new Error(
+            result.error ?? "We could not load available pickups.",
+          );
         if (!controller.signal.aborted) {
-          setCalendar({ key: calendarKey, days: result.days, checkedAtMs: result.checkedAtMs, receivedAtMs });
+          setCalendar({
+            key: calendarKey,
+            days: result.days,
+            checkedAtMs: result.checkedAtMs,
+            receivedAtMs,
+          });
           setClock(Date.now());
         }
       } catch (failure) {
         if (!controller.signal.aborted) {
-          setCalendar({ key: calendarKey, days: [], checkedAtMs: receivedAtMs, receivedAtMs,
-            error: failure instanceof Error ? failure.message : "We could not load available pickups. Please try again." });
+          setCalendar({
+            key: calendarKey,
+            days: [],
+            checkedAtMs: receivedAtMs,
+            receivedAtMs,
+            error:
+              failure instanceof Error
+                ? failure.message
+                : "We could not load available pickups. Please try again.",
+          });
         }
       }
     }
@@ -75,18 +118,35 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
 
   useEffect(() => {
     const tick = window.setInterval(() => setClock(Date.now()), 1000);
-    const reload = () => { if (!document.hidden) setRefresh(value => value + 1); };
+    const reload = () => {
+      if (!document.hidden) setRefresh((value) => value + 1);
+    };
     const polling = window.setInterval(reload, 30_000);
     window.addEventListener("focus", reload);
-    return () => { window.clearInterval(tick); window.clearInterval(polling); window.removeEventListener("focus", reload); };
+    return () => {
+      window.clearInterval(tick);
+      window.clearInterval(polling);
+      window.removeEventListener("focus", reload);
+    };
   }, []);
 
   // A changed duration or refreshed inventory must never leave a hidden stale selection.
   useEffect(() => {
-    if (calendarMatches && !calendar.error && formData.time && !selectedTimeAvailable) {
+    if (
+      calendarMatches &&
+      !calendar.error &&
+      formData.time &&
+      !selectedTimeAvailable
+    ) {
       updateForm({ time: "" });
     }
-  }, [calendarMatches, calendar?.error, formData.time, selectedTimeAvailable, updateForm]);
+  }, [
+    calendarMatches,
+    calendar?.error,
+    formData.time,
+    selectedTimeAvailable,
+    updateForm,
+  ]);
 
   async function checkAvailability() {
     if (!formData.date || !selectedTimeAvailable || checking) return;
@@ -103,11 +163,18 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           duration: formData.duration,
         }),
       });
-      const result = (await response.json()) as { ok: boolean; available?: boolean; error?: string };
+      const result = (await response.json()) as {
+        ok: boolean;
+        available?: boolean;
+        error?: string;
+      };
       if (!result.ok || !result.available) {
-        setError(result.error ?? "That trailer is not available for the selected time.");
+        setError(
+          result.error ??
+            "That trailer is not available for the selected time.",
+        );
         updateForm({ time: "" });
-        setRefresh(value => value + 1);
+        setRefresh((value) => value + 1);
         return;
       }
       onNext();
@@ -134,7 +201,10 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
             htmlFor="booking-date"
             className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3"
           >
-            Pickup Date <span className="text-error" aria-hidden="true">*</span>
+            Pickup Date{" "}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
           </label>
           <PickupDatePicker
             value={formData.date}
@@ -143,9 +213,16 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
             days={availableDays}
             loading={calendarLoading}
             error={calendarMatches ? calendar.error : undefined}
-            onRetry={() => setRefresh(value => value + 1)}
-            onMonthChange={(value) => { setMonth(value); updateForm({ date: "", time: "" }); setError(null); }}
-            onChange={(date) => { updateForm({ date, time: "" }); setError(null); }}
+            onRetry={() => setRefresh((value) => value + 1)}
+            onMonthChange={(value) => {
+              setMonth(value);
+              updateForm({ date: "", time: "" });
+              setError(null);
+            }}
+            onChange={(date) => {
+              updateForm({ date, time: "" });
+              setError(null);
+            }}
           />
         </div>
 
@@ -155,14 +232,30 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
             htmlFor="booking-time"
             className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3"
           >
-            Pickup Time <span className="text-error" aria-hidden="true">*</span>
+            Pickup Time{" "}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
           </label>
           <PickupTimePicker
             value={selectedTimeAvailable ? formData.time : ""}
             options={timeOptions}
-            disabled={!formData.date || calendarLoading || timeOptions.length === 0}
-            onChange={time => { updateForm({ time }); setError(null); }}
-            placeholder={calendarLoading ? "Checking available times…" : !formData.date ? "Choose a date first" : timeOptions.length === 0 ? "No available times — choose another date" : "Choose a pickup time"}
+            disabled={
+              !formData.date || calendarLoading || timeOptions.length === 0
+            }
+            onChange={(time) => {
+              updateForm({ time });
+              setError(null);
+            }}
+            placeholder={
+              calendarLoading
+                ? "Checking available times…"
+                : !formData.date
+                  ? "Choose a date first"
+                  : timeOptions.length === 0
+                    ? "No available times — choose another date"
+                    : "Choose a pickup time"
+            }
           />
           <p
             id="booking-time-help"
@@ -170,6 +263,19 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           >
             {PICKUP_HOURS_DESCRIPTION} Only available times are shown.
           </p>
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="pickup-request-dialog"
+            aria-expanded={requestOpen}
+            onClick={() => {
+              if (!requestDetails) setRequestDetails({ ...formData });
+              setRequestOpen(true);
+            }}
+            className="min-h-11 text-sm text-on-surface-variant underline underline-offset-4 hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary-action"
+          >
+            Need a different pickup time?
+          </button>
         </div>
 
         {/* Duration */}
@@ -177,11 +283,18 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           <legend className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3">
             Rental Duration
           </legend>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3" role="radiogroup" aria-label="Select rental duration">
+          <div
+            className="grid grid-cols-2 md:grid-cols-4 gap-3"
+            role="radiogroup"
+            aria-label="Select rental duration"
+          >
             {ALL_DURATIONS.map((d) => (
               <button
                 key={d}
-                onClick={() => { updateForm({ duration: d, time: "" }); setError(null); }}
+                onClick={() => {
+                  updateForm({ duration: d, time: "" });
+                  setError(null);
+                }}
                 role="radio"
                 aria-checked={formData.duration === d}
                 aria-label={`${DURATION_LABELS[d]} — ${durationDescriptions[d]}`}
@@ -204,15 +317,35 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
       </div>
 
       {calendarMatches && calendar.error && (
-        <div role="alert" className="mt-8 border-l-4 border-error bg-error/10 px-4 py-3 text-sm text-error">
+        <div
+          role="alert"
+          className="mt-8 border-l-4 border-error bg-error/10 px-4 py-3 text-sm text-error"
+        >
           <p>{calendar.error}</p>
-          <button type="button" onClick={() => setRefresh(value => value + 1)} className="underline min-h-[44px]">Try Again</button>
+          <button
+            type="button"
+            onClick={() => setRefresh((value) => value + 1)}
+            className="underline min-h-[44px]"
+          >
+            Try Again
+          </button>
         </div>
       )}
       {error && (
-        <p role="alert" className="mt-8 border-l-4 border-error bg-error/10 px-4 py-3 text-sm text-error">
+        <p
+          role="alert"
+          className="mt-8 border-l-4 border-error bg-error/10 px-4 py-3 text-sm text-error"
+        >
           {error}
         </p>
+      )}
+
+      {requestDetails && (
+        <PickupRequestDialog
+          open={requestOpen}
+          initialDetails={requestDetails}
+          onClose={() => setRequestOpen(false)}
+        />
       )}
 
       {/* Nav */}

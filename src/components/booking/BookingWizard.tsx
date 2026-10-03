@@ -13,6 +13,7 @@ import { Icon } from "@/components/ui/Icon";
 import type { RentalDuration, ReferralSource } from "@/types/models";
 
 export interface BookingFormData {
+  pickupRequestId?: string;
   trailerId: string;
   trailerSlug: string;
   date: string;
@@ -67,18 +68,40 @@ const steps = [
   { label: "Payment", icon: "credit_card" },
 ];
 
-export function BookingWizard({ savedDetails, returningCustomer = false }: { savedDetails?: Partial<BookingFormData>; returningCustomer?: boolean }) {
+export function BookingWizard({
+  savedDetails,
+  returningCustomer = false,
+  resumeCheckoutKey,
+}: {
+  savedDetails?: Partial<BookingFormData>;
+  returningCustomer?: boolean;
+  resumeCheckoutKey?: string;
+}) {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<BookingFormData>(() => ({ ...initialFormData, ...savedDetails }));
-  const [checkoutKey, setCheckoutKey] = useState(() => crypto.randomUUID());
+  const [currentStep, setCurrentStep] = useState(
+    resumeCheckoutKey ? 4 : savedDetails?.pickupRequestId ? 2 : 0,
+  );
+  const [formData, setFormData] = useState<BookingFormData>(() => ({
+    ...initialFormData,
+    ...savedDetails,
+  }));
+  const [checkoutKey, setCheckoutKey] = useState(
+    () => resumeCheckoutKey ?? crypto.randomUUID(),
+  );
 
   const updateForm = (updates: Partial<BookingFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
   };
 
   const next = () => setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-  const back = () => setCurrentStep((s) => Math.max(s - 1, 0));
+  const goToStep = (step: number) => {
+    if (step < 2 && formData.pickupRequestId) {
+      updateForm({ pickupRequestId: undefined, date: "", time: "" });
+      setCheckoutKey(crypto.randomUUID());
+    }
+    setCurrentStep(step);
+  };
+  const back = () => goToStep(Math.max(currentStep - 1, 0));
 
   const handlePaymentSuccess = (nextUrl: string) => {
     router.push(nextUrl);
@@ -92,15 +115,23 @@ export function BookingWizard({ savedDetails, returningCustomer = false }: { sav
   return (
     <>
       <Navbar />
-      <main id="main-content" className="min-h-screen pt-28 pb-24 px-4 md:px-8 max-w-4xl mx-auto">
+      <main
+        id="main-content"
+        className="min-h-screen pt-28 pb-24 px-4 md:px-8 max-w-4xl mx-auto"
+      >
         {/* Step Indicator */}
-        {(
-          <nav aria-label="Booking progress" className="flex items-center justify-center gap-2 mb-16">
+        {
+          <nav
+            aria-label="Booking progress"
+            className="flex items-center justify-center gap-2 mb-16"
+          >
             <ol className="flex items-center gap-2 list-none p-0 m-0">
               {steps.map((step, i) => (
                 <li key={step.label} className="flex items-center">
                   <button
-                    onClick={() => i < currentStep && currentStep !== 4 && setCurrentStep(i)}
+                    onClick={() =>
+                      i < currentStep && currentStep !== 4 && goToStep(i)
+                    }
                     disabled={i > currentStep || currentStep === 4}
                     aria-current={i === currentStep ? "step" : undefined}
                     aria-label={`Step ${i + 1}: ${step.label}${i === currentStep ? " (current)" : i < currentStep ? " (completed)" : ""}`}
@@ -121,7 +152,9 @@ export function BookingWizard({ savedDetails, returningCustomer = false }: { sav
                     <div
                       aria-hidden="true"
                       className={`w-8 h-[2px] mx-1 ${
-                        i < currentStep ? "bg-primary" : "bg-surface-container-highest"
+                        i < currentStep
+                          ? "bg-primary"
+                          : "bg-surface-container-highest"
                       }`}
                     />
                   )}
@@ -129,21 +162,47 @@ export function BookingWizard({ savedDetails, returningCustomer = false }: { sav
               ))}
             </ol>
           </nav>
-        )}
+        }
 
+        {formData.pickupRequestId && currentStep < 4 && (
+          <p className="mb-6 text-sm text-on-surface-variant">
+            Your approved pickup time is selected. Changing the trailer or
+            schedule starts a regular booking.
+          </p>
+        )}
         {/* Step Content — aria-live announces step changes to screen readers */}
         <div aria-live="polite" aria-atomic="true">
           {currentStep === 0 && (
-            <StepTrailer formData={formData} updateForm={updateForm} onNext={next} />
+            <StepTrailer
+              formData={formData}
+              updateForm={updateForm}
+              onNext={next}
+            />
           )}
           {currentStep === 1 && (
-            <StepDateTime formData={formData} updateForm={updateForm} onNext={next} onBack={back} />
+            <StepDateTime
+              formData={formData}
+              updateForm={updateForm}
+              onNext={next}
+              onBack={back}
+            />
           )}
           {currentStep === 2 && (
-            <StepCustomer returningCustomer={returningCustomer} formData={formData} updateForm={updateForm} onNext={next} onBack={back} />
+            <StepCustomer
+              returningCustomer={returningCustomer}
+              formData={formData}
+              updateForm={updateForm}
+              onNext={next}
+              onBack={back}
+            />
           )}
           {currentStep === 3 && (
-            <StepReview formData={formData} updateForm={updateForm} onBack={back} onContinue={next} />
+            <StepReview
+              formData={formData}
+              updateForm={updateForm}
+              onBack={back}
+              onContinue={next}
+            />
           )}
           {currentStep === 4 && (
             <StepPayment

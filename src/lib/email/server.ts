@@ -26,13 +26,17 @@ function getResend() {
 }
 
 function escapeHtml(value: string) {
-  return value.replace(/[&<>'"]/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "'": "&#39;",
-    '"': "&quot;",
-  })[character] as string);
+  return value.replace(
+    /[&<>'"]/g,
+    (character) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "'": "&#39;",
+        '"': "&quot;",
+      })[character] as string,
+  );
 }
 
 const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -148,7 +152,8 @@ export async function sendBookingStatusEmail({
 export async function sendReadyForPickupEmail(booking: Booking) {
   const resend = getResend();
   if (!resend) return { sent: false as const };
-  if (!pickupAddress) throw new Error("The private pickup address is not configured.");
+  if (!pickupAddress)
+    throw new Error("The private pickup address is not configured.");
   const bookingUrl = `${appUrl}/booking/${booking.id}/documents`;
   const items = pickupChecklist({
     pickupAddress,
@@ -206,7 +211,8 @@ export async function sendOwnerReviewEmail(booking: Booking) {
 export async function scheduleReturnReminderEmail(booking: Booking) {
   const resend = getResend();
   if (!resend) return { sent: false as const };
-  if (!pickupAddress) throw new Error("The private pickup address is not configured.");
+  if (!pickupAddress)
+    throw new Error("The private pickup address is not configured.");
   const scheduledAt = returnReminderScheduledAt(booking.endTimeMs);
   const items = returnChecklist({
     pickupAddress,
@@ -221,7 +227,9 @@ export async function scheduleReturnReminderEmail(booking: Booking) {
       replyTo: supportEmail,
       subject: `Return reminder — ${booking.trailerName}`,
       html: bookingEmailShell({
-        heading: scheduledAt ? "Trailer return in two hours" : "Your trailer return is coming up",
+        heading: scheduledAt
+          ? "Trailer return in two hours"
+          : "Your trailer return is coming up",
         body: `
           <p style="line-height:1.6;color:#d4d4d4"><strong>Return by:</strong> ${escapeHtml(dateTimeFormatter.format(new Date(booking.endTime)))}</p>
           <p style="line-height:1.6;color:#d4d4d4"><strong>Return address:</strong> ${escapeHtml(pickupAddress)}</p>
@@ -252,3 +260,24 @@ export async function cancelReturnReminderEmail(emailId: string) {
 }
 
 export { hasEmail };
+
+/** Request delivery uses a stable identity so retrying a timeout does not create another email. */
+export async function sendPickupRequestEmail(
+  record: import("@/lib/pickup-requests/types").PickupRequestRecord,
+  notification: import("@/lib/pickup-requests/types").RequestNotification,
+) {
+  const resend = getResend();
+  if (!resend) return { sent: false as const };
+  const { pickupRequestEmailContent } = await import(
+    "@/lib/pickup-requests/email-content"
+  );
+  const message = pickupRequestEmailContent(record, notification.kind);
+  if (!message.to.length) return { sent: false as const };
+  const { data, error } = await resend.emails.send(
+    { from: emailFrom, replyTo: supportEmail, ...message },
+    { idempotencyKey: notification.key },
+  );
+  if (error || !data?.id)
+    throw new Error("Email delivery could not be confirmed.");
+  return { sent: true as const, providerId: data.id };
+}
