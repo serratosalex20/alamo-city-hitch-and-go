@@ -128,8 +128,10 @@ assert.equal(newPaymentCalls.length, 0);
 
 - [x] Then implement transactional linkage, then rerun for pass. Commit as `feat: retain request history through rental payment`.
 - [x] Run `npm test`, `tsc --noEmit --incremental false`, ESLint on changed files, `git diff --check`, and `next build --webpack`. Resolve actual regressions; do not expand unrelated scope. Review auth, exception binding, transaction retries, and notification delivery once across the complete change.
-- [ ] Publish only to the complete booking Preview after required review. Verify the unobtrusive link, hours, calendar behavior, keyboard/mobile dialog, preserved normal selections, and successful build. Record which backend paths were tested with mocks versus real configuration. No production promotion or live end-to-end purchase is implied.
+- [x] Publish only to the complete booking Preview after required review. Verify the unobtrusive link, hours, calendar behavior, keyboard/mobile dialog, preserved normal selections, and successful build. Record which backend paths were tested with mocks versus real configuration. No production promotion or live end-to-end purchase is implied.
 
 ## Self-review outcome
 
 All spec requirements map to Tasks 1–6: lead persistence (2), owner decisions and notes (3), restrained optional UI (4), safe continuation and inventory (5), payment linkage (6), Central-time validation (1), and retained leads across failures (2–3, 5–6). The five Review Focus cases have explicit owning tests/checks. No new SDK, CRM, payment model, marketing subscription, or ordinary-booking approval requirement is introduced.
+
+Final validation note: deployment and desktop interaction checks passed. The mobile-width and isolated end-to-end browser portion remains unverified due to browser capability limits; see the verification record for exact evidence.

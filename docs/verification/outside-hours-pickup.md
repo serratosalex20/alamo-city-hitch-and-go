@@ -34,4 +34,18 @@ Regressions were observed failing before fixes, then passing. No Minor findings 
 
 ## Preview observations
 
-Pending deployment/UI observations. Baseline before update: ordinary schedule exposes five steps and Check Availability, with 21 half-hour slots from 8 AM through 6 PM Central.
+Preview commit `549e13cdd424a18959741ca84e29d3e95de36070` deployed READY as `dpl_2f4sJ6wqnG4ahttiXNRzo7W3ryfK`, target Preview. Stable page verified: https://alamo-city-hitch-and-g-git-40519c-serratosalex20-5972s-projects.vercel.app/book
+
+Observed in the deployed desktop browser:
+- Five-step booking and Check Availability remain. The small underlined request link sits beneath the regular hours note; no form is shown until opened.
+- Regular picker contains 21 half-hour slots, 8 AM through 6 PM. Past dates are disabled.
+- Selecting October 10 and One Week before opening correctly prefills the request trailer, date, and duration.
+- Requested-time options exclude normal business hours. Selecting 7:30 AM and entering a draft, then closing/reopening retains both.
+- Closing restores the original normal booking date, 8 AM time, and One Week duration. Keyboard focus returns to the request link.
+- Escape on the closed time picker closes the dialog. Escape on an open calendar closes the calendar first; a second Escape closes the dialog and restores trigger focus.
+- Dialog content scrolls within its constrained height (observed 840px client height, 984px content height). Required-name validation prevents an empty submission and focuses the first field.
+- No request was submitted, no owner decision made, and no provider message/charge/signature initiated in this browser check.
+
+Mobile-width browser validation remains pending: this browser surface exposed no supported viewport-resize method, and keyboard zoom did not change its 1363px viewport. Responsive CSS and DOM behavior were inspected/tested, but are not a substitute for a phone-browser check. A real end-to-end request/email/approved-payment run also remains a launch check.
+
+Screenshot: [Booking schedule with secondary request link](pickup-request-link-20261003.jpg).
