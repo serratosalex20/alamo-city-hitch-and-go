@@ -1,5 +1,13 @@
 # Alamo City Hitch & Go Co — Build Plan
 
+## Active — Full-color trailer photos (2026-10-03)
+
+User requested full-color photos at rest with the existing subtle hover zoom.
+- [x] Locate grayscale filters on the homepage, fleet cards, and detail pages.
+- [x] Remove photo desaturation and retain subtle hover zoom; keep availability labels authoritative.
+- [ ] Check the changed components and verify the published Preview visually.
+
+
 ## Active — Automatic booking confirmation (2026-10-03)
 
 User selected step 1: qualified ordinary bookings confirm themselves. Preview only.

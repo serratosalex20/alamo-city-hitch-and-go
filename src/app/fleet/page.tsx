@@ -31,7 +31,7 @@ export default function FleetPage() {
             alt="Big Tex 6.5' x 12' utility trailer with spring-assisted mesh ramp gate — Alamo City Hitch &amp; Go rental fleet, San Antonio"
             fill
             sizes="100vw"
-            className="object-cover grayscale opacity-30"
+            className="object-cover opacity-30"
             priority
           />
         </div>

@@ -43,7 +43,7 @@ export function TrailerCard({ trailer }: TrailerCardProps) {
           alt={`${trailer.name} — heavy-duty trailer available for rental in San Antonio`}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px"
-          className="object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
+          className="object-cover transition-transform duration-700 group-hover:scale-110 motion-reduce:scale-100"
         />
       </div>
 

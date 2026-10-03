@@ -34,3 +34,9 @@ Each entry:
 - **Mistake:** Treated commits as a final step instead of an incremental one. When the session ended and the worktree was cleaned up between sessions, the working-tree files were destroyed. `git reflog` confirmed the branch `claude/bold-moore-a6a914` never advanced past its creation point. No stash. No dangling objects. All output gone.
 - **Correction:** The user lost roughly an hour of brand work and had to ask for a rebuild. Took ownership and rebuilt with the new rule below.
 - **Rule:** **Commit-on-write inside a worktree, never commit-at-the-end.** As soon as a meaningful artifact is written to disk in a worktree, immediately `git add <file> && git commit -m "..."` on the worktree's branch. Worktree directories are removable scratch space — any uncommitted change there is one-way disposable. The rule is *not* "ask for permission to commit first"; the rule is "commit, then ask for permission to *push* or *merge*." Commits are local — they cost nothing and they make work durable.
+
+
+### 2026-10-03 — Trailer Photos Should Not Look Disabled
+- **Context:** Trailer marketing photos were gray until hovered.
+- **Correction:** Alex noted that renters could mistake grayscale imagery for unavailable inventory.
+- **Rule:** Show trailer photos in full color at rest. Use explicit availability badges and booking controls to communicate stock, and keep hover motion subtle with reduced-motion support.

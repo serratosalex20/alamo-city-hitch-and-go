@@ -260,13 +260,13 @@ export default async function TrailerDetailPage({ params }: PageProps) {
         {/* ─── Hero ───────────────────────────────────────── */}
         <section className="grid md:grid-cols-[1.4fr_1fr] gap-8 md:gap-12 mb-16">
           {/* Image */}
-          <div className="relative aspect-[4/3] bg-surface-container overflow-hidden">
+          <div className="group relative aspect-[4/3] bg-surface-container overflow-hidden">
             <Image
               src={trailer.imageUrl}
               alt={`${trailer.name} — available for rental in San Antonio`}
               fill
               sizes="(max-width: 768px) 100vw, 60vw"
-              className="object-cover grayscale hover:grayscale-0 transition-all duration-500"
+              className="object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:scale-100"
               priority
             />
             {trailer.badge && (
@@ -612,7 +612,7 @@ export default async function TrailerDetailPage({ params }: PageProps) {
                       alt=""
                       fill
                       sizes="80px"
-                      className="object-cover grayscale group-hover:grayscale-0 transition-all"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:scale-100"
                     />
                   </div>
                   <div className="flex-grow min-w-0">

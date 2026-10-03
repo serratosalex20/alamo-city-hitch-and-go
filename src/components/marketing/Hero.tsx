@@ -74,13 +74,13 @@ export function Hero() {
 
         {/* Hero Image — Asymmetric Overlap */}
         <div className="col-span-12 lg:col-span-10 lg:col-start-3 mt-12 relative">
-          <div className="relative aspect-[21/9] w-full overflow-hidden rounded-sm bg-surface-container">
+          <div className="group relative aspect-[21/9] w-full overflow-hidden rounded-sm bg-surface-container">
             <Image
               src="/fleet/20-enclosed-side.png"
               alt="Charcoal 8.5' x 20' enclosed cargo trailer available to rent in San Antonio — Alamo City Hitch &amp; Go"
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1100px"
-              className="object-cover grayscale brightness-90 hover:grayscale-0 transition-all duration-700"
+              className="object-cover transition-transform duration-700 group-hover:scale-105 motion-reduce:scale-100"
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
