@@ -5,7 +5,7 @@
 User requested full-color photos at rest with the existing subtle hover zoom.
 - [x] Locate grayscale filters on the homepage, fleet cards, and detail pages.
 - [x] Remove photo desaturation and retain subtle hover zoom; keep availability labels authoritative.
-- [ ] Check the changed components and verify the published Preview visually.
+- [x] Check the changed components and verify the published Preview visually. See docs/verification/trailer-photo-color.md.
 
 
 ## Active — Automatic booking confirmation (2026-10-03)
