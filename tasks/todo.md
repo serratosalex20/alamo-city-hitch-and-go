@@ -6,7 +6,7 @@ User selected step 1: qualified ordinary bookings confirm themselves. Preview on
 - [x] Add regression tests for qualifying bookings, incomplete/expired documents, outside-hours approval binding, callback replays, and cancellation races.
 - [x] Reconcile fresh booking state atomically after document/payment updates; accept submitted proof without claiming insurer verification; preserve explicit owner exceptions and pickup/return inspections.
 - [x] Update renter messages and returning-document reuse.
-- [ ] Run tests, typecheck, lint, build, review, and publish the tested Preview.
+- [x] Run tests, typecheck, lint, build, review, and publish the tested Preview.
 
 
 

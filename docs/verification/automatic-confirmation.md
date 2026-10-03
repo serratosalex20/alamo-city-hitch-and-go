@@ -35,3 +35,12 @@ Finish self-service booking confirmation in Preview. Qualified renters no longer
 ## Verification boundaries
 
 Provider requests in tests are mocked; no real payment, ID check, signature, lead submission, email delivery, pickup, or refund was performed. Production has not been promoted. Live DocuSign setup and an authenticated real-provider smoke test remain separate launch work. Mobile browser verification is not claimed.
+
+## Preview deployment
+
+- Verified application commit: `6e487a2e0948f189fd9b7be325d1e47042a1af51`.
+- Vercel reported READY for Preview deployment `dpl_Hty9q5L8XyDQe3AaNj8EmZ78c8WL`.
+- Immutable application Preview: https://alamo-city-hitch-and-psf83v020-serratosalex20-5972s-projects.vercel.app
+- Stable booking Preview: https://alamo-city-hitch-and-g-git-40519c-serratosalex20-5972s-projects.vercel.app/book
+- Reloaded the stable Preview in the browser and verified the booking wizard loads. No authenticated booking or provider submission was performed in that browser check.
+- Production `master` remained `b23b5bc2a5bc180f9f3abc3fe133dfe12401db6c` at publication.
