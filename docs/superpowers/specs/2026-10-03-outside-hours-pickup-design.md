@@ -1,6 +1,6 @@
 # Outside-hours pickup requests and lead capture
 
-Status: proposed design for review; this workflow is not implemented yet.
+Status: design approved October 2, 2026 (Central Time), with the secondary-link refinement below. Implementation is pending implementation-plan review.
 
 ## Intended result
 
@@ -10,14 +10,14 @@ Declining a time, failing to finish checkout, or an email delivery failure must 
 
 ## Approach
 
-Recommended: add a request form within the schedule step and a Requests area within the existing owner console. Use the existing Firestore persistence, email service, verified-email sign-in, and booking checkout.
+Approved approach: add a quiet secondary link beneath the schedule step's pickup-hours note, opening a separate request dialog, and a Requests area within the existing owner console. Use the existing Firestore persistence, email service, verified-email sign-in, and booking checkout.
 
 An email-only request would be quicker to add but would not provide a dependable lead list, decision history, or booking continuation. Creating a normal booking immediately would confuse a pending request with a reservation and tie up inventory before approval. The recommended design stores a request separately and links it to a booking when checkout starts.
 
 ## Renter experience
 
-1. The schedule step displays **Need a pickup outside 8 AM–6 PM? Request a different time.** The request remains accessible if there are no normal pickup slots for the chosen date.
-2. The request form asks for first name, last name, email, phone, trailer, preferred pickup date/time, rental duration, and an optional message. Any information already entered in the booking wizard is prefilled. Address and towing details are collected in the normal booking flow later; they are not required to capture a lead.
+1. Beneath the pickup-hours note, show one small underlined **Need a different pickup time?** control. It opens a separate request dialog only when clicked. It is not a booking step, banner, prominent button, or automatically opened prompt. The ordinary **Check Availability** button remains the primary action. The request link remains accessible if there are no normal pickup slots for the chosen date.
+2. The request form asks for first name, last name, email, phone, trailer, preferred pickup date/time, rental duration, and an optional message. Any information already entered in the booking wizard is prefilled. Address and towing details are collected in the normal booking flow later; they are not required to capture a lead. Closing the dialog preserves the ordinary booking selections and returns keyboard focus to the request link. Keep the renter's unsent request draft in memory while they stay on the schedule step. The dialog has its own close control, accessible title, focus management, and mobile scrolling.
 3. The renter submits **Send pickup request** without signing in, uploading documents, or paying. The server saves the request before attempting either notification. A success message displays a request reference and explains that the requested time is awaiting approval and no reservation or charge has been made.
 4. The owner receives a notification and the request appears in the owner console. The renter receives an acknowledgement. A failed notification is recorded for retry and does not undo the saved request.
 5. An approval email includes the owner's note and **Continue booking**. A denial email includes the owner's note and a link to choose a normal pickup time. Both decisions remain visible to the owner with the lead information.
@@ -73,4 +73,4 @@ No new CRM, text-message provider, extra pickup charge, or payment-before-approv
 5. Busy inventory cannot be approved or double-booked; concurrent checkout and expired-hold retries remain safe.
 6. Regular pickups remain limited to 8 AM–6 PM; only a matching approved exception can pass outside-hours checkout validation.
 7. Preview and production data remain isolated. Tests use mocked email/payment providers and do not send customer messages or create charges.
-8. Mobile and keyboard flows support clear validation, full-width date/time controls, and returning to regular booking without losing entered details.
+8. Mobile and keyboard flows support clear validation, full-width date/time controls, and returning to regular booking without losing entered details. Before the request link is clicked, the form is hidden, the five-step booking flow is unchanged, and only the regular booking action uses primary button styling.
