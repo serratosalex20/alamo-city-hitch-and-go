@@ -10,6 +10,7 @@ import { getSession } from "@/lib/auth/session";
 import { listBookingsForEmail } from "@/lib/booking/repository";
 import { getProfile } from "@/lib/customers/repository";
 import { returningDetails } from "@/lib/customers/returning";
+import { agreementSigningMode } from "@/lib/env";
 export type { BookingFormData } from "@/components/booking/BookingWizard";
 
 export default async function BookPage({
@@ -58,7 +59,7 @@ export default async function BookPage({
     const details = returningDetails(session.email, profile, bookings);
     const resume = await getResumablePickupCheckout(requestId, session);
     return (
-      <BookingWizard
+      <BookingWizard agreementSigningMode={agreementSigningMode}
         resumeCheckoutKey={resume?.checkoutKey}
         returningCustomer={details.returningCustomer}
         savedDetails={{
@@ -79,14 +80,14 @@ export default async function BookPage({
       />
     );
   }
-  if (!session || session.bookingId) return <BookingWizard />;
+  if (!session || session.bookingId) return <BookingWizard agreementSigningMode={agreementSigningMode} />;
   const [profile, bookings] = await Promise.all([
     getProfile(session.email),
     listBookingsForEmail(session.email),
   ]);
   const details = returningDetails(session.email, profile, bookings);
   return (
-    <BookingWizard
+    <BookingWizard agreementSigningMode={agreementSigningMode}
       savedDetails={details.savedDetails}
       returningCustomer={details.returningCustomer}
     />

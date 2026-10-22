@@ -29,6 +29,7 @@ test("live checkout rejects test or mixed Stripe keys and demo signing endpoints
 
 const configured = {
   NODE_ENV: "production" as const,
+  AGREEMENT_SIGNING_MODE: "docusign",
   FIREBASE_ADMIN_PROJECT_ID: "fixture",
   FIREBASE_ADMIN_CLIENT_EMAIL: "fixture@example.com",
   FIREBASE_ADMIN_PRIVATE_KEY: "fixture",
@@ -85,4 +86,17 @@ test("a signed test webhook cannot update production even when its signature is 
       }
     })().catch(error => { console.error(error); process.exitCode = 1; });
   `, { VERCEL_ENV: "production" });
+});
+
+test("paper mode waives only DocuSign configuration and still requires live payment and operations", () => {
+  const ready = (overrides: Record<string, string>) => isolated(
+    "process.stdout.write(String(require('./src/lib/env.ts').isProductionBookingReady))",
+    { VERCEL_ENV: "production", AGREEMENT_SIGNING_MODE: "in_person", DOCUSIGN_TEMPLATE_ID: "", DOCUSIGN_RSA_PRIVATE_KEY: "", DOCUSIGN_BASE_URL: "https://demo.docusign.net/restapi", ...overrides },
+  );
+  assert.equal(ready({}), "true");
+  for (const key of ["STRIPE_WEBHOOK_SECRET", "FIREBASE_STORAGE_BUCKET", "RESEND_API_KEY", "AUTH_SECRET", "ADMIN_EMAILS", "PICKUP_ADDRESS"]) {
+    assert.equal(ready({ [key]: "" }), "false");
+  }
+  assert.equal(ready({ STRIPE_SECRET_KEY: "sk_test_fixture" }), "false");
+  assert.equal(ready({ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_fixture" }), "false");
 });

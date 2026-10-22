@@ -31,7 +31,9 @@ export function automaticConfirmationIssue(
     return "Payment must be completed.";
   if (booking.identityStatus !== "verified")
     return "Identity verification must be completed.";
-  if (booking.agreementStatus !== "signed")
+  if (booking.agreementStatus === "awaiting_in_person")
+    return "The rental agreement must be signed in person and verified by the owner before pickup.";
+  if (!hasVerifiedAgreement(booking))
     return "The rental agreement must be signed.";
   if (
     !["uploaded", "accepted", "approved"].includes(booking.insuranceStatus) ||
@@ -51,7 +53,8 @@ export function automaticConfirmationIssue(
   if (
     !Number.isFinite(booking.startTimeMs) ||
     !Number.isFinite(booking.endTimeMs) ||
-    booking.startTimeMs <= nowMs ||
+    (booking.startTimeMs <= nowMs && booking.agreementStatus !== "signed_in_person") ||
+    booking.endTimeMs <= nowMs ||
     booking.endTimeMs <= booking.startTimeMs ||
     Date.parse(booking.startTime) !== booking.startTimeMs ||
     Date.parse(booking.endTime) !== booking.endTimeMs
@@ -116,4 +119,16 @@ export function automaticConfirmationIssue(
     }
   }
   return null;
+}
+
+/** Physical signatures require recorded owner verification; no DocuSign completion is implied. */
+export function hasVerifiedAgreement(booking: Pick<Booking, "agreementStatus" | "agreementSignedAt" | "agreementVerifiedAt" | "agreementVerifiedBy" | "auditTrail">) {
+  return booking.agreementStatus === "signed" || (
+    booking.agreementStatus === "signed_in_person" &&
+    !!booking.agreementSignedAt && !!booking.agreementVerifiedAt && !!booking.agreementVerifiedBy?.trim() &&
+    Number.isFinite(Date.parse(booking.agreementSignedAt)) &&
+    Number.isFinite(Date.parse(booking.agreementVerifiedAt)) &&
+    Date.parse(booking.agreementSignedAt) <= Date.parse(booking.agreementVerifiedAt) &&
+    booking.auditTrail.some(event => event.action === "in_person_agreement_verified" && event.actor === booking.agreementVerifiedBy && !!event.note?.trim() && Date.parse(event.createdAt) >= Date.parse(booking.agreementVerifiedAt!))
+  );
 }

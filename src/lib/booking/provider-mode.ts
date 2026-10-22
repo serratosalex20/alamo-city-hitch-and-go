@@ -4,9 +4,12 @@ export function hasLiveProviderConfiguration(config: {
   stripePublishableKey?: string;
   docusignOauthBaseUrl: string;
   docusignBaseUrl: string;
+  agreementSigningMode?: "in_person" | "docusign";
 }): boolean {
   if (!/^(?:sk|rk)_live_\S+$/.test(config.stripeSecretKey ?? "") ||
       !/^pk_live_\S+$/.test(config.stripePublishableKey ?? "")) return false;
+
+  if (config.agreementSigningMode === "in_person") return true;
 
   try {
     const oauth = new URL(config.docusignOauthBaseUrl);

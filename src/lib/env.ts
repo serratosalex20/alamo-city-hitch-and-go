@@ -200,6 +200,13 @@ export const hasDocuSign = Boolean(
 
 export const hasEmail = Boolean(resendApiKey);
 
+/** Temporary paper-signing release; electronic signing remains available explicitly. */
+const configuredAgreementMode = read("AGREEMENT_SIGNING_MODE") ?? "in_person";
+if (!["in_person", "docusign"].includes(configuredAgreementMode)) {
+  throw new Error("AGREEMENT_SIGNING_MODE must be in_person or docusign.");
+}
+export const agreementSigningMode = configuredAgreementMode as "in_person" | "docusign";
+
 /** Vercel Preview also uses NODE_ENV=production, so use the deployment target. */
 export const isLiveDeployment = read("VERCEL_ENV") === "production";
 const providerModeReady =
@@ -209,6 +216,7 @@ const providerModeReady =
     stripePublishableKey,
     docusignOauthBaseUrl,
     docusignBaseUrl,
+    agreementSigningMode,
   });
 
 /** Configuration prerequisites; provider credentials must also be verified before launch. */
@@ -219,7 +227,7 @@ export const isProductionBookingReady = Boolean(
     hasStripe &&
     stripePublishableKey &&
     stripeWebhookSecret &&
-    hasDocuSign &&
+    (agreementSigningMode === "in_person" || hasDocuSign) &&
     hasEmail &&
     hasProductionAuthSecret &&
     adminEmails.size > 0 &&

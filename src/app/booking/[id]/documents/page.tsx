@@ -17,6 +17,7 @@ import {
   pickupInstructions,
   supportEmail,
   supportPhone,
+  agreementSigningMode,
 } from "@/lib/env";
 
 export const metadata: Metadata = {
@@ -54,7 +55,7 @@ export default async function BookingDocumentsPage({ params, searchParams }: { p
   return (
     <>
       <Navbar />
-      <RefreshBookingStatus enabled={confirmed || booking.status === "under_review"} />
+      <RefreshBookingStatus enabled={confirmed || booking.status === "under_review" || booking.agreementStatus === "awaiting_in_person"} />
       <main id="main-content" className="min-h-screen max-w-5xl mx-auto px-4 md:px-8 pt-28 pb-20">
         <nav aria-label="Renter navigation" className="flex flex-wrap gap-3 mb-8">
           <Link href={session.bookingId ? "/sign-in?next=%2Faccount" : "/account"} className="min-h-[44px] px-5 py-3 bg-primary-action text-white font-bold uppercase">Go to My Command Center</Link>
@@ -78,11 +79,13 @@ export default async function BookingDocumentsPage({ params, searchParams }: { p
           <div className="bg-surface-container p-5"><div className="text-xs uppercase tracking-widest text-on-surface-variant mb-2">Paid</div><div className="font-bold text-primary">{formatUsd(bookingCheckoutTotal(booking))}</div><div className="text-sm text-on-surface-variant">{booking.depositCollectedAtCheckout ? "Includes refundable security deposit" : "Deposit handled separately near pickup"}</div></div>
         </section>
 
+        {booking.agreementStatus === "awaiting_in_person" && booking.status === "pending_signature" && <section className="mb-8 bg-surface-container p-5" aria-label="Paper agreement at pickup"><h2 className="font-bold">Awaiting in-person signature</h2><p className="mt-2">ID and insurance received. Sign the paper agreement with the owner at pickup. Your trailer cannot be released until the owner verifies the signature and completes the pickup checks.</p>{operationsContact && <p className="mt-2">Signing location: {operationsContact.pickupAddress}. {operationsContact.pickupInstructions}</p>}<p className="mt-2">Contact the owner at <a href={`tel:${supportPhone}`} className="underline">{supportPhone}</a> to coordinate signing.</p></section>}
+
         {confirmed && <div className="mb-8"><BookingInstructions status={booking.status} endTime={booking.endTime} contact={operationsContact} nowMs={nowMs} /></div>}
 
-        <div className="mb-8"><DocumentList bookingId={booking.id} signedAvailable={booking.agreementStatus === "signed" && !!booking.docusignEnvelopeId} /></div>
+        <div className="mb-8"><DocumentList agreementStatus={booking.agreementStatus} bookingId={booking.id} signedAvailable={booking.agreementStatus === "signed" && !!booking.docusignEnvelopeId} /></div>
 
-        <PostPaymentChecklist
+        <PostPaymentChecklist agreementSigningMode={agreementSigningMode}
           bookingId={booking.id}
           customerName={customerName}
           agreementStatus={booking.agreementStatus}

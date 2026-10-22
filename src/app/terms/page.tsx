@@ -19,6 +19,7 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/marketing/Navbar";
 import { Footer } from "@/components/marketing/Footer";
 import { Icon } from "@/components/ui/Icon";
+import { agreementSigningMode } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Terms",
@@ -84,9 +85,9 @@ const sections: Section[] = [
       "This rental is governed by the laws of the State of Texas. Any dispute is resolved exclusively in the state or federal courts located in Bexar County, Texas.",
   },
   {
-    heading: "Electronic Signature",
+    heading: agreementSigningMode === "in_person" ? "Rental Agreement at Pickup" : "Electronic Signature",
     body:
-      "When you sign the rental agreement at booking — including via DocuSign or any equivalent platform — your electronic signature has the same legal force as a handwritten one under the Texas Uniform Electronic Transactions Act, Texas Business & Commerce Code Chapter 322.",
+      agreementSigningMode === "in_person" ? "Complete online payment, ID verification and current insurance details, then review and sign the paper rental agreement with the owner at pickup. The owner must witness and verify the signature and retain the agreement before releasing the trailer." : "When you sign the rental agreement at booking - including via DocuSign or any equivalent platform - your electronic signature has the same legal force as a handwritten one under the Texas Uniform Electronic Transactions Act, Texas Business & Commerce Code Chapter 322.",
   },
 ];
 
@@ -108,7 +109,7 @@ export default function TermsPage() {
           </h1>
           <p className="text-xl text-on-surface-variant font-light leading-relaxed max-w-2xl">
             The major points, in plain language. The complete signed rental
-            agreement is presented at booking — this page exists so you can
+            agreement must be reviewed and signed before trailer release - this page exists so you can
             read it before you start.
           </p>
         </header>
@@ -129,7 +130,7 @@ export default function TermsPage() {
                 agreement. A licensed Texas business attorney is reviewing the
                 final language before any customer signs. Nothing on this page
                 is a binding contract — the binding document is the agreement
-                presented at booking time, signed via DocuSign.
+                {agreementSigningMode === "in_person" ? "presented for in-person signing at pickup." : "presented at booking time, signed via DocuSign."}
               </p>
             </div>
           </div>
@@ -165,8 +166,7 @@ export default function TermsPage() {
             Ready When You Are
           </h2>
           <p className="text-on-surface-variant text-base font-light max-w-xl mx-auto mb-8 leading-relaxed">
-            You&apos;ll see the full binding agreement at booking. Sign once,
-            pull, go.
+            {agreementSigningMode === "in_person" ? "Review and sign the full agreement with the owner at pickup. Owner verification is required before trailer release." : "You'll see the full binding agreement at booking. Sign once, pull, go."}
           </p>
           <Link
             href="/book"

@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
+import type { AgreementStatus } from "@/types/models";
 
-export function DocumentList({ bookingId, signedAvailable }: { bookingId: string; signedAvailable: boolean }) {
+export function DocumentList({ bookingId, signedAvailable, agreementStatus }: { bookingId: string; signedAvailable: boolean; agreementStatus?: AgreementStatus }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ name: string; url: string } | null>(null);
@@ -39,7 +40,7 @@ export function DocumentList({ bookingId, signedAvailable }: { bookingId: string
         <button onClick={() => void open(doc, false)} disabled={busy !== null} className="min-h-[44px] px-4 bg-surface-container-high font-bold text-sm disabled:opacity-50">View PDF</button>
         <button onClick={() => void open(doc, true)} disabled={busy !== null} aria-label={`Download ${doc.name}`} className="min-h-[44px] px-4 bg-surface-container-high font-bold text-sm disabled:opacity-50">Download</button>
         {busy === doc.name && <span role="status" className="self-center text-xs">Loading…</span>}
-      </div> : <p className="text-xs text-on-surface-variant mt-2">Available after the agreement is signed and processed.</p>}
+      </div> : <p className="text-xs text-on-surface-variant mt-2">{agreementStatus === "awaiting_in_person" ? "Sign the paper agreement at pickup. The owner will retain it; contact the owner for a copy." : agreementStatus === "signed_in_person" ? "The owner retains your signed paper agreement. Contact the owner for a copy; an electronic signed PDF is not available." : "Available after the electronic agreement is signed and processed."}</p>}
     </div>)}
     {error && <p role="alert" className="text-error text-sm">{error}</p>}
     {preview && <div className="space-y-3">

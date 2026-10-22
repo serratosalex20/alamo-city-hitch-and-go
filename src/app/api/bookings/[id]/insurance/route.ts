@@ -5,9 +5,10 @@ import { getCustomerBooking } from "@/lib/auth/authorization";
 import { updateBooking } from "@/lib/booking/repository";
 import { formatBusinessDate } from "@/lib/booking/schedule";
 import { getStorageBucket } from "@/lib/firebase/admin";
-import { bookingStoragePrefix, isDemoEnvironment } from "@/lib/env";
+import { agreementSigningMode, bookingStoragePrefix, isDemoEnvironment } from "@/lib/env";
 import { reconcileBookingConfirmation } from "@/lib/booking/workflow";
 import { canCompleteDocuments } from "@/lib/booking/confirmation-policy";
+import { agreementUpdatesForInsuranceChange } from "@/lib/booking/agreement-policy";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "application/pdf"]);
@@ -79,12 +80,7 @@ export async function POST(
     }
 
     const policyChanged = carrier !== booking.insuranceCarrier || policyNumber !== booking.insurancePolicyNumber || expiresAt !== booking.insuranceExpiresAt || policyholder !== booking.insurancePolicyholder;
-    const agreementUpdates = ["signed", "sent"].includes(booking.agreementStatus) && policyChanged ? {
-      agreementStatus: "not_started" as const,
-      agreementSignedAt: undefined,
-      docusignEnvelopeId: undefined,
-      supersededAgreementEnvelopeIds: [...(booking.supersededAgreementEnvelopeIds ?? []), ...(booking.docusignEnvelopeId ? [booking.docusignEnvelopeId] : [])],
-    } : {};
+    const agreementUpdates = agreementUpdatesForInsuranceChange(booking, policyChanged, agreementSigningMode);
     const updated = await updateBooking(
       id,
       {

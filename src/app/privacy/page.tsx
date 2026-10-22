@@ -27,7 +27,7 @@ const sections = [
   },
   {
     title: "Agreements and Insurance",
-    body: "DocuSign processes the electronic rental agreement. Insurance photos and PDFs are stored in private cloud storage and are available only to authorized staff through protected booking tools. We use these records to confirm rental eligibility and resolve a documented claim, charge, or dispute.",
+    body: "For in-person signing, the owner retains the signed paper agreement and records the verification time, owner identity and decision note. Contact the owner for a copy. DocuSign processes electronic rental agreements when electronic signing is enabled. Insurance photos and PDFs are stored in private cloud storage and are available only to authorized staff through protected booking tools. We use these records to confirm rental eligibility and resolve a documented claim, charge, or dispute.",
   },
   {
     title: "Sharing and Service Providers",

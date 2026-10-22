@@ -11,6 +11,7 @@ import { formatUsd } from "@/lib/booking/pricing";
 import type { AgreementStatus, BookingStatus, DepositMethod, DepositStatus, IdentityStatus, InsuranceStatus } from "@/types/models";
 
 interface Props {
+  agreementSigningMode?: "in_person" | "docusign";
   bookingId: string;
   customerName: string;
   agreementStatus: AgreementStatus;
@@ -156,7 +157,8 @@ export function PostPaymentChecklist(props: Props) {
     }
   }
 
-  const agreementComplete = props.agreementStatus === "signed";
+  const agreementComplete = ["signed", "signed_in_person"].includes(props.agreementStatus);
+  const awaitingInPerson = props.agreementStatus === "awaiting_in_person";
   const identityComplete = props.identityStatus === "verified";
   const insuranceComplete = ["uploaded", "accepted", "approved"].includes(props.insuranceStatus) && (!!props.insurancePolicyNumber || agreementComplete);
   const reviewComplete = ["confirmed", "deposit_action_required", "ready_for_pickup", "active", "return_inspection", "completed"].includes(props.bookingStatus);
@@ -212,12 +214,12 @@ export function PostPaymentChecklist(props: Props) {
       <section className="bg-surface-container-low p-6 ghost-border" aria-labelledby="agreement-step">
         <div className="flex items-center justify-between gap-4 mb-3">
           <h2 id="agreement-step" className="font-headline text-xl font-bold uppercase">3. Rental Agreement</h2>
-          <StatusBadge complete={agreementComplete} label={identityComplete && insuranceComplete ? "Required" : "Locked"} />
+          <StatusBadge complete={agreementComplete} label={awaitingInPerson ? "Sign at pickup" : identityComplete && insuranceComplete ? "Required" : "Locked"} />
         </div>
-        <p className="text-sm text-on-surface-variant mb-5">Your insurance details are filled in. Review and sign here through DocuSign.</p>
-        {!agreementComplete && (
+        <p className="text-sm text-on-surface-variant mb-5">{awaitingInPerson ? "Your agreement is awaiting in-person signing. Complete ID verification and insurance above, then bring your ID and insurance proof to pickup. The owner must witness the signature and retain the signed paper agreement before releasing the trailer." : props.agreementStatus === "signed_in_person" ? "The owner verified your signed paper agreement and retains the original. Contact the owner for a copy." : props.agreementSigningMode === "in_person" && !agreementComplete ? "Complete ID verification and insurance, then arrange to sign the paper agreement at pickup. Owner verification is required before trailer release." : "Your insurance details are filled in. Review the agreement to continue."}</p>
+        {!agreementComplete && !awaitingInPerson && (
           <button onClick={startAgreement} disabled={!identityComplete || !insuranceComplete || busy !== null} className="min-h-[44px] bg-primary-action px-6 py-3 font-headline font-bold uppercase tracking-widest text-white disabled:opacity-50">
-            {busy === "agreement" ? "Opening…" : "Review & Sign"}
+            {busy === "agreement" ? "Opening…" : props.agreementSigningMode === "in_person" ? "Arrange Signing at Pickup" : "Review & Sign"}
           </button>
         )}
       </section>

@@ -39,7 +39,7 @@ export function nextDocumentStatus(booking: Pick<Booking, "identityStatus" | "in
   if (booking.identityStatus !== "verified") return "pending_identity";
   if (!["uploaded", "accepted", "approved"].includes(booking.insuranceStatus)) return "pending_insurance";
   // Existing signed agreements predate collection of policy numbers in the portal.
-  if (booking.agreementStatus === "signed") return "under_review";
+  if (["signed", "signed_in_person"].includes(booking.agreementStatus)) return "under_review";
   if (!booking.insurancePolicyNumber?.trim()) return "pending_insurance";
   return "pending_signature";
 }

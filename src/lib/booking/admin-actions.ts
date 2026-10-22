@@ -1,3 +1,6 @@
+import { hasVerifiedAgreement } from "./confirmation-policy";
+import { nextDocumentStatus } from "@/lib/customers/returning";
+import { reconcileBookingConfirmation } from "./workflow";
 import { appUrl } from "@/lib/env";
 import { getBooking, updateBooking, confirmQualifiedBooking } from "@/lib/booking/repository";
 import {
@@ -11,6 +14,7 @@ import type { Booking } from "@/types/models";
 const DEPOSIT_REQUEST_WINDOW_MS = 48 * 60 * 60 * 1000;
 
 export type AdminBookingAction =
+  | "verify_in_person_agreement"
   | "approve"
   | "request_insurance_resubmission"
   | "reject"
@@ -146,11 +150,28 @@ export async function performAdminBookingAction({
   const now = new Date();
 
   switch (action) {
+    case "verify_in_person_agreement": {
+      const evidence = requireNote(note);
+      if (!actor.trim()) throw new Error("Owner identity is required.");
+      const verify = (current: Booking) => {
+        assertState(current, ["pending_signature", "under_review", "confirmed", "deposit_action_required", "ready_for_pickup"], "Agreement verification");
+        if (current.agreementStatus !== "awaiting_in_person") throw new Error("The agreement must be awaiting in-person signing.");
+        if (current.paymentStatus !== "succeeded" || current.identityStatus !== "verified" || !["uploaded", "accepted", "approved"].includes(current.insuranceStatus)) throw new Error("Complete payment, identity and insurance first.");
+      };
+      verify(booking);
+      await updateBooking(bookingId, current => {
+        verify(current);
+        return {agreementStatus: "signed_in_person", agreementSignedAt: now.toISOString(), agreementVerifiedAt: now.toISOString(), agreementVerifiedBy: actor,
+          status: ["pending_signature", "under_review"].includes(current.status) ? nextDocumentStatus({...current, agreementStatus:"signed_in_person"}) : current.status};
+      }, {action:"in_person_agreement_verified", actor, note:evidence});
+      return reconcileBookingConfirmation(bookingId);
+    }
+
     case "approve": {
       assertState(booking, ["under_review"], "Approval");
       if (
         booking.paymentStatus !== "succeeded" ||
-        booking.agreementStatus !== "signed" ||
+        !hasVerifiedAgreement(booking) ||
         booking.identityStatus !== "verified" ||
         booking.insuranceStatus !== "uploaded"
       ) {
@@ -169,7 +190,7 @@ export async function performAdminBookingAction({
       return updated.status === "ready_for_pickup" ? notifyReadyForPickup(updated) : updated;
     }
     case "request_insurance_resubmission": {
-      assertState(booking, ["under_review"], "Insurance resubmission");
+      assertState(booking, ["under_review", "pending_signature"], "Insurance resubmission");
       const reason = requireNote(note);
       const updated = await updateBooking(
         bookingId,
@@ -189,7 +210,7 @@ export async function performAdminBookingAction({
       return updated;
     }
     case "reject": {
-      assertState(booking, ["under_review", "pending_insurance"], "Rejection");
+      assertState(booking, ["under_review", "pending_insurance", "pending_signature"], "Rejection");
       const reason = requireNote(note);
       const updated = await updateBooking(
         bookingId,
@@ -227,6 +248,7 @@ export async function performAdminBookingAction({
     }
     case "mark_picked_up": {
       assertState(booking, ["ready_for_pickup"], "Pickup");
+      if (!hasVerifiedAgreement(booking)) throw new Error("The rental agreement must be signed and owner-verified in person before pickup.");
       if (booking.preInspectionPhotos.length === 0) {
         throw new Error("Upload at least one pre-rental inspection photo before releasing the trailer.");
       }
@@ -234,6 +256,11 @@ export async function performAdminBookingAction({
         bookingId,
         { status: "active", pickedUpAt: now.toISOString() },
         { action: "trailer_picked_up", actor, note: note?.trim() || undefined },
+        current => {
+          assertState(current, ["ready_for_pickup"], "Pickup");
+          if (!hasVerifiedAgreement(current) || current.preInspectionPhotos.length === 0) throw new Error("Complete the signed agreement and inspection before pickup.");
+          return true;
+        },
       );
       return ensureReturnReminder(pickedUp, actor);
     }

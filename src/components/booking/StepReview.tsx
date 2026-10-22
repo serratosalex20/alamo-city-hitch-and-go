@@ -8,13 +8,14 @@ import { calculatePrice, DURATION_LABELS, formatUsd } from "@/lib/booking/pricin
 import type { BookingFormData } from "@/app/book/page";
 
 interface Props {
+  agreementSigningMode?: "in_person" | "docusign";
   formData: BookingFormData;
   updateForm: (updates: Partial<BookingFormData>) => void;
   onBack: () => void;
   onContinue: () => void;
 }
 
-export function StepReview({ formData, updateForm, onBack, onContinue }: Props) {
+export function StepReview({ formData, updateForm, onBack, onContinue, agreementSigningMode = "in_person" }: Props) {
   const trailer = trailers.find((t) => t.id === formData.trailerId);
   if (!trailer) return null;
 
@@ -169,7 +170,7 @@ export function StepReview({ formData, updateForm, onBack, onContinue }: Props) 
             <Link href="/terms" target="_blank" className="text-primary underline">
               key rental terms
             </Link>
-            , cancellation policy, cleaning and damage charges, and the $200 security-deposit process. I understand the full rental agreement is signed after payment.
+            , cancellation policy, cleaning and damage charges, and the $200 refundable deposit charged at checkout. {agreementSigningMode === "in_person" ? "I will complete ID verification and insurance after payment, then sign the paper rental agreement at pickup. The owner must verify the signed agreement before releasing the trailer." : "I understand the full rental agreement is signed electronically after payment."}
           </span>
         </label>
       </div>

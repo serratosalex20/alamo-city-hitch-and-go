@@ -9,6 +9,7 @@ import {
 const Body = z.object({
   action: z.enum([
     "approve",
+    "verify_in_person_agreement",
     "request_insurance_resubmission",
     "reject",
     "request_deposit",

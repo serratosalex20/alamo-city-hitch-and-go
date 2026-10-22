@@ -129,7 +129,7 @@ export type BookingStatus =
   | "cancelled";
 
 export type PaymentStatus = "pending" | "succeeded" | "failed" | "refunded";
-export type AgreementStatus = "not_started" | "sent" | "signed" | "declined";
+export type AgreementStatus = "not_started" | "sent" | "signed" | "declined" | "awaiting_in_person" | "signed_in_person";
 export type IdentityStatus =
   | "not_started"
   | "pending"
@@ -256,6 +256,8 @@ export interface Booking {
   supersededAgreementEnvelopeIds?: string[];
   agreementStatus: AgreementStatus;
   agreementSignedAt?: string;
+  agreementVerifiedAt?: string;
+  agreementVerifiedBy?: string;
   // Stripe Identity — raw ID images are not stored in this application.
   stripeIdentitySessionId?: string;
   identityStatus: IdentityStatus;

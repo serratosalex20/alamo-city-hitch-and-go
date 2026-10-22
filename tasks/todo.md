@@ -475,3 +475,13 @@ These judgment-call audit findings still need YES/NO/TWEAK before Phase 3 closes
 - Phase 11 (production polish)
 
 This keeps Sprint 1 shippable as a lead-capture site with a booking form that just stores leads to Firestore — already beats every local competitor.
+# Recovery release — 2026-10-22
+
+Approved scope: complete the saved Preview payment flow with temporary paper signing. All pushes and deployments are held pending parent ownership resolution.
+
+- [x] Capture stable source hashes and preserve original checkout in an independent clone.
+- [x] Connect paid checkout/document completion to awaiting in-person agreement; retain DocuSign mode.
+- [x] Require audited owner verification of signed paper before confirmation/pickup; update customer and owner copy.
+- [x] Verify existing full-color hero/trailer imagery and subtle zoom.
+- [ ] Materialize and inspect supplied founders photo unchanged before using it (blocked: Windows Library helper lacks os.setxattr).
+- [x] Run affected mocked regressions, typecheck, changed-file lint and isolated build; record evidence in docs/verification/paper-signing-recovery-20261022.md.

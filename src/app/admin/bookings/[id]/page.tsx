@@ -1,3 +1,4 @@
+import { hasVerifiedAgreement } from "@/lib/booking/confirmation-policy";
 import { bookingCheckoutTotal } from "@/lib/booking/pricing";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -77,7 +78,8 @@ export default async function AdminBookingPage({ params }: { params: Promise<{ i
           <section className="bg-surface-container-low p-6 ghost-border">
             <h2 className="font-headline text-2xl font-bold uppercase mb-5">Documents</h2>
             <dl className="grid gap-5 sm:grid-cols-2">
-              <Item label="Agreement">{booking.agreementStatus}</Item>
+              <Item label="Agreement">{booking.agreementStatus.replaceAll("_", " ")}</Item>
+              {booking.agreementVerifiedAt && <Item label="Physical signature verified">{booking.agreementVerifiedAt} by {booking.agreementVerifiedBy}</Item>}
               <Item label="Identity">{booking.identityStatus.replaceAll("_", " ")}</Item>
               <Item label="Insurance">{booking.insuranceStatus.replaceAll("_", " ")}</Item>
               <Item label="Expires">{booking.insuranceExpiresAt ?? "—"}</Item>
@@ -95,6 +97,8 @@ export default async function AdminBookingPage({ params }: { params: Promise<{ i
         <AdminBookingActions
           bookingId={booking.id}
           status={booking.status}
+            agreementStatus={booking.agreementStatus}
+            agreementVerified={hasVerifiedAgreement(booking)}
           depositStatus={booking.depositStatus}
           depositAmount={booking.depositAmount}
           prePhotoCount={booking.preInspectionPhotos.length}

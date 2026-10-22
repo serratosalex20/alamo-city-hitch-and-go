@@ -15,6 +15,7 @@ import {
 } from "@/lib/booking/repository";
 import { trailers } from "@/lib/data/trailers";
 import { getStripe } from "@/lib/stripe/server";
+import { agreementSigningMode } from "@/lib/env";
 
 import { bookingCheckoutTotal } from "@/lib/booking/pricing";
 
@@ -78,6 +79,8 @@ export async function markRentalPaymentSucceeded(
       updates: {
         status: nextDocumentStatus(booking),
         paymentStatus: "succeeded",
+        ...(agreementSigningMode === "in_person" && booking.agreementStatus !== "signed"
+          ? { agreementStatus: "awaiting_in_person" as const } : {}),
         ...(booking.depositCollectedAtCheckout
           ? {
               depositStatus: "charged" as const,
@@ -142,6 +145,8 @@ export async function markDemoRentalPaymentSucceeded(bookingId: string) {
     updates: {
       status: nextDocumentStatus(booking),
       paymentStatus: "succeeded",
+      ...(agreementSigningMode === "in_person" && booking.agreementStatus !== "signed"
+        ? { agreementStatus: "awaiting_in_person" as const } : {}),
       ...(booking.depositCollectedAtCheckout
         ? {
             depositStatus: "charged" as const,
@@ -290,7 +295,7 @@ export async function reconcileBookingConfirmation(id: string) {
 }
 
 export async function notifyDocumentReview(booking: Booking) {
-  if (booking.status !== "under_review") return;
+  if (booking.status !== "under_review" && !(booking.status === "pending_signature" && booking.agreementStatus === "awaiting_in_person")) return;
   try {
     await sendOwnerReviewEmail(booking);
   } catch {
@@ -313,7 +318,7 @@ export async function completeAgreement(
       status: nextDocumentStatus({ ...current, agreementStatus: "signed" }),
     }),
     { action: "agreement_signed", actor },
-    current => canCompleteDocuments(current) && current.agreementStatus !== "signed" &&
+    current => canCompleteDocuments(current) && !["signed", "signed_in_person", "awaiting_in_person"].includes(current.agreementStatus) &&
       current.docusignEnvelopeId === booking.docusignEnvelopeId &&
       current.insuranceStoragePath === booking.insuranceStoragePath &&
       current.insurancePolicyNumber === booking.insurancePolicyNumber &&

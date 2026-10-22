@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
   BookingStatus,
+  AgreementStatus,
   DepositStatus,
   ReturnReminderStatus,
 } from "@/types/models";
@@ -13,6 +14,8 @@ import type {
 interface Props {
   bookingId: string;
   status: BookingStatus;
+  agreementStatus: AgreementStatus;
+  agreementVerified: boolean;
   depositStatus: DepositStatus;
   depositAmount: number;
   prePhotoCount: number;
@@ -95,18 +98,21 @@ export function AdminBookingActions(props: Props) {
   const secondaryClass = "min-h-[44px] px-5 py-3 bg-surface-container-high text-white font-headline font-bold uppercase tracking-widest text-xs disabled:opacity-40";
   const needsPrePhotos = ["confirmed", "deposit_action_required", "ready_for_pickup"].includes(props.status);
   const needsPostPhotos = props.status === "return_inspection";
+  const canVerifyPaper = ["pending_signature", "under_review", "confirmed", "deposit_action_required", "ready_for_pickup"].includes(props.status);
 
   return (
     <section className="space-y-5 bg-surface-container-low p-6 ghost-border" aria-labelledby="owner-actions">
       <h2 id="owner-actions" className="font-headline text-2xl font-bold uppercase">Owner Actions</h2>
-      {(props.status === "under_review" || props.status === "pending_insurance" || props.status === "return_inspection") && (
+      {(props.agreementStatus === "awaiting_in_person" || props.status === "under_review" || props.status === "pending_insurance" || props.status === "return_inspection") && (
         <div><label htmlFor="owner-note" className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Inspection / Decision Note</label><textarea id="owner-note" value={note} onChange={(event) => setNote(event.target.value)} rows={3} className="w-full bg-surface-container-high p-3 outline-none focus:ring-2 focus:ring-primary" /></div>
       )}
+      {props.agreementStatus === "awaiting_in_person" && <div className="space-y-3"><p className="text-sm text-primary">Physical agreement signature required before trailer release. Complete ID and insurance checks first. Verify only after witnessing the renter sign and retaining the signed paper agreement. Describe the retained agreement in the decision note.</p><button disabled={busy !== null || note.trim().length < 5 || !canVerifyPaper} onClick={() => act("verify_in_person_agreement")} className={actionClass}>Verify Physical Agreement Signed</button></div>}
+      {props.status === "pending_signature" && <div className="flex flex-wrap gap-3"><button disabled={busy !== null} onClick={() => act("request_insurance_resubmission")} className={secondaryClass}>Request New Insurance</button><button disabled={busy !== null} onClick={() => act("reject")} className={secondaryClass}>Reject</button></div>}
       {props.status === "under_review" && <div className="flex flex-wrap gap-3"><button disabled={busy !== null} onClick={() => act("approve")} className={actionClass}>Approve Booking</button><button disabled={busy !== null} onClick={() => act("request_insurance_resubmission")} className={secondaryClass}>Request New Insurance</button><button disabled={busy !== null} onClick={() => act("reject")} className={secondaryClass}>Reject</button></div>}
       {props.status === "confirmed" && <div><button disabled={busy !== null} onClick={() => act("request_deposit")} className={actionClass}>Request $200 Deposit</button><p className="text-xs text-on-surface-variant mt-2">The server allows this within 48 hours of pickup to protect the authorization window.</p></div>}
       {props.status === "deposit_action_required" && <p className="text-sm text-primary">Awaiting customer confirmation of the security deposit.</p>}
       {needsPrePhotos && <InspectionPhotoPicker phase="pre" savedCount={props.prePhotoCount} disabled={busy !== null} uploading={busy === "photos"} onUpload={uploadPhotos} />}
-      {props.status === "ready_for_pickup" && <button disabled={busy !== null || props.prePhotoCount === 0} onClick={() => act("mark_picked_up")} className={actionClass}>Mark Picked Up</button>}
+      {props.status === "ready_for_pickup" && <button disabled={busy !== null || props.prePhotoCount === 0 || !props.agreementVerified} onClick={() => act("mark_picked_up")} className={actionClass}>Mark Picked Up</button>}
       {props.status === "active" && (
         <div className="space-y-3">
           <p className="text-sm text-on-surface-variant">

@@ -8,7 +8,7 @@ import {
   getEnvelopeStatus,
   hasDocuSign,
 } from "@/lib/docusign/server";
-import { isDemoEnvironment } from "@/lib/env";
+import { agreementSigningMode, isDemoEnvironment } from "@/lib/env";
 
 export async function POST(
   request: Request,
@@ -21,7 +21,7 @@ export async function POST(
   if (booking.paymentStatus !== "succeeded") {
     return NextResponse.json({ ok: false, error: "Rental payment is required first." }, { status: 409 });
   }
-  if (booking.agreementStatus === "signed") {
+  if (["signed", "signed_in_person"].includes(booking.agreementStatus)) {
     await reconcileBookingConfirmation(id);
     return NextResponse.json({ ok: true, mode: "complete" as const });
   }
@@ -32,6 +32,26 @@ export async function POST(
 
   if (booking.identityStatus !== "verified" || !["uploaded", "accepted", "approved"].includes(booking.insuranceStatus) || !booking.insurancePolicyNumber?.trim()) {
     return NextResponse.json({ ok: false, error: "Complete identity verification and insurance details first." }, { status: 409 });
+  }
+
+  if (agreementSigningMode === "in_person") {
+    await updateBooking(id, { agreementStatus: "awaiting_in_person" },
+      { action: "agreement_awaiting_in_person", actor: session.email },
+      current => {
+        if (!canCompleteDocuments(current) || current.identityStatus !== "verified" ||
+            !["uploaded", "accepted", "approved"].includes(current.insuranceStatus) ||
+            current.agreementStatus !== booking.agreementStatus ||
+            current.insuranceStoragePath !== booking.insuranceStoragePath ||
+            current.insurancePolicyNumber !== booking.insurancePolicyNumber ||
+            current.insuranceExpiresAt !== booking.insuranceExpiresAt ||
+            current.insuranceCarrier !== booking.insuranceCarrier ||
+            current.insurancePolicyholder !== booking.insurancePolicyholder) {
+          throw new Error("Your booking changed. Refresh before continuing.");
+        }
+        return true;
+      });
+    await reconcileBookingConfirmation(id);
+    return NextResponse.json({ ok: true, mode: "in_person" as const });
   }
 
   if (!hasDocuSign) {
@@ -79,11 +99,11 @@ export async function GET(
   const authorized = await getCustomerBooking(id);
   if (!authorized) return NextResponse.json({ ok: false, error: "Not authorized." }, { status: 403 });
   const { booking, session } = authorized;
-  if (booking.agreementStatus === "signed") {
+  if (["signed", "signed_in_person"].includes(booking.agreementStatus)) {
     await reconcileBookingConfirmation(id);
-    return NextResponse.json({ ok: true, status: "signed" });
+    return NextResponse.json({ ok: true, status: booking.agreementStatus });
   }
-  if (!booking.docusignEnvelopeId || !hasDocuSign) {
+  if (booking.agreementStatus === "awaiting_in_person" || !booking.docusignEnvelopeId || !hasDocuSign) {
     return NextResponse.json({ ok: true, status: booking.agreementStatus });
   }
 

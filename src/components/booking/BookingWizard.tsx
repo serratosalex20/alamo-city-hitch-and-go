@@ -69,6 +69,7 @@ const steps = [
 ];
 
 export function BookingWizard({
+  agreementSigningMode = "in_person",
   savedDetails,
   returningCustomer = false,
   resumeCheckoutKey,
@@ -76,6 +77,7 @@ export function BookingWizard({
   savedDetails?: Partial<BookingFormData>;
   returningCustomer?: boolean;
   resumeCheckoutKey?: string;
+  agreementSigningMode?: "in_person" | "docusign";
 }) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(
@@ -197,7 +199,7 @@ export function BookingWizard({
             />
           )}
           {currentStep === 3 && (
-            <StepReview
+            <StepReview agreementSigningMode={agreementSigningMode}
               formData={formData}
               updateForm={updateForm}
               onBack={back}
