@@ -17,6 +17,7 @@ function SentInner() {
   const search = useSearchParams();
   const email = search.get("email") ?? "your email";
   const devLink = search.get("devLink");
+  const next = search.get("next");
 
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-6 py-24">
@@ -43,7 +44,7 @@ function SentInner() {
         </p>
         <p className="text-on-surface-variant text-xs font-light leading-relaxed">
           Didn&apos;t get it? Check your spam folder or{" "}
-          <Link href="/sign-in" className="text-primary hover:underline font-medium">
+          <Link href={next ? `/sign-in?next=${encodeURIComponent(next)}` : "/sign-in"} className="text-primary hover:underline font-medium">
             request a new link
           </Link>
           .

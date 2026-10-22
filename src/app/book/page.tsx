@@ -1,26 +1,95 @@
-import { Navbar } from '@/components/marketing/Navbar';
-import { Footer } from '@/components/marketing/Footer';
-import { RentalRequestForm } from '@/components/booking/RentalRequestForm';
-import type { RentalDuration, ReferralSource } from '@/types/models';
-// Retained for the dormant full-booking components; this page never mounts them.
-export interface BookingFormData {
-    trailerId: string;
-    trailerSlug: string;
-    date: string;
-    time: string;
-    duration: RentalDuration;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address: {
-        street: string;
-        city: string;
-        state: string;
-        zip: string;
-    };
-    referralSource: ReferralSource;
-    referralDetail: string;
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import {
+  getApprovedPickupRequest,
+  getResumablePickupCheckout,
+} from "@/lib/pickup-requests/checkout";
+import { trailers } from "@/lib/data/trailers";
+import { BookingWizard } from "@/components/booking/BookingWizard";
+import { getSession } from "@/lib/auth/session";
+import { listBookingsForEmail } from "@/lib/booking/repository";
+import { getProfile } from "@/lib/customers/repository";
+import { returningDetails } from "@/lib/customers/returning";
+import { agreementSigningMode } from "@/lib/env";
+export type { BookingFormData } from "@/components/booking/BookingWizard";
+
+export default async function BookPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pickupRequest?: string }>;
+}) {
+  const session = await getSession();
+  const requestId = (await searchParams).pickupRequest;
+  if (requestId) {
+    if (!session || session.bookingId)
+      redirect(
+        `/sign-in?next=${encodeURIComponent(`/book?pickupRequest=${requestId}`)}`,
+      );
+    let request;
+    try {
+      request = await getApprovedPickupRequest(requestId, session);
+    } catch {
+      return (
+        <main className="max-w-3xl mx-auto px-4 pt-28">
+          <h1 className="font-headline text-3xl uppercase">
+            Pickup request unavailable
+          </h1>
+          <p className="my-4">
+            Use the email associated with your request, or check its current
+            status.
+          </p>
+          <Link
+            href={`/pickup-requests/${encodeURIComponent(requestId)}`}
+            className="underline"
+          >
+            View request status
+          </Link>
+          <p className="mt-4">
+            <Link href="/book" className="underline">
+              Choose a regular pickup
+            </Link>
+          </p>
+        </main>
+      );
+    }
+    const [profile, bookings] = await Promise.all([
+      getProfile(session.email),
+      listBookingsForEmail(session.email),
+    ]);
+    const details = returningDetails(session.email, profile, bookings);
+    const resume = await getResumablePickupCheckout(requestId, session);
+    return (
+      <BookingWizard agreementSigningMode={agreementSigningMode}
+        resumeCheckoutKey={resume?.checkoutKey}
+        returningCustomer={details.returningCustomer}
+        savedDetails={{
+          ...details.savedDetails,
+          pickupRequestId: request.id,
+          trailerId: request.trailerId,
+          trailerSlug:
+            trailers.find((t) => t.id === request.trailerId)?.slug ?? "",
+          date: request.date,
+          time: request.time,
+          duration: request.duration,
+          firstName: request.firstName,
+          lastName: request.lastName,
+          email: request.email,
+          phone: request.phone,
+          ...resume?.savedDetails,
+        }}
+      />
+    );
+  }
+  if (!session || session.bookingId) return <BookingWizard agreementSigningMode={agreementSigningMode} />;
+  const [profile, bookings] = await Promise.all([
+    getProfile(session.email),
+    listBookingsForEmail(session.email),
+  ]);
+  const details = returningDetails(session.email, profile, bookings);
+  return (
+    <BookingWizard agreementSigningMode={agreementSigningMode}
+      savedDetails={details.savedDetails}
+      returningCustomer={details.returningCustomer}
+    />
+  );
 }
-export const metadata = { title: 'Request a Trailer Rental', description: 'Send a rental request. JB must confirm availability. No payment or deposit hold is taken online.' };
-export default function BookPage() { return <><Navbar /><main id="main-content" className="min-h-screen pt-28 pb-24 px-4 md:px-8 max-w-3xl mx-auto"><h1 className="text-4xl font-headline font-bold uppercase mb-4">Request a trailer rental</h1><p className="text-lg mb-8">Send your preferred trailer and pickup time. JB must confirm availability and arrangements before your rental is reserved. No payment or deposit hold is taken here.</p><RentalRequestForm /></main><Footer /></>; }

@@ -1,3 +1,5 @@
+import { hasLiveProviderConfiguration } from "./booking/provider-mode";
+
 /**
  * Typed environment variable reader.
  *
@@ -18,9 +20,33 @@ function read(name: string): string | undefined {
 export const firebaseAdminProjectId = read("FIREBASE_ADMIN_PROJECT_ID");
 export const firebaseAdminClientEmail = read("FIREBASE_ADMIN_CLIENT_EMAIL");
 // Newlines in the private key arrive as literal "\n" through env vars; restore them.
-export const firebaseAdminPrivateKey = read("FIREBASE_ADMIN_PRIVATE_KEY")?.replace(
-  /\\n/g,
-  "\n",
+export const firebaseAdminPrivateKey = read(
+  "FIREBASE_ADMIN_PRIVATE_KEY",
+)?.replace(/\\n/g, "\n");
+export const firebaseStorageBucket =
+  read("FIREBASE_STORAGE_BUCKET") ??
+  read("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
+
+function resourceNamespace(name: string, fallback: string): string {
+  const value = read(name) ?? fallback;
+  if (!/^[A-Za-z0-9_-]+$/.test(value)) {
+    throw new Error(
+      `${name} may contain only letters, numbers, underscores, and hyphens.`,
+    );
+  }
+  return value;
+}
+
+// Preview deployments can share a Firebase project without sharing customer data.
+export const bookingCollection = resourceNamespace(
+  "BOOKING_COLLECTION",
+  "bookings",
+);
+export const pickupRequestCollection = `${bookingCollection}_pickup_requests`;
+export const pickupRequestRateCollection = `${bookingCollection}_pickup_request_rates`;
+export const bookingStoragePrefix = resourceNamespace(
+  "BOOKING_STORAGE_PREFIX",
+  "bookings",
 );
 
 // ─── Firebase (client-side SDK) ──────────────────────────
@@ -38,13 +64,71 @@ export const stripeSecretKey = read("STRIPE_SECRET_KEY");
 export const stripePublishableKey = read("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY");
 export const stripeWebhookSecret = read("STRIPE_WEBHOOK_SECRET");
 
+// ─── DocuSign ───────────────────────────────────────────
+export const docusignIntegrationKey = read("DOCUSIGN_INTEGRATION_KEY");
+export const docusignUserId = read("DOCUSIGN_USER_ID");
+export const docusignAccountId = read("DOCUSIGN_ACCOUNT_ID");
+export const docusignTemplateId = read("DOCUSIGN_TEMPLATE_ID");
+export const docusignSignerRole = read("DOCUSIGN_SIGNER_ROLE") ?? "Renter";
+export const docusignRsaPrivateKey = read("DOCUSIGN_RSA_PRIVATE_KEY")?.replace(
+  /\\n/g,
+  "\n",
+);
+export const docusignOauthBaseUrl =
+  read("DOCUSIGN_OAUTH_BASE_URL") ?? "https://account-d.docusign.com";
+export const docusignBaseUrl =
+  read("DOCUSIGN_BASE_URL") ?? "https://demo.docusign.net/restapi";
+
+// ─── Email ──────────────────────────────────────────────
+export const resendApiKey = read("RESEND_API_KEY");
+export const emailFrom =
+  read("EMAIL_FROM") ??
+  "Alamo City Hitch & Go <booking@alamocityhitchandgo.com>";
+export const supportEmail =
+  read("SUPPORT_EMAIL") ?? "alamocityhitchandgo@gmail.com";
+export const supportPhone = read("SUPPORT_PHONE") ?? "210-269-3467";
+
+// ─── Pickup operations ──────────────────────────────────
+// Kept server-side so the exact handoff location is disclosed only after approval.
+export const pickupAddress = read("PICKUP_ADDRESS");
+export const pickupInstructions =
+  read("PICKUP_INSTRUCTIONS") ??
+  "Arrive at your scheduled time and wait for the representative before connecting or moving the trailer.";
+
+// ─── Owner access ───────────────────────────────────────
+export const adminEmails = new Set(
+  (read("ADMIN_EMAILS") ?? "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean),
+);
+
 // ─── App ─────────────────────────────────────────────────
 /**
  * Runtime origin of THIS deployment. Env-driven on purpose: auth
  * redirects and magic-link callbacks must resolve against whatever
  * host actually served the request, so preview deployments work.
  */
-export const appUrl = read("NEXT_PUBLIC_APP_URL") ?? "http://localhost:3000";
+export function resolveAppUrl(
+  configuredUrl: string | undefined,
+  vercelDeploymentHost: string | undefined,
+): string {
+  const candidate =
+    configuredUrl ??
+    (vercelDeploymentHost
+      ? `https://${vercelDeploymentHost}`
+      : "http://localhost:3000");
+  try {
+    return new URL(candidate).origin;
+  } catch {
+    throw new Error("NEXT_PUBLIC_APP_URL must be a valid absolute URL.");
+  }
+}
+
+export const appUrl = resolveAppUrl(
+  read("NEXT_PUBLIC_APP_URL"),
+  read("VERCEL_URL"),
+);
 
 /**
  * Canonical public origin of the business. Deliberately NOT env-driven.
@@ -77,7 +161,8 @@ export const siteUrl = "https://www.alamocityhitchandgo.com";
 const DEV_FALLBACK_SECRET =
   "dev-only-fallback-secret-do-not-use-in-production-rotate-via-AUTH_SECRET";
 export const authSecret = read("AUTH_SECRET") ?? DEV_FALLBACK_SECRET;
-export const hasProductionAuthSecret = read("AUTH_SECRET") !== undefined;
+export const hasProductionAuthSecret =
+  authSecret !== DEV_FALLBACK_SECRET && authSecret.length >= 32;
 
 // ─── Mode gates ──────────────────────────────────────────
 /**
@@ -93,7 +178,9 @@ export const hasFirebase = Boolean(
  * Different gate from admin because public keys live in different env vars.
  */
 export const hasFirebaseClient = Boolean(
-  firebasePublicConfig.apiKey && firebasePublicConfig.authDomain && firebasePublicConfig.projectId,
+  firebasePublicConfig.apiKey &&
+    firebasePublicConfig.authDomain &&
+    firebasePublicConfig.projectId,
 );
 
 /**
@@ -102,3 +189,51 @@ export const hasFirebaseClient = Boolean(
  * the /api/webhooks/stripe route).
  */
 export const hasStripe = Boolean(stripeSecretKey);
+
+export const hasDocuSign = Boolean(
+  docusignIntegrationKey &&
+    docusignUserId &&
+    docusignAccountId &&
+    docusignTemplateId &&
+    docusignRsaPrivateKey,
+);
+
+export const hasEmail = Boolean(resendApiKey);
+
+/** Temporary paper-signing release; electronic signing remains available explicitly. */
+const configuredAgreementMode = read("AGREEMENT_SIGNING_MODE") ?? "in_person";
+if (!["in_person", "docusign"].includes(configuredAgreementMode)) {
+  throw new Error("AGREEMENT_SIGNING_MODE must be in_person or docusign.");
+}
+export const agreementSigningMode = configuredAgreementMode as "in_person" | "docusign";
+
+/** Vercel Preview also uses NODE_ENV=production, so use the deployment target. */
+export const isLiveDeployment = read("VERCEL_ENV") === "production";
+const providerModeReady =
+  !isLiveDeployment ||
+  hasLiveProviderConfiguration({
+    stripeSecretKey,
+    stripePublishableKey,
+    docusignOauthBaseUrl,
+    docusignBaseUrl,
+    agreementSigningMode,
+  });
+
+/** Configuration prerequisites; provider credentials must also be verified before launch. */
+export const isProductionBookingReady = Boolean(
+  providerModeReady &&
+    hasFirebase &&
+    firebaseStorageBucket &&
+    hasStripe &&
+    stripePublishableKey &&
+    stripeWebhookSecret &&
+    (agreementSigningMode === "in_person" || hasDocuSign) &&
+    hasEmail &&
+    hasProductionAuthSecret &&
+    adminEmails.size > 0 &&
+    pickupAddress &&
+    pickupInstructions,
+);
+
+/** Development-only adapters are never allowed to create a production booking. */
+export const isDemoEnvironment = process.env.NODE_ENV !== "production";

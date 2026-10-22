@@ -1,22 +1,27 @@
 "use client";
 
+import { MARKETING_CONSENT_TEXT } from "@/lib/customers/profile";
+import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { trailers } from "@/lib/data/trailers";
-import { DURATION_LABELS } from "@/lib/booking/pricing";
+import { calculatePrice, DURATION_LABELS, formatUsd } from "@/lib/booking/pricing";
 import type { BookingFormData } from "@/app/book/page";
 
 interface Props {
+  agreementSigningMode?: "in_person" | "docusign";
   formData: BookingFormData;
+  updateForm: (updates: Partial<BookingFormData>) => void;
   onBack: () => void;
   onContinue: () => void;
 }
 
-export function StepReview({ formData, onBack, onContinue }: Props) {
+export function StepReview({ formData, updateForm, onBack, onContinue, agreementSigningMode = "in_person" }: Props) {
   const trailer = trailers.find((t) => t.id === formData.trailerId);
   if (!trailer) return null;
 
   // Sprint 3.3 — direct lookup: pricing keys mirror RentalDuration values.
   const rentalPrice = trailer.pricing[formData.duration];
+  const quote = calculatePrice(formData.trailerId, formData.duration);
   const durationLabel = DURATION_LABELS[formData.duration];
 
   return (
@@ -49,6 +54,21 @@ export function StepReview({ formData, onBack, onContinue }: Props) {
             {trailer.specs.gvwr.toLocaleString()} LBS GVWR &bull;{" "}
             {trailer.specs.hitchSize}
           </p>
+        </div>
+
+        <div className="bg-surface-container p-6 space-y-3">
+          <div className="flex items-center gap-2 mb-4">
+            <Icon name="directions_car" className="text-primary text-xl" />
+            <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+              Tow Vehicle
+            </span>
+          </div>
+          <p className="font-bold">
+            {formData.towVehicle.year} {formData.towVehicle.make} {formData.towVehicle.model}
+          </p>
+          {formData.towVehicle.plate && (
+            <p className="text-on-surface-variant text-sm">Plate: {formData.towVehicle.plate}</p>
+          )}
         </div>
 
         {/* Schedule */}
@@ -113,14 +133,18 @@ export function StepReview({ formData, onBack, onContinue }: Props) {
               <span className="text-on-surface-variant">
                 Rental Fee ({durationLabel})
               </span>
-              <span className="font-bold">${rentalPrice}.00</span>
+              <span className="font-bold">{formatUsd(quote.rentalCents)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-on-surface-variant">Texas Motor Vehicle Rental Tax</span>
+              <span className="font-bold">{formatUsd(quote.taxCents)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-on-surface-variant">
                 Security Deposit{" "}
-                <span className="text-[10px]">(hold only — not charged)</span>
+                <span className="text-[10px]">(refundable, charged today)</span>
               </span>
-              <span className="font-bold">${trailer.deposit}.00</span>
+              <span className="font-bold">{formatUsd(quote.depositCents)}</span>
             </div>
             <div className="h-px bg-white/10 my-2" />
             <div className="flex justify-between text-lg">
@@ -128,12 +152,33 @@ export function StepReview({ formData, onBack, onContinue }: Props) {
                 Total Charged Today
               </span>
               <span className="text-primary font-headline font-bold">
-                ${rentalPrice}.00
+                {formatUsd(quote.checkoutTotalCents)}
               </span>
             </div>
           </div>
         </div>
+
+        <label className="flex items-start gap-3 bg-surface-container-low p-5 cursor-pointer ghost-border">
+          <input
+            type="checkbox"
+            checked={formData.policiesAccepted}
+            onChange={(event) => updateForm({ policiesAccepted: event.target.checked })}
+            className="mt-1 h-5 w-5 accent-primary-action"
+          />
+          <span className="text-sm leading-relaxed text-on-surface-variant">
+            I agree to the{" "}
+            <Link href="/terms" target="_blank" className="text-primary underline">
+              key rental terms
+            </Link>
+            , cancellation policy, cleaning and damage charges, and the $200 refundable deposit charged at checkout. {agreementSigningMode === "in_person" ? "I will complete ID verification and insurance after payment, then sign the paper rental agreement at pickup. The owner must verify the signed agreement before releasing the trailer." : "I understand the full rental agreement is signed electronically after payment."}
+          </span>
+        </label>
       </div>
+
+      <label className="mt-5 flex items-start gap-3 bg-surface-container-low p-5 cursor-pointer ghost-border">
+        <input type="checkbox" checked={formData.emailMarketingOptIn} onChange={(event) => updateForm({ emailMarketingOptIn: event.target.checked })} className="mt-1 h-5 w-5 shrink-0 accent-primary-action" />
+        <span className="text-sm text-on-surface-variant">{MARKETING_CONSENT_TEXT}<br />Pickup and return reminders are included with your booking regardless of this choice.</span>
+      </label>
 
       {/* Actions */}
       <div className="flex gap-4 mt-12">
@@ -145,8 +190,9 @@ export function StepReview({ formData, onBack, onContinue }: Props) {
         </button>
         <button
           onClick={onContinue}
+          disabled={!formData.policiesAccepted}
           aria-label="Continue to payment"
-          className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest hover:brightness-110 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+          className="flex-1 min-h-[44px] bg-primary-action text-white py-5 font-headline font-bold uppercase tracking-widest hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98] flex items-center justify-center gap-3"
         >
           Continue to Payment
           <Icon name="arrow_forward" className="text-sm" />
@@ -154,8 +200,7 @@ export function StepReview({ formData, onBack, onContinue }: Props) {
       </div>
 
       <p className="text-center text-[10px] text-on-surface-variant mt-4 uppercase tracking-wider">
-        Secure Deposit Authorization &bull; Your card is held, not charged, for
-        the ${trailer.deposit} deposit
+        Your rental, tax, and refundable ${trailer.deposit} security deposit are charged today.
       </p>
     </div>
   );

@@ -19,6 +19,7 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/marketing/Navbar";
 import { Footer } from "@/components/marketing/Footer";
 import { Icon } from "@/components/ui/Icon";
+import { agreementSigningMode } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Terms",
@@ -41,12 +42,12 @@ const sections: Section[] = [
   {
     heading: "Payment",
     body:
-      "The rental fee is charged at booking. Texas sales tax (Bexar County combined, 8.25%) applies to the rental fee only. Your card on file must be in your legal name as shown on the driver's license you present at pickup.",
+      "The rental fee is charged at booking. Texas motor vehicle rental tax (10% for contracts of 1–30 days) applies to the rental fee. Your card on file must be in your legal name as shown on the driver's license you present at pickup.",
   },
   {
     heading: "Refundable Deposit",
     body:
-      "Every rental requires a $200 refundable deposit hold — the same amount across every trailer in the fleet. It is a pre-authorization on your card, not a charge. The hold releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning ($100 flat), or unpaid overtime is owed, we capture only the amount due and release the remainder.",
+      "Every rental requires a $200 security deposit. The refundable deposit is charged at checkout along with the rental fee and tax. After return and inspection, we initiate the release or refund within 24 hours when nothing is owed; your bank may take additional time to update your available balance. If documented damage, cleaning ($100 flat), or unpaid overtime is owed, we retain only the supported amount and release or refund the remainder.",
   },
   {
     heading: "Insurance",
@@ -76,7 +77,7 @@ const sections: Section[] = [
   {
     heading: "Damage, Loss & Inspection",
     body:
-      "We inspect with you at pickup and document the trailer's condition on a joint inspection report. We re-inspect within two business days of return. Damage, loss, missing accessories, or excessive soiling that wasn't there at pickup is documented with photographs and billed at commercially reasonable rates.",
+      "We inspect with you at pickup and document the trailer's condition on a joint inspection report. The supplied trailer lock and key are included accessories and must be returned. We complete the return review within 24 hours. Damage, loss, missing accessories, or excessive soiling that wasn't there at pickup is documented with photographs and billed at commercially reasonable rates. If the supplied lock or key is lost or damaged, its documented replacement cost may be deducted from the deposit; the full deposit is not automatically forfeited.",
   },
   {
     heading: "Governing Law & Venue",
@@ -84,9 +85,9 @@ const sections: Section[] = [
       "This rental is governed by the laws of the State of Texas. Any dispute is resolved exclusively in the state or federal courts located in Bexar County, Texas.",
   },
   {
-    heading: "Electronic Signature",
+    heading: agreementSigningMode === "in_person" ? "Rental Agreement at Pickup" : "Electronic Signature",
     body:
-      "When you sign the rental agreement at booking — including via DocuSign or any equivalent platform — your electronic signature has the same legal force as a handwritten one under the Texas Uniform Electronic Transactions Act, Texas Business & Commerce Code Chapter 322.",
+      agreementSigningMode === "in_person" ? "Complete online payment, ID verification and current insurance details, then review and sign the paper rental agreement with the owner at pickup. The owner must witness and verify the signature and retain the agreement before releasing the trailer." : "When you sign the rental agreement at booking - including via DocuSign or any equivalent platform - your electronic signature has the same legal force as a handwritten one under the Texas Uniform Electronic Transactions Act, Texas Business & Commerce Code Chapter 322.",
   },
 ];
 
@@ -108,7 +109,7 @@ export default function TermsPage() {
           </h1>
           <p className="text-xl text-on-surface-variant font-light leading-relaxed max-w-2xl">
             The major points, in plain language. The complete signed rental
-            agreement is presented at booking — this page exists so you can
+            agreement must be reviewed and signed before trailer release - this page exists so you can
             read it before you start.
           </p>
         </header>
@@ -129,7 +130,7 @@ export default function TermsPage() {
                 agreement. A licensed Texas business attorney is reviewing the
                 final language before any customer signs. Nothing on this page
                 is a binding contract — the binding document is the agreement
-                presented at booking time, signed via DocuSign.
+                {agreementSigningMode === "in_person" ? "presented for in-person signing at pickup." : "presented at booking time, signed via DocuSign."}
               </p>
             </div>
           </div>
@@ -165,8 +166,7 @@ export default function TermsPage() {
             Ready When You Are
           </h2>
           <p className="text-on-surface-variant text-base font-light max-w-xl mx-auto mb-8 leading-relaxed">
-            You&apos;ll see the full binding agreement at booking. Sign once,
-            pull, go.
+            {agreementSigningMode === "in_person" ? "Review and sign the full agreement with the owner at pickup. Owner verification is required before trailer release." : "You'll see the full binding agreement at booking. Sign once, pull, go."}
           </p>
           <Link
             href="/book"

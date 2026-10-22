@@ -5,7 +5,7 @@ const features = [
     icon: "speed",
     title: "Rapid Pickup",
     description:
-      "Send your preferred trailer and pickup time. JB will confirm availability and arrange your rental.",
+      "Skip the paperwork. Our digital-first booking gets you on the road in under 5 minutes.",
     borderColor: "border-secondary",
     iconColor: "text-secondary",
   },

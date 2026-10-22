@@ -41,7 +41,7 @@ const promises: Promise[] = [
     icon: "schedule",
     heading: "If It's Booked, It's Yours",
     body:
-      "JB checks trailer availability and confirms your arrangements personally. Sending a request does not reserve a trailer.",
+      "No double-booking, no \"the trailer you reserved isn't actually here\" surprises. Your booking is held against a single physical unit, not a wishlist.",
   },
   {
     icon: "support_agent",
@@ -53,7 +53,7 @@ const promises: Promise[] = [
     icon: "request_quote",
     heading: "What You See Is What You Pay",
     body:
-      "Published block rates help you plan. JB confirms the final rental total and deposit arrangements. No payment or deposit hold is taken online.",
+      "Flat block pricing on the rates page. Texas motor vehicle rental tax called out. Refundable deposit is charged at checkout. No mileage roulette, no fuel-fill gotchas.",
   },
 ];
 

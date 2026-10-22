@@ -33,7 +33,7 @@ const rows: Row[] = [
     counter:
       "Your booking is a wishlist. You arrive and the trailer is rented to someone else, broken, or never showed up on the truck.",
     yard:
-      "JB confirms the trailer and schedule personally. Your online request does not reserve a physical unit.",
+      "Your booking holds a specific physical unit. If it's booked to you, it's yours.",
   },
   {
     topic: "Pre-Rental Inspection",
@@ -47,7 +47,7 @@ const rows: Row[] = [
     counter:
       "Daily rate, plus mileage, plus environmental fee, plus insurance up-sell at the counter, plus a fuel-fill surcharge if you don't top it off perfectly.",
     yard:
-      "Published block prices plus Texas sales tax. JB confirms the final total and deposit arrangements before rental.",
+      "Block price + Texas motor vehicle rental tax. Refundable deposit charged at checkout. That's it.",
   },
   {
     topic: "Support While You're Out",

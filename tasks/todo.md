@@ -1,5 +1,23 @@
 # Alamo City Hitch & Go Co — Build Plan
 
+## Active — Full-color trailer photos (2026-10-03)
+
+User requested full-color photos at rest with the existing subtle hover zoom.
+- [x] Locate grayscale filters on the homepage, fleet cards, and detail pages.
+- [x] Remove photo desaturation and retain subtle hover zoom; keep availability labels authoritative.
+- [x] Check the changed components and verify the published Preview visually. See docs/verification/trailer-photo-color.md.
+
+
+## Active — Automatic booking confirmation (2026-10-03)
+
+User selected step 1: qualified ordinary bookings confirm themselves. Preview only.
+- [x] Add regression tests for qualifying bookings, incomplete/expired documents, outside-hours approval binding, callback replays, and cancellation races.
+- [x] Reconcile fresh booking state atomically after document/payment updates; accept submitted proof without claiming insurer verification; preserve explicit owner exceptions and pickup/return inspections.
+- [x] Update renter messages and returning-document reuse.
+- [x] Run tests, typecheck, lint, build, review, and publish the tested Preview.
+
+
+
 **Started:** 2026-04-08
 **Stack:** Next.js 16 (App Router) + TypeScript + Tailwind CSS 4 + Firebase (Auth, Firestore, Storage) + Stripe (Auth/Capture) + DocuSign + Google Gemini Vision
 **Design system:** Industrial Editorial — source of truth `src/app/globals.css`
@@ -11,6 +29,98 @@
 - **MVP cutline:** External integrations stub via env-gated adapter interfaces. Real keys swap in without rewriting callers.
 - **Stub-mode policy (Sprint 2):** Build Phase 5 + Phase 6 in **stub mode by default**. If `STRIPE_SECRET_KEY` is unset, `/api/checkout` returns a fake `PaymentIntent` so the booking flow works end-to-end. If Firebase Admin env vars are unset, magic-link "sending" logs to console and the email link is exposed in the dev-mode response for testing.
 - **Brand assets:** v1.0 brand guide + DRAFT rental agreement live in `deliverables/` (committed 2026-05-14).
+
+---
+
+## ACTIVE SPRINT — Production Booking, Documents & Pickup Flow (2026-09-04)
+
+> Owner-approved launch flow: pickup only; Stripe rental payment; DocuSign
+> embedded agreement; Stripe Identity verification; private insurance upload;
+> owner review; $200 security deposit authorization near pickup; owner-only
+> release after return inspection, initiated within 24 hours. One- and two-week
+> rentals use an eligible extended authorization or a refundable-charge fallback.
+
+### B0 — Baseline and launch safeguards
+- [x] Preserve the existing brand, trailer catalog, pricing, and pickup-only scope.
+- [x] Add strict server validation for customer, schedule, pricing, and bookability.
+- [x] Replace confirmation-before-payment and permissive stub behavior with explicit
+      development/demo states that cannot masquerade as a live booking.
+- [x] Document every required environment variable without committing secrets.
+
+### B1 — Booking records and availability
+- [x] Expand booking statuses for payment, documents, review, deposit, pickup,
+      return inspection, release/capture, cancellation, and completion.
+- [x] Persist provisional bookings in Firestore and calculate authoritative start/end
+      timestamps on the server.
+- [x] Reject conflicts against active/pending bookings with the 30-minute buffer.
+- [x] Add a 15-minute checkout expiration and a 24-hour document-completion deadline.
+
+### B2 — Rental payment and saved card
+- [x] Create/reuse a Stripe Customer and create the rental PaymentIntent from the
+      server-calculated quote; save the card for the later deposit authorization.
+- [x] Mount Stripe Payment Element and require successful payment before advancing.
+- [x] Verify Stripe webhook signatures and make fulfillment idempotent.
+- [x] Show "Payment received — documents required" until the post-payment steps pass.
+
+### B3 — Agreement, identity, and insurance
+- [x] Create an embedded DocuSign envelope from the approved rental agreement, with a
+      clearly labeled development fallback when DocuSign credentials are absent.
+- [x] Create a Stripe Identity document-verification session and store only the
+      verification reference/status in the booking record.
+- [x] Accept private insurance JPG/PNG/PDF uploads with type/size validation and
+      staff-only retrieval; collect carrier, policyholder, and expiration date.
+- [x] Provide a single post-payment checklist with signed/verified/uploaded states.
+
+### B4 — Customer and owner operations
+- [x] Replace the mock customer dashboard with the renter's real booking and next steps.
+- [x] Add owner-only booking review, approve/resubmit/reject actions, pickup readiness,
+      checkout/return timestamps, inspection notes/photos, and an audit trail.
+- [x] Add owner-only deposit authorize/release/capture actions. No automatic release;
+      show reminders and the Stripe authorization expiration deadline.
+- [x] Initiate clean-return release within 24 hours; document and capture only the
+      supported amount when cleaning/damage is found.
+
+### B5 — Verification and launch
+- [x] Add focused tests for pricing, schedule validation, conflicts, booking state
+      transitions, webhook idempotency, and deposit decisions.
+- [x] Run TypeScript/build checks and review the complete diff.
+- [ ] Walk the browser flow end-to-end in safe test mode: booking → payment → agreement
+      → identity → insurance → owner approval → deposit → pickup → return → release.
+- [ ] Deploy only after the full flow passes and required production credentials are
+      confirmed; perform a separate low-dollar/live-mode smoke test before accepting
+      real customers.
+
+### Verification log — 2026-09-04
+
+- [ ] **Smoke Test 1 launch blocker:** the Vercel preview reaches trailer and schedule
+      selection, but `/api/availability` returns HTTP 503 because Firebase Admin booking
+      storage is not configured for the Preview environment. Configure sandbox/test
+      integrations in Preview, production integrations in Production, and do not launch
+      until both the safe test flow and a controlled live-mode flow pass.
+- [x] Isolate preview Firestore records and uploaded documents with environment-scoped
+      collection/storage prefixes before reusing Firebase credentials in Vercel Preview.
+- [x] Make payment, signing, identity, email, and auth callbacks use the actual Vercel
+      preview origin when `NEXT_PUBLIC_APP_URL` is not explicitly configured.
+- [x] Replace the inconsistent native mobile time wheel with explicit 30-minute pickup
+      options during operating hours; enforce the same choices server-side and add tests.
+- [x] Local API/UI-route smoke: booking → demo payment → demo agreement → demo identity
+      → insurance upload → owner approval → deposit authorization → pre-inspection
+      → pickup → return → post-inspection → manual release. Customer and owner protected
+      pages both returned HTTP 200.
+- [x] Final payment review corrected the checkout from 8.25% sales tax to the Texas
+      Comptroller's 10% motor vehicle rental tax for 1–30 day contracts; all current
+      rental blocks are 15 days or shorter.
+- [x] Checkout holds now reject edited/reused checkout keys, expose a 15-minute timer,
+      release safely when the renter returns to review, and atomically re-check inventory
+      before converting a successful payment into a reservation. A late/conflicting real
+      payment is refunded automatically instead of creating a double booking.
+- [x] `npm test`, `npm run lint`, `npx tsc --noEmit`, and `npm run build` pass.
+- [x] Smoke Test 1 scheduling correction passes 12 focused booking tests, ESLint,
+      TypeScript, and the 28-route production build.
+- [ ] Visual browser pass requires an external preview URL; local-only browser access was
+      blocked by the test environment. Preview deployment awaits explicit owner approval.
+- [ ] Live providers and low-dollar card test remain blocked until production credentials,
+      approved DocuSign template, owner email, and pickup instructions are configured.
 
 ## Open decisions (still owed by owner)
 
@@ -365,14 +475,13 @@ These judgment-call audit findings still need YES/NO/TWEAK before Phase 3 closes
 - Phase 11 (production polish)
 
 This keeps Sprint 1 shippable as a lead-capture site with a booking form that just stores leads to Firestore — already beats every local competitor.
+# Recovery release — 2026-10-22
 
+Approved scope: complete the saved Preview payment flow with temporary paper signing. All pushes and deployments are held pending parent ownership resolution.
 
-## Approved temporary request-only release — 2026-10-22
-
-Alex approved request-only intake pending DocuSign. Base: production b23b5bc.
-- [x] Inspect remote/local changes and preserve unrelated work.
-- [x] Replace /book with pending request capture; disable payment intent creation.
-- [x] Add bounded durable intake, rate limits, owner notification status and honest receipt.
-- [x] Run 8 mocked/isolated tests, typecheck and production build; review exact diff. Read-only staged readiness is still required.
-- [ ] Stage production and verify read-only storage/email readiness before promotion.
-- [ ] Verify live UI without submitting requests, payments or notifications.
+- [x] Capture stable source hashes and preserve original checkout in an independent clone.
+- [x] Connect paid checkout/document completion to awaiting in-person agreement; retain DocuSign mode.
+- [x] Require audited owner verification of signed paper before confirmation/pickup; update customer and owner copy.
+- [x] Verify existing full-color hero/trailer imagery and subtle zoom.
+- [ ] Materialize and inspect supplied founders photo unchanged before using it (blocked: Windows Library helper lacks os.setxattr).
+- [x] Run affected mocked regressions, typecheck, changed-file lint and isolated build; record evidence in docs/verification/paper-signing-recovery-20261022.md.

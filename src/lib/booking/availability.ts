@@ -1,11 +1,7 @@
 /**
  * Booking conflict detection — buffer policy.
  *
- * Sprint 2 establishes the minimum buffer between two rentals of the same
- * trailer. The conflict-check algorithm itself runs server-side against
- * Firestore (Phase 4 future work); this file only defines the policy
- * constant and a pure helper used by both client UI hints and the server
- * check.
+ * Shared by the calendar, availability check, and atomic checkout hold.
  *
  * Default: 30 minutes. Industrial Architect math:
  *   - 15 min for the customer to load/unload after pickup
@@ -41,4 +37,8 @@ export function hasConflict(
       proposed.startMs < b.endMs + bufferMs &&
       proposed.endMs + bufferMs > b.startMs,
   );
+}
+
+export function hasInventoryCapacity(proposed: Interval, existing: Interval[], capacity: number): boolean {
+  return existing.filter(interval => hasConflict(proposed, [interval])).length < capacity;
 }

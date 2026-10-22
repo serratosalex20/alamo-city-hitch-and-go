@@ -46,12 +46,12 @@ const faqs: FAQ[] = [
   {
     question: "Is the security deposit charged to my card?",
     answer:
-      "No payment or deposit hold is taken when you submit an online request. JB confirms availability, the final total, and refundable deposit arrangements before your rental is reserved.",
+      "The refundable $200 deposit is charged at checkout along with the rental fee and tax. After the trailer is returned and inspected, we initiate a clean-return release or refund within 24 hours; your bank may take additional time to update the balance. If documented damage, cleaning, a missing lock or key, or overtime is owed, we retain only the supported amount and release or refund the remainder.",
   },
   {
     question: "How much does a trailer rental cost in San Antonio?",
     answer:
-      "Block rates start at $75 for a Half Day (12 hours) on our 6.5'×12' utility trailer, or $100 for a Full Day and $600 for 1 Week. The 8.5'×20' enclosed runs $90 for a Half Day, $150 for a Full Day, $900 for 1 Week, and $1,680 for 2 Weeks — and every 2-Week block ships with one free day baked in (15 calendar days, not 14). See the full price matrix on our rates page — every block of every trailer is priced openly, no quote forms or hidden fees. Texas sales tax (Bexar County combined, 8.25%) applies to the rental fee.",
+      "Block rates start at $75 for a Half Day (12 hours) on our 6.5'×12' utility trailer, or $100 for a Full Day and $600 for 1 Week. The 8.5'×20' enclosed runs $90 for a Half Day, $150 for a Full Day, $900 for 1 Week, and $1,680 for 2 Weeks — and every 2-Week block ships with one free day baked in (15 calendar days, not 14). See the full price matrix on our rates page — every block of every trailer is priced openly, no quote forms or hidden fees. Texas motor vehicle rental tax (10% for contracts of 1–30 days) applies to the rental fee.",
   },
   {
     question: "What if I'm late returning the trailer?",
@@ -61,7 +61,7 @@ const faqs: FAQ[] = [
   {
     question: "Is there a cleaning fee?",
     answer:
-      "Only if the trailer is returned uncleaned — meaning trash, mud, debris, manure, paint splatter, or any soiling that requires more than about 15 minutes of cleanup. The flat cleaning fee is $100 and is captured from your deposit hold. Sweep the deck and clear any obvious mess before return and you're set.",
+      "Only if the trailer is returned uncleaned — meaning trash, mud, debris, manure, paint splatter, or any soiling that requires more than about 15 minutes of cleanup. The flat cleaning fee is $100 and is deducted from your refundable deposit. Sweep the deck and clear any obvious mess before return and you're set.",
   },
   {
     question: "Can I take the trailer outside of Texas?",

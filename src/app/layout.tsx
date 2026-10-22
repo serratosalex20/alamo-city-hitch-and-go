@@ -113,6 +113,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
+        {/* Material Symbols is an icon font, not a page text font. */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"

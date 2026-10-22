@@ -1,0 +1,739 @@
+import {
+  automaticConfirmationIssue,
+  canCompleteDocuments,
+} from "./confirmation-policy";
+import { trailers } from "@/lib/data/trailers";
+import { getPickupRequest } from "@/lib/pickup-requests/repository";
+import { bindRequestToBooking } from "@/lib/pickup-requests/checkout";
+import {
+  mutatePickupRequest,
+  PickupRequestError,
+} from "@/lib/pickup-requests/repository";
+import type { PickupRequestRecord } from "@/lib/pickup-requests/types";
+import { getFirestoreAdmin } from "@/lib/firebase/admin";
+import {
+  bookingCollection,
+  pickupRequestCollection,
+  hasFirebase,
+  isDemoEnvironment,
+} from "@/lib/env";
+import { hasInventoryCapacity } from "@/lib/booking/availability";
+import {
+  buildRentalSchedule,
+  localPickupToUtc,
+  pickupMonthDates,
+  PICKUP_TIME_OPTIONS,
+  type PickupDay,
+} from "@/lib/booking/schedule";
+import type {
+  Booking,
+  BookingAuditEvent,
+  RentalDuration,
+} from "@/types/models";
+
+const ACTIVE_CONFLICT_STATUSES = new Set<Booking["status"]>([
+  "pending_payment",
+  "pending_signature",
+  "pending_identity",
+  "pending_insurance",
+  "under_review",
+  "confirmed",
+  "deposit_action_required",
+  "ready_for_pickup",
+  "active",
+  "return_inspection",
+]);
+
+type DemoGlobal = typeof globalThis & {
+  __acgDemoBookings?: Map<string, Booking>;
+};
+
+function demoBookings(): Map<string, Booking> {
+  const root = globalThis as DemoGlobal;
+  root.__acgDemoBookings ??= new Map<string, Booking>();
+  return root.__acgDemoBookings;
+}
+
+export class BookingConflictError extends Error {}
+export class BookingPersistenceError extends Error {}
+
+function sameCheckoutDetails(left: Booking, right: Booking): boolean {
+  return (
+    left.checkoutKey === right.checkoutKey &&
+    left.pickupRequestId === right.pickupRequestId &&
+    left.checkoutAccessHash === right.checkoutAccessHash &&
+    left.customerEmail === right.customerEmail &&
+    JSON.stringify(left.customer) === JSON.stringify(right.customer) &&
+    left.towVehicle.year === right.towVehicle.year &&
+    left.towVehicle.make === right.towVehicle.make &&
+    left.towVehicle.model === right.towVehicle.model &&
+    (left.towVehicle.plate ?? "") === (right.towVehicle.plate ?? "") &&
+    left.trailerId === right.trailerId &&
+    left.duration === right.duration &&
+    left.startTimeMs === right.startTimeMs &&
+    left.endTimeMs === right.endTimeMs &&
+    left.rentalSubtotal === right.rentalSubtotal &&
+    left.taxAmount === right.taxAmount &&
+    left.rentalTotal === right.rentalTotal &&
+    Boolean(left.depositCollectedAtCheckout) ===
+      Boolean(right.depositCollectedAtCheckout) &&
+    Boolean(left.emailMarketingOptIn) === Boolean(right.emailMarketingOptIn) &&
+    left.depositAmount === right.depositAmount
+  );
+}
+
+function assertIdempotentCheckout(existing: Booking, candidate: Booking) {
+  if (!sameCheckoutDetails(existing, candidate)) {
+    throw new BookingConflictError(
+      "Checkout details changed after the time was secured. Return to review and restart payment.",
+    );
+  }
+}
+
+export function isPersistenceReady(): boolean {
+  return hasFirebase || isDemoEnvironment;
+}
+
+export function currentlyBlocksInventory(
+  booking: Booking,
+  nowMs: number,
+): boolean {
+  if (!ACTIVE_CONFLICT_STATUSES.has(booking.status)) return false;
+  if (
+    booking.status === "pending_payment" &&
+    booking.checkoutExpiresAtMs <= nowMs
+  ) {
+    return false;
+  }
+  return true;
+}
+
+export async function checkBookingAvailability(
+  trailerId: string,
+  startTimeMs: number,
+  endTimeMs: number,
+  capacity: number,
+): Promise<boolean> {
+  const bookings = await listTrailerBookings(trailerId);
+  const nowMs = Date.now();
+  return hasInventoryCapacity(
+    { startMs: startTimeMs, endMs: endTimeMs },
+    blockingIntervals(bookings, trailerId, nowMs),
+    capacity,
+  );
+}
+
+/** Request decisions and their inventory snapshot share one transaction. */
+export async function mutatePickupRequestWithInventory(
+  id: string,
+  change: (
+    record: PickupRequestRecord,
+    bookings: Booking[],
+  ) => PickupRequestRecord,
+): Promise<PickupRequestRecord> {
+  if (!hasFirebase) {
+    return mutatePickupRequest(id, (record) =>
+      change(record, Array.from(demoBookings().values())),
+    );
+  }
+  const db = getFirestoreAdmin();
+  if (!db)
+    throw new BookingPersistenceError("Booking storage failed to initialize.");
+  const ref = db.collection(pickupRequestCollection).doc(id);
+  return db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists)
+      throw new PickupRequestError("Request not found.", 404);
+    const record = snapshot.data() as PickupRequestRecord;
+    const inventory = await transaction.get(
+      db
+        .collection(bookingCollection)
+        .where("trailerId", "==", record.trailerId),
+    );
+    const next = change(
+      record,
+      inventory.docs.map((doc) => doc.data() as Booking),
+    );
+    transaction.set(ref, next);
+    return next;
+  });
+}
+
+function blockingIntervals(
+  bookings: Booking[],
+  trailerId: string,
+  nowMs: number,
+) {
+  return bookings
+    .filter(
+      (booking) =>
+        booking.trailerId === trailerId &&
+        currentlyBlocksInventory(booking, nowMs),
+    )
+    .map((booking) => ({
+      startMs: booking.startTimeMs,
+      endMs: booking.endTimeMs,
+    }));
+}
+
+async function listTrailerBookings(trailerId: string): Promise<Booking[]> {
+  if (!hasFirebase) {
+    if (!isDemoEnvironment)
+      throw new BookingPersistenceError("Booking storage is not configured.");
+    return Array.from(demoBookings().values()).filter(
+      (booking) => booking.trailerId === trailerId,
+    );
+  }
+  const db = getFirestoreAdmin();
+  if (!db)
+    throw new BookingPersistenceError("Booking storage failed to initialize.");
+  const snapshot = await db
+    .collection(bookingCollection)
+    .where("trailerId", "==", trailerId)
+    .get();
+  return snapshot.docs.map((doc) => doc.data() as Booking);
+}
+
+/** Read inventory once per month, returning only selectable slots, never customer data. */
+export async function getPickupAvailability(
+  trailerId: string,
+  month: string,
+  duration: RentalDuration,
+  capacity: number,
+  nowMs = Date.now(),
+): Promise<PickupDay[]> {
+  const dates = pickupMonthDates(month);
+  const intervals = blockingIntervals(
+    await listTrailerBookings(trailerId),
+    trailerId,
+    nowMs,
+  );
+  return dates.map((date) => ({
+    date,
+    times: PICKUP_TIME_OPTIONS.flatMap((option) => {
+      if (localPickupToUtc(date, option.value).getTime() <= nowMs) return [];
+      const schedule = buildRentalSchedule(date, option.value, duration, nowMs);
+      return hasInventoryCapacity(
+        { startMs: schedule.startTimeMs, endMs: schedule.endTimeMs },
+        intervals,
+        capacity,
+      )
+        ? [{ ...option, startTimeMs: schedule.startTimeMs }]
+        : [];
+    }),
+  }));
+}
+
+function assertNoConflict(
+  candidate: Booking,
+  existing: Booking[],
+  capacity: number,
+) {
+  const nowMs = Date.now();
+  if (
+    !hasInventoryCapacity(
+      { startMs: candidate.startTimeMs, endMs: candidate.endTimeMs },
+      blockingIntervals(
+        existing.filter((booking) => booking.id !== candidate.id),
+        candidate.trailerId,
+        nowMs,
+      ),
+      capacity,
+    )
+  ) {
+    throw new BookingConflictError(
+      "That trailer was just booked for the selected time. Choose another schedule.",
+    );
+  }
+}
+
+export async function createBookingHold(
+  booking: Booking,
+  capacity: number,
+): Promise<Booking> {
+  if (!hasFirebase) {
+    if (!isDemoEnvironment)
+      throw new BookingPersistenceError("Booking storage is not configured.");
+    const store = demoBookings();
+    const save = () => {
+      const existing = store.get(booking.id);
+      if (
+        existing &&
+        (existing.status !== "cancelled" ||
+          existing.paymentStatus === "succeeded")
+      ) {
+        assertIdempotentCheckout(existing, booking);
+        return existing;
+      }
+      assertNoConflict(booking, Array.from(store.values()), capacity);
+      store.set(booking.id, structuredClone(booking));
+      return booking;
+    };
+    if (!booking.pickupRequestId) return save();
+    let held: Booking | undefined;
+    await mutatePickupRequest(booking.pickupRequestId, (record) => {
+      const next = bindRequestToBooking(
+        record,
+        booking,
+        record.bookingId ? store.get(record.bookingId) : undefined,
+      );
+      held = save();
+      return next;
+    });
+    return held!;
+  }
+  const db = getFirestoreAdmin();
+  if (!db)
+    throw new BookingPersistenceError("Booking storage failed to initialize.");
+  const ref = db.collection(bookingCollection).doc(booking.id);
+  return db.runTransaction(async (transaction) => {
+    const existingSnapshot = await transaction.get(ref);
+    const requestRef = booking.pickupRequestId
+      ? db.collection(pickupRequestCollection).doc(booking.pickupRequestId)
+      : null;
+    let nextRequest: PickupRequestRecord | undefined;
+    if (requestRef) {
+      const requestSnapshot = await transaction.get(requestRef);
+      if (!requestSnapshot.exists)
+        throw new PickupRequestError("Pickup request not found.", 404);
+      const record = requestSnapshot.data() as PickupRequestRecord;
+      const previous = record.bookingId
+        ? ((record.bookingId === booking.id
+            ? existingSnapshot
+            : await transaction.get(
+                db.collection(bookingCollection).doc(record.bookingId),
+              )
+          ).data() as Booking | undefined)
+        : undefined;
+      nextRequest = bindRequestToBooking(record, booking, previous);
+    }
+    const existing = existingSnapshot.exists
+      ? (existingSnapshot.data() as Booking)
+      : null;
+    if (
+      existing &&
+      (existing.status !== "cancelled" ||
+        existing.paymentStatus === "succeeded")
+    ) {
+      assertIdempotentCheckout(existing, booking);
+      if (requestRef && nextRequest) transaction.set(requestRef, nextRequest);
+      return existing;
+    }
+    const sameTrailer = await transaction.get(
+      db
+        .collection(bookingCollection)
+        .where("trailerId", "==", booking.trailerId),
+    );
+    assertNoConflict(
+      booking,
+      sameTrailer.docs.map((doc) => doc.data() as Booking),
+      capacity,
+    );
+    transaction.set(ref, booking);
+    if (requestRef && nextRequest) transaction.set(requestRef, nextRequest);
+    return booking;
+  });
+}
+
+export async function completeRentalPaymentRecord({
+  bookingId,
+  paymentIntentId,
+  capacity,
+  updates,
+}: {
+  bookingId: string;
+  paymentIntentId: string;
+  capacity: number;
+  updates: Partial<Booking>;
+}): Promise<Booking> {
+  const now = new Date();
+
+  const complete = (current: Booking, allBookings: Booking[]) => {
+    if (current.rentalPaymentIntentId !== paymentIntentId) {
+      throw new Error("Payment does not match this booking.");
+    }
+    if (current.paymentStatus === "succeeded") return current;
+    if (
+      current.paymentStatus === "refunded" ||
+      current.status === "cancelled"
+    ) {
+      throw new BookingConflictError("This checkout is no longer active.");
+    }
+    if (current.checkoutExpiresAtMs <= now.getTime()) {
+      throw new BookingConflictError(
+        "The 15-minute checkout hold expired before payment completed.",
+      );
+    }
+    assertNoConflict(current, allBookings, capacity);
+    const auditEvent: BookingAuditEvent = {
+      action: "rental_payment_succeeded",
+      actor: "stripe",
+      createdAt: now.toISOString(),
+      createdAtMs: now.getTime(),
+    };
+    return {
+      ...current,
+      ...updates,
+      auditTrail: [...current.auditTrail, auditEvent],
+      updatedAt: now.toISOString(),
+      updatedAtMs: now.getTime(),
+    };
+  };
+
+  const completeRequest = (
+    record: PickupRequestRecord,
+    booking: Booking,
+  ): PickupRequestRecord => {
+    if (
+      record.bookingId !== booking.id ||
+      record.email !== booking.customerEmail ||
+      record.id !== booking.pickupRequestId ||
+      !["approved", "booked"].includes(record.status)
+    ) {
+      throw new PickupRequestError(
+        "The payment's pickup request could not be reconciled.",
+        409,
+      );
+    }
+    if (record.status === "booked") return record;
+    return {
+      ...record,
+      status: "booked",
+      updatedAtMs: now.getTime(),
+      audit: [
+        ...record.audit,
+        { action: "booked", actor: "stripe", at: now.getTime() },
+      ],
+    };
+  };
+  if (!hasFirebase) {
+    if (!isDemoEnvironment)
+      throw new BookingPersistenceError("Booking storage is not configured.");
+    const store = demoBookings();
+    const current = store.get(bookingId);
+    if (!current) throw new Error("Booking not found.");
+    const next = complete(current, Array.from(store.values()));
+    if (current.pickupRequestId) {
+      await mutatePickupRequest(current.pickupRequestId, (record) => {
+        const updated = completeRequest(record, next);
+        store.set(bookingId, structuredClone(next));
+        return updated;
+      });
+    } else store.set(bookingId, structuredClone(next));
+    return structuredClone(next);
+  }
+
+  const db = getFirestoreAdmin();
+  if (!db)
+    throw new BookingPersistenceError("Booking storage failed to initialize.");
+  const ref = db.collection(bookingCollection).doc(bookingId);
+  return db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists) throw new Error("Booking not found.");
+    const current = snapshot.data() as Booking;
+    const requestRef = current.pickupRequestId
+      ? db.collection(pickupRequestCollection).doc(current.pickupRequestId)
+      : null;
+    const requestSnapshot = requestRef
+      ? await transaction.get(requestRef)
+      : null;
+    const sameTrailer = await transaction.get(
+      db
+        .collection(bookingCollection)
+        .where("trailerId", "==", current.trailerId),
+    );
+    const next = complete(
+      current,
+      sameTrailer.docs.map((doc) => doc.data() as Booking),
+    );
+    if (requestRef) {
+      if (!requestSnapshot?.exists)
+        throw new PickupRequestError("Pickup request not found.", 404);
+      transaction.set(
+        requestRef,
+        completeRequest(requestSnapshot.data() as PickupRequestRecord, next),
+      );
+    }
+    transaction.set(ref, next);
+    return next;
+  });
+}
+
+export async function getBooking(id: string): Promise<Booking | null> {
+  if (!hasFirebase) {
+    return isDemoEnvironment
+      ? structuredClone(demoBookings().get(id) ?? null)
+      : null;
+  }
+  const db = getFirestoreAdmin();
+  if (!db) return null;
+  const snapshot = await db.collection(bookingCollection).doc(id).get();
+  return snapshot.exists ? (snapshot.data() as Booking) : null;
+}
+
+export async function listBookingsForEmail(email: string): Promise<Booking[]> {
+  const normalized = email.trim().toLowerCase();
+  let bookings: Booking[];
+  if (!hasFirebase) {
+    bookings = isDemoEnvironment ? Array.from(demoBookings().values()) : [];
+  } else {
+    const db = getFirestoreAdmin();
+    if (!db) return [];
+    const snapshot = await db
+      .collection(bookingCollection)
+      .where("customerEmail", "==", normalized)
+      .get();
+    bookings = snapshot.docs.map((doc) => doc.data() as Booking);
+  }
+  return bookings
+    .filter((booking) => booking.customerEmail === normalized)
+    .sort((a, b) => b.createdAtMs - a.createdAtMs)
+    .map((booking) => structuredClone(booking));
+}
+
+export async function listAllBookings(): Promise<Booking[]> {
+  let bookings: Booking[];
+  if (!hasFirebase) {
+    bookings = isDemoEnvironment ? Array.from(demoBookings().values()) : [];
+  } else {
+    const db = getFirestoreAdmin();
+    if (!db) return [];
+    const snapshot = await db.collection(bookingCollection).get();
+    bookings = snapshot.docs.map((doc) => doc.data() as Booking);
+  }
+  return bookings
+    .sort((a, b) => b.createdAtMs - a.createdAtMs)
+    .map((booking) => structuredClone(booking));
+}
+
+// Explicit undefined updates clear optional fields. The full document is saved
+// below, so removing the property deletes it without passing undefined to Firestore.
+function applyBookingUpdates(
+  current: Booking,
+  updates: Partial<Booking>,
+): Booking {
+  const next = { ...current, ...updates };
+  for (const key of Object.keys(updates) as (keyof Booking)[]) {
+    if (updates[key] === undefined) Reflect.deleteProperty(next, key);
+  }
+  return next;
+}
+
+export async function updateBooking(
+  id: string,
+  updates: Partial<Booking> | ((current: Booking) => Partial<Booking>),
+  event?: Omit<BookingAuditEvent, "createdAt" | "createdAtMs">,
+  canUpdate?: (current: Booking) => boolean,
+): Promise<Booking> {
+  const now = new Date();
+  const auditEvent: BookingAuditEvent | undefined = event
+    ? { ...event, createdAt: now.toISOString(), createdAtMs: now.getTime() }
+    : undefined;
+  // Firestore rejects undefined values, including optional audit notes.
+  if (auditEvent?.note === undefined && auditEvent) delete auditEvent.note;
+
+  if (!hasFirebase) {
+    if (!isDemoEnvironment)
+      throw new BookingPersistenceError("Booking storage is not configured.");
+    const store = demoBookings();
+    const current = store.get(id);
+    if (!current) throw new Error("Booking not found.");
+    if (canUpdate && !canUpdate(current)) return structuredClone(current);
+    const next: Booking = {
+      ...applyBookingUpdates(
+        current,
+        typeof updates === "function" ? updates(current) : updates,
+      ),
+      auditTrail: auditEvent
+        ? [...current.auditTrail, auditEvent]
+        : current.auditTrail,
+      updatedAt: now.toISOString(),
+      updatedAtMs: now.getTime(),
+    };
+    store.set(id, structuredClone(next));
+    return next;
+  }
+
+  const db = getFirestoreAdmin();
+  if (!db)
+    throw new BookingPersistenceError("Booking storage failed to initialize.");
+  const ref = db.collection(bookingCollection).doc(id);
+  return db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists) throw new Error("Booking not found.");
+    const current = snapshot.data() as Booking;
+    if (canUpdate && !canUpdate(current)) return current;
+    const next: Booking = {
+      ...applyBookingUpdates(
+        current,
+        typeof updates === "function" ? updates(current) : updates,
+      ),
+      auditTrail: auditEvent
+        ? [...current.auditTrail, auditEvent]
+        : current.auditTrail,
+      updatedAt: now.toISOString(),
+      updatedAtMs: now.getTime(),
+    };
+    transaction.set(ref, next);
+    return next;
+  });
+}
+
+export async function findBookingByPaymentIntent(
+  paymentIntentId: string,
+): Promise<Booking | null> {
+  if (!hasFirebase) {
+    const found = isDemoEnvironment
+      ? Array.from(demoBookings().values()).find(
+          (booking) =>
+            booking.rentalPaymentIntentId === paymentIntentId ||
+            booking.depositPaymentIntentId === paymentIntentId,
+        )
+      : undefined;
+    return found ? structuredClone(found) : null;
+  }
+  const db = getFirestoreAdmin();
+  if (!db) return null;
+  for (const field of [
+    "rentalPaymentIntentId",
+    "depositPaymentIntentId",
+  ] as const) {
+    const snapshot = await db
+      .collection(bookingCollection)
+      .where(field, "==", paymentIntentId)
+      .limit(1)
+      .get();
+    if (!snapshot.empty) return snapshot.docs[0].data() as Booking;
+  }
+  return null;
+}
+
+/** Recheck the booking, approval and inventory together before making pickup available. */
+export async function confirmQualifiedBooking(
+  id: string,
+  ownerReview?: { actor: string; note?: string },
+): Promise<Booking> {
+  const confirm = (
+    current: Booking,
+    bookings: Booking[],
+    request: PickupRequestRecord | null,
+  ) => {
+    if (!canCompleteDocuments(current) || current.status !== "under_review") {
+      if (ownerReview)
+        throw new Error(
+          "Approval is not available in the current booking state.",
+        );
+      return current;
+    }
+    const depositReady = ["charged", "authorized"].includes(
+      current.depositStatus,
+    );
+    let issue = automaticConfirmationIssue(
+      current,
+      request,
+      Date.now(),
+      !ownerReview || !!current.depositCollectedAtCheckout || depositReady,
+    );
+    if (!issue) {
+      const trailer = trailers.find((item) => item.id === current.trailerId);
+      if (!trailer || !["available", "rented"].includes(trailer.status))
+        issue = "The trailer is unavailable. Please contact us.";
+      else {
+        try {
+          assertNoConflict(
+            current,
+            bookings,
+            trailer.inventoryCount + trailer.virtualBoost,
+          );
+        } catch (error) {
+          if (!(error instanceof BookingConflictError)) throw error;
+          issue =
+            "This schedule needs an availability review. Please contact us.";
+        }
+      }
+    }
+    if (issue && ownerReview) throw new Error(issue);
+    if (issue && current.automaticConfirmationIssue === issue) return current;
+    const now = new Date();
+    if (issue)
+      return {
+        ...current,
+        automaticConfirmationIssue: issue,
+        updatedAt: now.toISOString(),
+        updatedAtMs: now.getTime(),
+      };
+    const next: Booking = {
+      ...current,
+      status: ownerReview && !depositReady ? "confirmed" : "ready_for_pickup",
+      insuranceStatus:
+        ownerReview || current.insuranceStatus === "approved"
+          ? "approved"
+          : "accepted",
+      confirmedAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+      updatedAtMs: now.getTime(),
+      auditTrail: [
+        ...current.auditTrail,
+        {
+          action: ownerReview ? "booking_approved" : "booking_auto_confirmed",
+          actor: ownerReview?.actor ?? "system",
+          note:
+            ownerReview?.note?.trim() ||
+            "Payment, identity, submitted insurance details, signed agreement, schedule, availability and applicable deposit checks passed. Insurance coverage is not verified with the insurer.",
+          createdAt: now.toISOString(),
+          createdAtMs: now.getTime(),
+        },
+      ],
+    };
+    if (ownerReview?.note?.trim()) next.reviewNote = ownerReview.note.trim();
+    delete next.automaticConfirmationIssue;
+    return next;
+  };
+  if (!hasFirebase) {
+    if (!isDemoEnvironment)
+      throw new BookingPersistenceError("Booking storage is not configured.");
+    const store = demoBookings();
+    const initial = store.get(id);
+    if (!initial) throw new Error("Booking not found.");
+    // Read again after the asynchronous request lookup, matching transaction freshness.
+    const request = initial.pickupRequestId
+      ? await getPickupRequest(initial.pickupRequestId)
+      : null;
+    const next = confirm(store.get(id)!, Array.from(store.values()), request);
+    store.set(id, structuredClone(next));
+    return structuredClone(next);
+  }
+  const db = getFirestoreAdmin();
+  if (!db)
+    throw new BookingPersistenceError("Booking storage failed to initialize.");
+  const ref = db.collection(bookingCollection).doc(id);
+  return db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists) throw new Error("Booking not found.");
+    const current = snapshot.data() as Booking;
+    if (!canCompleteDocuments(current) || current.status !== "under_review") {
+      if (ownerReview)
+        throw new Error(
+          "Approval is not available in the current booking state.",
+        );
+      return current;
+    }
+    const request = current.pickupRequestId
+      ? await transaction.get(
+          db.collection(pickupRequestCollection).doc(current.pickupRequestId),
+        )
+      : null;
+    const inventory = await transaction.get(
+      db
+        .collection(bookingCollection)
+        .where("trailerId", "==", current.trailerId),
+    );
+    const next = confirm(
+      current,
+      inventory.docs.map((doc) => doc.data() as Booking),
+      request?.exists ? (request.data() as PickupRequestRecord) : null,
+    );
+    if (next !== current) transaction.set(ref, next);
+    return next;
+  });
+}

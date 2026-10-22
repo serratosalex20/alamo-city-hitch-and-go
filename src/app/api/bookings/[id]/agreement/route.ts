@@ -1,0 +1,121 @@
+import { canCompleteDocuments } from "@/lib/booking/confirmation-policy";
+import { completeAgreement, reconcileBookingConfirmation } from "@/lib/booking/workflow";
+import { NextResponse } from "next/server";
+import { getCustomerBooking } from "@/lib/auth/authorization";
+import { updateBooking } from "@/lib/booking/repository";
+import {
+  createEmbeddedSigningSession,
+  getEnvelopeStatus,
+  hasDocuSign,
+} from "@/lib/docusign/server";
+import { agreementSigningMode, isDemoEnvironment } from "@/lib/env";
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const authorized = await getCustomerBooking(id);
+  if (!authorized) return NextResponse.json({ ok: false, error: "Not authorized." }, { status: 403 });
+  const { booking, session } = authorized;
+  if (booking.paymentStatus !== "succeeded") {
+    return NextResponse.json({ ok: false, error: "Rental payment is required first." }, { status: 409 });
+  }
+  if (["signed", "signed_in_person"].includes(booking.agreementStatus)) {
+    await reconcileBookingConfirmation(id);
+    return NextResponse.json({ ok: true, mode: "complete" as const });
+  }
+
+  if (!canCompleteDocuments(booking)) {
+    return NextResponse.json({ ok: false, error: "This booking is no longer accepting documents." }, { status: 409 });
+  }
+
+  if (booking.identityStatus !== "verified" || !["uploaded", "accepted", "approved"].includes(booking.insuranceStatus) || !booking.insurancePolicyNumber?.trim()) {
+    return NextResponse.json({ ok: false, error: "Complete identity verification and insurance details first." }, { status: 409 });
+  }
+
+  if (agreementSigningMode === "in_person") {
+    await updateBooking(id, { agreementStatus: "awaiting_in_person" },
+      { action: "agreement_awaiting_in_person", actor: session.email },
+      current => {
+        if (!canCompleteDocuments(current) || current.identityStatus !== "verified" ||
+            !["uploaded", "accepted", "approved"].includes(current.insuranceStatus) ||
+            current.agreementStatus !== booking.agreementStatus ||
+            current.insuranceStoragePath !== booking.insuranceStoragePath ||
+            current.insurancePolicyNumber !== booking.insurancePolicyNumber ||
+            current.insuranceExpiresAt !== booking.insuranceExpiresAt ||
+            current.insuranceCarrier !== booking.insuranceCarrier ||
+            current.insurancePolicyholder !== booking.insurancePolicyholder) {
+          throw new Error("Your booking changed. Refresh before continuing.");
+        }
+        return true;
+      });
+    await reconcileBookingConfirmation(id);
+    return NextResponse.json({ ok: true, mode: "in_person" as const });
+  }
+
+  if (!hasDocuSign) {
+    if (!isDemoEnvironment) {
+      return NextResponse.json(
+        { ok: false, error: "Agreement signing is temporarily unavailable." },
+        { status: 503 },
+      );
+    }
+    await completeAgreement(booking, session.email);
+    return NextResponse.json({ ok: true, mode: "demo" as const });
+  }
+
+  try {
+    const signing = await createEmbeddedSigningSession(booking, new URL(request.url).origin);
+    await updateBooking(
+      id,
+      { docusignEnvelopeId: signing.envelopeId, agreementStatus: "sent" },
+      { action: "agreement_sent", actor: session.email },
+      current => {
+        if (!canCompleteDocuments(current) || current.agreementStatus === "signed" || current.docusignEnvelopeId !== signing.envelopeId ||
+            current.insuranceStoragePath !== booking.insuranceStoragePath || current.insurancePolicyNumber !== booking.insurancePolicyNumber ||
+            current.insuranceExpiresAt !== booking.insuranceExpiresAt || current.insuranceCarrier !== booking.insuranceCarrier ||
+            current.insurancePolicyholder !== booking.insurancePolicyholder || current.insuranceStatus !== booking.insuranceStatus) {
+          throw new Error("Your booking changed. Refresh before signing.");
+        }
+        return true;
+      },
+    );
+    return NextResponse.json({ ok: true, mode: "real" as const, url: signing.url, integrationKey: signing.integrationKey });
+  } catch (error) {
+    console.error("[agreement-create]", error);
+    return NextResponse.json(
+      { ok: false, error: "We could not open the rental agreement. Please try again." },
+      { status: 502 },
+    );
+  }
+}
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const authorized = await getCustomerBooking(id);
+  if (!authorized) return NextResponse.json({ ok: false, error: "Not authorized." }, { status: 403 });
+  const { booking, session } = authorized;
+  if (["signed", "signed_in_person"].includes(booking.agreementStatus)) {
+    await reconcileBookingConfirmation(id);
+    return NextResponse.json({ ok: true, status: booking.agreementStatus });
+  }
+  if (booking.agreementStatus === "awaiting_in_person" || !booking.docusignEnvelopeId || !hasDocuSign) {
+    return NextResponse.json({ ok: true, status: booking.agreementStatus });
+  }
+
+  try {
+    const envelope = await getEnvelopeStatus(booking.docusignEnvelopeId);
+    const completed = envelope.status === "completed";
+    if (completed) {
+      await completeAgreement(booking, session.email, envelope.completedDateTime);
+    }
+    return NextResponse.json({ ok: true, status: completed ? "signed" : envelope.status });
+  } catch (error) {
+    console.error("[agreement-status]", error);
+    return NextResponse.json({ ok: false, error: "Could not verify the agreement status." }, { status: 502 });
+  }
+}

@@ -17,6 +17,12 @@ Each entry:
 
 ## Entries
 
+### 2026-09-04 — Preview Environment Is Part of the Booking Product
+- **Context:** The completed booking code passed local tests, but the first owner-run Vercel preview smoke test stopped at Check Availability.
+- **Mistake:** Treated the successful preview build as sufficient without proving that Preview-scoped Firebase and the remaining sandbox integrations were configured.
+- **Correction:** The recording showed `/api/availability` returning the deliberate 503 launch gate before customer details or payment.
+- **Rule:** A booking release is not ready when only the code builds. Verify every deployment environment from UI → API → persistence → payment → documents → owner operations, and explicitly inspect environment-variable scope before calling a preview usable.
+
 ### 2026-04-12 — UI/UX Audit Findings
 - **Context:** Building initial components (Navbar, forms, dashboard)
 - **Mistake:** Shipped without a11y fundamentals — no skip-link, no focus-visible, no htmlFor/id on form labels, no aria-hidden on decorative icons, no prefers-reduced-motion, download buttons at 32x32 (below 44px touch minimum), no mobile nav, progress bar missing role="progressbar"
@@ -28,3 +34,9 @@ Each entry:
 - **Mistake:** Treated commits as a final step instead of an incremental one. When the session ended and the worktree was cleaned up between sessions, the working-tree files were destroyed. `git reflog` confirmed the branch `claude/bold-moore-a6a914` never advanced past its creation point. No stash. No dangling objects. All output gone.
 - **Correction:** The user lost roughly an hour of brand work and had to ask for a rebuild. Took ownership and rebuilt with the new rule below.
 - **Rule:** **Commit-on-write inside a worktree, never commit-at-the-end.** As soon as a meaningful artifact is written to disk in a worktree, immediately `git add <file> && git commit -m "..."` on the worktree's branch. Worktree directories are removable scratch space — any uncommitted change there is one-way disposable. The rule is *not* "ask for permission to commit first"; the rule is "commit, then ask for permission to *push* or *merge*." Commits are local — they cost nothing and they make work durable.
+
+
+### 2026-10-03 — Trailer Photos Should Not Look Disabled
+- **Context:** Trailer marketing photos were gray until hovered.
+- **Correction:** Alex noted that renters could mistake grayscale imagery for unavailable inventory.
+- **Rule:** Show trailer photos in full color at rest. Use explicit availability badges and booking controls to communicate stock, and keep hover motion subtle with reduced-motion support.

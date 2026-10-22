@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Request a Trailer Rental",
+  title: "Book a Trailer Online",
   description:
-    "Send your requested trailer and schedule. JB must confirm availability. No payment or deposit hold is taken online.",
+    "Reserve your San Antonio trailer rental online in minutes. Enclosed cargo trailers and dump trailers. Half Day, Full Day, 1 Week, or 2 Weeks (15 days) blocks. Same-day pickup. Pull & Go.",
 };
 
 export default function BookLayout({ children }: { children: React.ReactNode }) {
