@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { revealBookingTarget } from "@/lib/booking/viewport";
 import {
   CalendarDays,
   ChevronDown,
@@ -47,6 +48,7 @@ export function PickupDatePicker({
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
   const dates = pickupMonthDates(month);
   const firstWeekday = new Date(`${month}-01T12:00:00Z`).getUTCDay();
   const availableDates = new Set(
@@ -58,6 +60,9 @@ export function PickupDatePicker({
     month: "long",
     year: "numeric",
   });
+  useLayoutEffect(() => {
+    if (open) revealBookingTarget(panel.current);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -70,7 +75,8 @@ export function PickupDatePicker({
 
   function close() {
     setOpen(false);
-    trigger.current?.focus();
+    trigger.current?.focus({ preventScroll: true });
+    revealBookingTarget(trigger.current);
   }
 
   function moveMonth(offset: number) {
@@ -132,10 +138,11 @@ export function PickupDatePicker({
       </button>
       {open && (
         <div
+          ref={panel}
           id={calendarId}
           role="dialog"
           aria-labelledby={`${calendarId}-heading`}
-          className={`${styles.panel} ${styles.scrollArea} absolute top-full left-0 z-50 mt-2 w-full max-w-sm max-h-[min(28rem,65dvh)] overflow-y-auto border border-outline-variant bg-surface-container text-on-surface p-4 shadow-2xl`}
+          className={`${styles.panel} ${styles.scrollArea} scroll-mt-24 scroll-mb-4 absolute top-full left-0 z-50 mt-2 w-full max-w-sm max-h-[min(34rem,calc(100dvh_-_8rem))] overflow-y-auto border border-outline-variant bg-surface-container text-on-surface p-4 shadow-2xl`}
         >
           <div className="flex items-center justify-between gap-2 mb-2">
             <h3

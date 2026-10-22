@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { revealBookingTarget } from "@/lib/booking/viewport";
 import { Icon } from "@/components/ui/Icon";
 // Sprint 3.3 — use bookableTrailers so "coming_soon" units don't appear
 // as selectable options. The /fleet page still shows them with a
@@ -17,27 +18,15 @@ interface Props {
 
 export function StepTrailer({ formData, updateForm, onNext }: Props) {
   const continueRef = useRef<HTMLButtonElement>(null);
-  const manualSelection = useRef(false);
+  const [manualSelection, setManualSelection] = useState(0);
 
   useLayoutEffect(() => {
-    if (!manualSelection.current) return;
-    manualSelection.current = false;
-    const button = continueRef.current;
-    if (!button) return;
-    const rect = button.getBoundingClientRect();
-    // Leave room for the fixed navigation and a small viewport-edge gutter.
-    if (rect.top >= 88 && rect.bottom <= window.innerHeight - 16) return;
-    button.scrollIntoView({
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "instant"
-        : "smooth",
-      block: "nearest",
-    });
-  }, [formData.trailerId]);
+    if (manualSelection) revealBookingTarget(continueRef.current);
+  }, [manualSelection]);
 
   const selectTrailer = (id: string, slug: string) => {
-    manualSelection.current = id !== formData.trailerId;
     updateForm({ trailerId: id, trailerSlug: slug });
+    setManualSelection((count) => count + 1);
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/marketing/Navbar";
 import { Footer } from "@/components/marketing/Footer";
@@ -12,6 +12,7 @@ import { StepPayment } from "@/components/booking/StepPayment";
 import { Icon } from "@/components/ui/Icon";
 import type { RentalDuration, ReferralSource } from "@/types/models";
 import { bookingTrailerFromQuery } from "@/lib/booking/entry";
+import { revealBookingTarget } from "@/lib/booking/viewport";
 
 export interface BookingFormData {
   pickupRequestId?: string;
@@ -103,6 +104,18 @@ export function BookingWizard({
   const [checkoutKey, setCheckoutKey] = useState(
     () => resumeCheckoutKey ?? crypto.randomUUID(),
   );
+  const contentRef = useRef<HTMLDivElement>(null);
+  const previousStep = useRef(currentStep);
+  useLayoutEffect(() => {
+    if (previousStep.current === currentStep) return;
+    previousStep.current = currentStep;
+    const heading = contentRef.current?.querySelector<HTMLElement>("h2");
+    if (!heading) return;
+    heading.tabIndex = -1;
+    heading.classList.add("scroll-mt-24");
+    heading.focus({ preventScroll: true });
+    revealBookingTarget(heading, "start");
+  }, [currentStep]);
 
   const updateForm = (updates: Partial<BookingFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -186,7 +199,7 @@ export function BookingWizard({
           </p>
         )}
         {/* Step Content — aria-live announces step changes to screen readers */}
-        <div aria-live="polite" aria-atomic="true">
+        <div ref={contentRef} aria-live="polite" aria-atomic="true">
           {currentStep === 0 && (
             <StepTrailer
               formData={formData}

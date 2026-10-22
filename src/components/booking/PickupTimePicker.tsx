@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
+import { revealBookingTarget } from "@/lib/booking/viewport";
 import { Check, ChevronDown, Clock3 } from "lucide-react";
 import type { PickupTimeOption } from "@/lib/booking/schedule";
 import styles from "./BookingPickers.module.css";
@@ -28,10 +29,14 @@ export function PickupTimePicker({
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLUListElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
   const search = useRef({ text: "", time: 0 });
   const selected = options.find((option) => option.value === value);
   const expanded = open && !disabled && options.length > 0;
   const activeIndex = Math.min(active, options.length - 1);
+  useLayoutEffect(() => {
+    if (expanded) revealBookingTarget(panel.current);
+  }, [expanded]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -78,7 +83,7 @@ export function PickupTimePicker({
   function choose(index: number) {
     if (options[index]) onChange(options[index].value);
     setOpen(false);
-    trigger.current?.focus();
+    trigger.current?.focus({ preventScroll: true });
   }
 
   function handleKey(event: KeyboardEvent<HTMLButtonElement>) {
@@ -192,7 +197,8 @@ export function PickupTimePicker({
       </button>
       {expanded && (
         <div
-          className={`${styles.panel} absolute top-full left-0 right-0 z-50 mt-2 border border-outline-variant bg-surface-container shadow-2xl`}
+          ref={panel}
+          className={`${styles.panel} scroll-mt-24 scroll-mb-4 absolute top-full left-0 right-0 z-50 mt-2 border border-outline-variant bg-surface-container shadow-2xl`}
         >
           <p className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant border-b border-outline-variant">
             Pickup time · Central Time

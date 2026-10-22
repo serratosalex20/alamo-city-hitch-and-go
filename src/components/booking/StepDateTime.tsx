@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { PickupRequestDialog } from "@/components/booking/PickupRequestDialog";
 import { PickupDatePicker } from "@/components/booking/PickupDatePicker";
 import { PickupTimePicker } from "@/components/booking/PickupTimePicker";
@@ -8,9 +8,11 @@ import type { BookingFormData } from "@/app/book/page";
 import type { RentalDuration } from "@/types/models";
 import { ALL_DURATIONS, DURATION_LABELS } from "@/lib/booking/pricing";
 import { bookableTrailers } from "@/lib/data/trailers";
+import { revealBookingTarget } from "@/lib/booking/viewport";
 import {
   formatBusinessDate,
   PICKUP_HOURS_DESCRIPTION,
+  PICKUP_TIME_OPTIONS,
   type PickupDay,
 } from "@/lib/booking/schedule";
 
@@ -30,6 +32,7 @@ const durationDescriptions: Record<RentalDuration, string> = {
   oneWeek: "One-week rental",
   twoWeeks: "Two-week rental — includes 1 free day (15 days)",
 };
+const unavailableTimeMessage = "Your selected pickup time is no longer available for this date and rental duration. Choose another pickup time.";
 
 export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
   const selectedTrailer = bookableTrailers.find((trailer) => trailer.id === formData.trailerId);
@@ -51,6 +54,10 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
   } | null>(null);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const continueRef = useRef<HTMLButtonElement>(null);
+  const [manualChange, setManualChange] = useState(0);
+  const revealedChange = useRef(0);
+  const markManualChange = () => setManualChange((count) => count + 1);
   const calendarKey = `${formData.trailerId}:${formData.duration}:${month}`;
   const calendarMatches = calendar?.key === calendarKey;
   const calendarLoading = !calendarMatches;
@@ -70,6 +77,27 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
   const selectedTimeAvailable = timeOptions.some(
     (option) => option.value === formData.time,
   );
+  const selectedTimeLabel = PICKUP_TIME_OPTIONS.find((option) => option.value === formData.time)?.label;
+  const scheduleKey = JSON.stringify([formData.trailerId, formData.date, formData.time, formData.duration]);
+  const latestScheduleKey = useRef(scheduleKey);
+  const latestSelection = useRef({ formData, updateForm });
+  useLayoutEffect(() => {
+    latestScheduleKey.current = scheduleKey;
+    latestSelection.current = { formData, updateForm };
+  }, [scheduleKey, formData, updateForm]);
+  const selectionError = error ?? (
+    formData.time && calendarMatches && !calendar.error && !selectedTimeAvailable
+      ? unavailableTimeMessage : null
+  );
+
+  useEffect(() => {
+    if (
+      !manualChange || revealedChange.current === manualChange ||
+      !calendarMatches || calendar.error || !formData.date || !selectedTimeAvailable
+    ) return;
+    revealedChange.current = manualChange;
+    revealBookingTarget(continueRef.current);
+  }, [manualChange, calendarMatches, calendar?.error, formData.date, selectedTimeAvailable]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -91,6 +119,21 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
             result.error ?? "We could not load available pickups.",
           );
         if (!controller.signal.aborted) {
+          const current = latestSelection.current;
+          const selected = current.formData;
+          // Revalidate the current choice against this duration's successful
+          // response; a failed or superseded request must never erase it.
+          if (
+            selected.trailerId === formData.trailerId &&
+            selected.duration === formData.duration && selected.time &&
+            selected.date.slice(0, 7) === month &&
+            !result.days.some((day: PickupDay) => day.date === selected.date &&
+              day.times.some((time) => time.value === selected.time &&
+                time.startTimeMs > result.checkedAtMs + Math.max(0, Date.now() - receivedAtMs)))
+          ) {
+            current.updateForm({ time: "" });
+            setError(unavailableTimeMessage);
+          }
           setCalendar({
             key: calendarKey,
             days: result.days,
@@ -132,28 +175,11 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
     };
   }, []);
 
-  // A changed duration or refreshed inventory must never leave a hidden stale selection.
-  useEffect(() => {
-    if (
-      calendarMatches &&
-      !calendar.error &&
-      formData.time &&
-      !selectedTimeAvailable
-    ) {
-      updateForm({ time: "" });
-    }
-  }, [
-    calendarMatches,
-    calendar?.error,
-    formData.time,
-    selectedTimeAvailable,
-    updateForm,
-  ]);
-
   async function checkAvailability() {
     if (!formData.date || !selectedTimeAvailable || checking) return;
     setChecking(true);
     setError(null);
+    const checkedScheduleKey = scheduleKey;
     try {
       const response = await fetch("/api/availability", {
         method: "POST",
@@ -170,7 +196,12 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
         available?: boolean;
         error?: string;
       };
-      if (!result.ok || !result.available) {
+      if (checkedScheduleKey !== latestScheduleKey.current) return;
+      if (!response.ok || !result.ok) {
+        setError(result.error ?? "We could not check availability. Please try again.");
+        return;
+      }
+      if (!result.available) {
         setError(
           result.error ??
             "That trailer is not available for the selected time.",
@@ -181,7 +212,8 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
       }
       onNext();
     } catch {
-      setError("We could not check availability. Please try again.");
+      if (checkedScheduleKey === latestScheduleKey.current)
+        setError("We could not check availability. Please try again.");
     } finally {
       setChecking(false);
     }
@@ -193,7 +225,7 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
         Pick Your Schedule
       </h2>
       <p className="text-on-surface-variant mb-6">
-        Choose your pickup date, time, and rental duration.
+        Choose your pickup date, rental duration, and pickup time.
       </p>
       {selectedTrailer && (
         <div className="mb-8 px-4 py-3 border border-white/10 bg-surface-container-low flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
@@ -230,11 +262,51 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
               setError(null);
             }}
             onChange={(date) => {
+              markManualChange();
               updateForm({ date, time: "" });
               setError(null);
             }}
           />
         </div>
+
+        {/* Duration */}
+        <fieldset>
+          <legend className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3">
+            Rental Duration
+          </legend>
+          <div
+            className="grid grid-cols-2 md:grid-cols-4 gap-3"
+            role="radiogroup"
+            aria-label="Select rental duration"
+          >
+            {ALL_DURATIONS.map((d) => (
+              <button
+                type="button"
+                key={d}
+                onClick={() => {
+                  markManualChange();
+                  updateForm({ duration: d });
+                  setError(null);
+                }}
+                role="radio"
+                aria-checked={formData.duration === d}
+                aria-label={`${DURATION_LABELS[d]} — ${durationDescriptions[d]}`}
+                className={`p-4 min-h-[44px] text-center transition-all ${
+                  formData.duration === d
+                    ? "bg-primary-action text-white"
+                    : "bg-surface-container hover:bg-surface-container-high text-on-surface"
+                }`}
+              >
+                <span className="block font-headline font-bold text-lg">
+                  {DURATION_LABELS[d]}
+                </span>
+                <span className="block text-[10px] uppercase tracking-wider opacity-70 mt-1">
+                  {durationDescriptions[d]}
+                </span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
 
         {/* Time */}
         <div>
@@ -248,18 +320,21 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
             </span>
           </label>
           <PickupTimePicker
-            value={selectedTimeAvailable ? formData.time : ""}
+            value={formData.time}
             options={timeOptions}
             disabled={
               !formData.date || calendarLoading || timeOptions.length === 0
             }
             onChange={(time) => {
+              markManualChange();
               updateForm({ time });
               setError(null);
             }}
             placeholder={
               calendarLoading
-                ? "Checking available times…"
+                ? selectedTimeLabel ? `Checking ${selectedTimeLabel}…` : "Checking available times…"
+                : calendar.error
+                  ? selectedTimeLabel ? `${selectedTimeLabel} — retry availability` : "Availability unavailable — try again"
                 : !formData.date
                   ? "Choose a date first"
                   : timeOptions.length === 0
@@ -288,42 +363,7 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           </button>
         </div>
 
-        {/* Duration */}
-        <fieldset>
-          <legend className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3">
-            Rental Duration
-          </legend>
-          <div
-            className="grid grid-cols-2 md:grid-cols-4 gap-3"
-            role="radiogroup"
-            aria-label="Select rental duration"
-          >
-            {ALL_DURATIONS.map((d) => (
-              <button
-                key={d}
-                onClick={() => {
-                  updateForm({ duration: d, time: "" });
-                  setError(null);
-                }}
-                role="radio"
-                aria-checked={formData.duration === d}
-                aria-label={`${DURATION_LABELS[d]} — ${durationDescriptions[d]}`}
-                className={`p-4 min-h-[44px] text-center transition-all ${
-                  formData.duration === d
-                    ? "bg-primary-action text-white"
-                    : "bg-surface-container hover:bg-surface-container-high text-on-surface"
-                }`}
-              >
-                <span className="block font-headline font-bold text-lg">
-                  {DURATION_LABELS[d]}
-                </span>
-                <span className="block text-[10px] uppercase tracking-wider opacity-70 mt-1">
-                  {durationDescriptions[d]}
-                </span>
-              </button>
-            ))}
-          </div>
-        </fieldset>
+
       </div>
 
       {calendarMatches && calendar.error && (
@@ -341,12 +381,12 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           </button>
         </div>
       )}
-      {error && (
+      {selectionError && (
         <p
           role="alert"
           className="mt-8 border-l-4 border-error bg-error/10 px-4 py-3 text-sm text-error"
         >
-          {error}
+          {selectionError}
         </p>
       )}
 
@@ -359,7 +399,7 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
       )}
 
       {/* Nav */}
-      <div className="flex gap-4 mt-12">
+      <div className="flex flex-col-reverse sm:flex-row gap-4 mt-12">
         <button
           onClick={onBack}
           className="flex-1 min-h-[44px] bg-surface-container-highest text-on-surface py-4 font-headline font-bold uppercase tracking-widest hover:bg-surface-bright transition-all"
@@ -367,11 +407,13 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
           Back
         </button>
         <button
+          ref={continueRef}
+          type="button"
           onClick={checkAvailability}
           disabled={!formData.date || !selectedTimeAvailable || checking}
-          className="flex-1 min-h-[44px] bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 transition-all active:scale-[0.98]"
+          className="flex-1 scroll-mt-24 scroll-mb-4 min-h-[56px] bg-primary-action text-white px-4 py-4 font-headline font-bold uppercase tracking-wider text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 transition-all active:scale-[0.98]"
         >
-          {checking ? "Checking…" : "Check Availability"}
+          {checking ? "Checking availability…" : "Continue to your details"}
         </button>
       </div>
     </div>

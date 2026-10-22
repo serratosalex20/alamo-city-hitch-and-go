@@ -187,7 +187,7 @@ test("schedule exposes only a secondary request trigger and a closed optional di
   assert.match(html, /aria-controls="pickup-request-dialog"/);
   assert.doesNotMatch(html, /<dialog/);
   assert.doesNotMatch(html, /<dialog[^>]*\sopen(?:[=>\s])/);
-  assert.match(html, /Check Availability/);
+  assert.match(html, /Continue to your details/);
   assert.equal((html.match(/id="booking-time"/g) || []).length, 1);
   assert.equal((html.match(/id="request-time"/g) || []).length, 0);
 });
