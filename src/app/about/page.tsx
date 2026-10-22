@@ -25,6 +25,7 @@
  * the photo drop is what moves the needle on conversion.
  */
 
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Navbar } from "@/components/marketing/Navbar";
@@ -87,23 +88,17 @@ const founders = [
 function FoundersBlock() {
   return (
     <div className="flex flex-col">
-      {/* Group photo frame — pending state until founders.png lands */}
+      {/* Group photo frame */}
       <div
         className="relative aspect-[16/10] bg-surface-container border border-outline-variant/15 flex items-center justify-center overflow-hidden"
-        role="img"
-        aria-label="Founders John Brandon Martinez and Kelby Pape — photo pending"
       >
-        <Icon
-          name="group"
-          className="text-[8rem] text-on-surface-variant/20"
-          aria-hidden="true"
+        <Image
+          src="/about/founders.webp"
+          alt="Founders John Brandon Martinez and Kelby Pape at the Alamo City Hitch & Go yard in San Antonio"
+          fill
+          sizes="(max-width: 767px) calc(100vw - 48px), (max-width: 895px) calc(100vw - 64px), 832px"
+          className="object-cover object-center"
         />
-        <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2">
-          <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" aria-hidden="true" />
-          <span className="font-headline uppercase tracking-[0.25em] text-[10px] text-on-surface-variant/70 font-bold">
-            Photo Coming Soon
-          </span>
-        </div>
       </div>
 
       {/* Names — order mirrors the photo (left to right) */}
