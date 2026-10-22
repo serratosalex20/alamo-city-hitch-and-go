@@ -56,11 +56,10 @@ export function PricingCallout() {
             <span className="text-on-surface-variant"> &middot; Every rate published.</span>
           </h2>
           <p className="text-on-surface-variant text-sm md:text-base font-light leading-relaxed max-w-2xl">
-            No quote forms, no &quot;call for a price&quot; runaround, no mileage
-            surprises. Pick a trailer, pick a Half Day, Full Day, 1 Week, or
-            2 Weeks block (2-Week ships with a free day — 15 calendar days),
-            see the total before you book. Texas sales tax called out.
-            Refundable $200 deposit is a hold, not a charge.
+            Browse published rental rates, then send your preferred trailer
+            and schedule. JB will confirm availability and the final total,
+            including tax and the refundable deposit, before arranging your rental.
+            No payment or deposit hold is taken when you send an online request.
           </p>
         </div>
 

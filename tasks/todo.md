@@ -365,3 +365,14 @@ These judgment-call audit findings still need YES/NO/TWEAK before Phase 3 closes
 - Phase 11 (production polish)
 
 This keeps Sprint 1 shippable as a lead-capture site with a booking form that just stores leads to Firestore — already beats every local competitor.
+
+
+## Approved temporary request-only release — 2026-10-22
+
+Alex approved request-only intake pending DocuSign. Base: production b23b5bc.
+- [x] Inspect remote/local changes and preserve unrelated work.
+- [x] Replace /book with pending request capture; disable payment intent creation.
+- [x] Add bounded durable intake, rate limits, owner notification status and honest receipt.
+- [x] Run 8 mocked/isolated tests, typecheck and production build; review exact diff. Read-only staged readiness is still required.
+- [ ] Stage production and verify read-only storage/email readiness before promotion.
+- [ ] Verify live UI without submitting requests, payments or notifications.

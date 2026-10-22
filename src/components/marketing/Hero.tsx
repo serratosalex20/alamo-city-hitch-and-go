@@ -60,7 +60,7 @@ export function Hero() {
               href="/book"
               className="bg-primary-action text-white hover:brightness-110 transition-all duration-300 font-headline font-black tracking-widest uppercase px-10 py-5 text-lg flex items-center justify-center gap-3 active:scale-95 min-h-[44px]"
             >
-              Book Your Trailer
+              Request Your Trailer
               <Icon name="arrow_forward" />
             </Link>
             <Link

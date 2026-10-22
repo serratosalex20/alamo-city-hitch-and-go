@@ -137,7 +137,7 @@ export function Navbar() {
             href="/book"
             className="bg-primary-action text-white px-5 py-2.5 rounded-full font-headline font-bold tracking-[0.15em] uppercase text-xs hover:brightness-110 active:scale-[0.97] transition-all min-h-[40px] inline-flex items-center whitespace-nowrap"
           >
-            Rent Now
+            Request a Rental
           </Link>
 
           {/* Mobile menu toggle */}

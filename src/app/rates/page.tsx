@@ -136,14 +136,14 @@ export default function RatesPage() {
               {/* CTA strip */}
               <div className="p-6 md:p-8 flex items-center justify-between gap-4 flex-wrap">
                 <p className="text-on-surface-variant text-xs uppercase tracking-widest font-headline font-bold">
-                  All blocks include the deposit hold • Released after return inspection
+                  Request only — JB confirms availability, final total and deposit arrangements
                 </p>
                 {trailer.status === "available" || trailer.status === "rented" ? (
                   <Link
                     href={`/book?trailer=${trailer.slug}`}
                     className="inline-flex items-center gap-2 bg-primary-action text-white px-6 py-3 min-h-[44px] font-headline font-bold uppercase tracking-widest text-sm hover:brightness-110 transition-all"
                   >
-                    Book This Trailer
+                    Request This Trailer
                     <Icon name="arrow_forward" className="text-sm" />
                   </Link>
                 ) : (

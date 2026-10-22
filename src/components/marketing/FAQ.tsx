@@ -46,7 +46,7 @@ const faqs: FAQ[] = [
   {
     question: "Is the security deposit charged to my card?",
     answer:
-      "No. The deposit is a $200 refundable pre-authorization hold, not a charge — the same amount across every trailer in the fleet. It releases within three business days after the trailer is returned and inspected in acceptable condition. If damage, cleaning, fuel replacement, or overtime is owed, we capture only the amount due and release the remainder.",
+      "No payment or deposit hold is taken when you submit an online request. JB confirms availability, the final total, and refundable deposit arrangements before your rental is reserved.",
   },
   {
     question: "How much does a trailer rental cost in San Antonio?",

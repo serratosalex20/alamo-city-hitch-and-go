@@ -83,6 +83,7 @@ export default function HomePage() {
       />
       <Navbar />
       <main id="main-content" className="relative min-h-screen pt-24 overflow-hidden">
+        <section aria-label="Rental requests" className="max-w-7xl mx-auto px-8 py-5 border-b border-outline-variant"><p>Online bookings are currently requests only. JB must confirm availability before your rental is reserved. No online payment or deposit hold is taken.</p></section>
         <Hero />
         <PricingCallout />
         <FeatureGrid />
