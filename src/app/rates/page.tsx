@@ -12,6 +12,7 @@
  */
 
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { Navbar } from "@/components/marketing/Navbar";
 import { Footer } from "@/components/marketing/Footer";
@@ -30,130 +31,126 @@ export default function RatesPage() {
   return (
     <>
       <Navbar />
-      <main id="main-content" className="min-h-screen pt-28 pb-24 px-6 md:px-8 max-w-6xl mx-auto">
+      <main id="main-content" className="min-h-screen pt-28 pb-24 px-4 md:px-8 max-w-6xl mx-auto">
         {/* Section header */}
-        <header className="mb-16">
+        <header className="mb-10 md:mb-14">
           <div className="flex items-center gap-4 mb-6" aria-hidden="true">
             <div className="h-[2px] w-12 bg-primary" />
             <span className="font-headline text-primary tracking-[0.3em] uppercase text-xs font-bold">
               Transparent Pricing
             </span>
           </div>
-          <h1 className="font-teko text-6xl md:text-8xl font-bold tracking-tighter uppercase leading-[0.85] mb-6">
+          <h1 style={{ fontFamily: "var(--font-teko)" }} className="text-6xl md:text-8xl font-bold tracking-tight uppercase leading-[0.85] mb-6">
             Rates
           </h1>
-          <p className="text-xl text-on-surface-variant font-light leading-relaxed max-w-2xl">
+          <p className="text-base md:text-lg text-on-surface-variant leading-relaxed max-w-2xl">
             Pick a trailer, pick a block, see the total. No quote forms. No
             mileage surprises. The price you see is the price you pay, plus
             Texas motor vehicle rental tax on the rental fee and a refundable deposit charged at checkout.
           </p>
         </header>
 
-        {/* Pricing matrix — one card per trailer */}
-        <section aria-labelledby="pricing-heading" className="space-y-12">
+        <section aria-labelledby="pricing-heading" className="space-y-8 md:space-y-12">
           <h2 id="pricing-heading" className="sr-only">
             Pricing by trailer and rental block
           </h2>
-
           {trailers.map((trailer) => (
             <article
               key={trailer.id}
-              className="bg-surface-container-low border border-outline-variant/15 overflow-hidden"
+              aria-labelledby={`rate-${trailer.id}`}
+              className="bg-surface-container-low border border-white/10 overflow-hidden"
             >
-              {/* Card header */}
-              <div className="p-6 md:p-8 border-b border-outline-variant/15">
-                <div className="flex items-start justify-between gap-6 flex-wrap">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="font-headline uppercase tracking-widest text-xs font-bold text-primary">
-                        {trailer.type.replace(/_/g, " ")}
-                      </span>
-                      {trailer.status === "coming_soon" && (
-                        <span className="bg-primary-action/80 text-white border border-primary/30 px-3 py-1 text-[10px] font-bold uppercase tracking-tighter">
-                          Coming Soon
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-teko text-4xl md:text-5xl font-bold uppercase tracking-tighter leading-none mb-2">
-                      {trailer.name}
-                    </h3>
-                    <p className="text-on-surface-variant text-sm font-light max-w-xl leading-relaxed">
-                      {trailer.description}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-headline uppercase tracking-widest text-[10px] font-bold text-on-surface-variant mb-1">
-                      Refundable Deposit
-                    </div>
-                    <div className="font-teko text-3xl font-bold text-on-surface">
-                      ${trailer.deposit}
-                    </div>
-                  </div>
+              <div className="grid lg:grid-cols-[2fr_3fr] border-b border-white/10">
+                <div className="relative aspect-[16/10] lg:aspect-auto bg-surface-container overflow-hidden">
+                  <Image
+                    src={trailer.imageUrl}
+                    alt={trailer.name}
+                    fill
+                    sizes="(max-width: 1023px) 100vw, 440px"
+                    className="object-cover"
+                  />
+                  {trailer.status === "coming_soon" && (
+                    <span className="absolute top-4 left-4 bg-background/90 text-on-surface border border-white/20 px-3 py-2 text-xs font-headline font-bold uppercase tracking-wider">
+                      Coming Soon
+                    </span>
+                  )}
                 </div>
-
-                {/* Spec strip */}
-                <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-outline-variant/10 text-xs">
-                  <div>
-                    <dt className="font-headline uppercase tracking-widest text-[10px] text-on-surface-variant">GVWR</dt>
-                    <dd className="font-bold text-on-surface mt-1">{trailer.specs.gvwr.toLocaleString()} lbs</dd>
-                  </div>
-                  <div>
-                    <dt className="font-headline uppercase tracking-widest text-[10px] text-on-surface-variant">Payload</dt>
-                    <dd className="font-bold text-on-surface mt-1">{trailer.specs.payload.toLocaleString()} lbs</dd>
-                  </div>
-                  <div>
-                    <dt className="font-headline uppercase tracking-widest text-[10px] text-on-surface-variant">Length</dt>
-                    <dd className="font-bold text-on-surface mt-1">{trailer.specs.lengthFeet} ft</dd>
-                  </div>
-                  <div>
-                    <dt className="font-headline uppercase tracking-widest text-[10px] text-on-surface-variant">Hitch</dt>
-                    <dd className="font-bold text-on-surface mt-1">{trailer.specs.hitchSize}</dd>
-                  </div>
-                </dl>
+                <div className="p-5 md:p-8 min-w-0">
+                  <p className="font-headline uppercase tracking-widest text-xs font-bold text-primary mb-3">
+                    {trailer.type.replace(/_/g, " ")}
+                  </p>
+                  <h3 id={`rate-${trailer.id}`} style={{ fontFamily: "var(--font-teko)" }} className="text-4xl md:text-5xl font-bold uppercase tracking-tight leading-none mb-3">
+                    {trailer.name}
+                  </h3>
+                  <p className="text-on-surface-variant text-sm max-w-xl leading-relaxed">
+                    {trailer.description}
+                  </p>
+                  <dl className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-x-5 gap-y-4 mt-5 pt-5 border-t border-white/10 text-sm">
+                    <div>
+                      <dt className="font-headline uppercase tracking-wider text-xs text-on-surface-variant">GVWR</dt>
+                      <dd className="font-bold text-on-surface mt-1">{trailer.specs.gvwr.toLocaleString()} lbs</dd>
+                    </div>
+                    <div>
+                      <dt className="font-headline uppercase tracking-wider text-xs text-on-surface-variant">Payload</dt>
+                      <dd className="font-bold text-on-surface mt-1">{trailer.specs.payload.toLocaleString()} lbs</dd>
+                    </div>
+                    <div>
+                      <dt className="font-headline uppercase tracking-wider text-xs text-on-surface-variant">Length</dt>
+                      <dd className="font-bold text-on-surface mt-1">{trailer.specs.lengthFeet} ft</dd>
+                    </div>
+                    <div>
+                      <dt className="font-headline uppercase tracking-wider text-xs text-on-surface-variant">Hitch</dt>
+                      <dd className="font-bold text-on-surface mt-1">{trailer.specs.hitchSize}</dd>
+                    </div>
+                  </dl>
+                </div>
               </div>
 
-              {/* Block grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-outline-variant/10 border-b border-outline-variant/15">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10 border-b border-white/10">
                 {ALL_DURATIONS.map((duration) => {
                   const quote = calculatePrice(trailer.id, duration);
                   return (
-                    <div key={duration} className="p-5 md:p-6 text-center">
-                      <div className="font-headline uppercase tracking-widest text-[10px] font-bold text-on-surface-variant mb-2">
+                    <div key={duration} className="p-4 md:p-6 bg-surface-container-low min-w-0">
+                      <div className="font-headline uppercase tracking-wider text-xs font-bold text-on-surface-variant mb-3">
                         {DURATION_LABELS[duration]}
                       </div>
-                      <div className="font-teko text-4xl md:text-5xl font-bold text-on-surface leading-none mb-1">
+                      <div className="font-teko text-4xl md:text-5xl font-bold tabular-nums text-on-surface leading-none whitespace-nowrap">
                         {formatUsd(quote.rentalCents)}
                       </div>
-                      <div className="text-[10px] text-on-surface-variant mt-2 leading-tight">
-                        + {formatUsd(quote.taxCents)} tax<br />
-                        + {formatUsd(quote.depositCents)} refundable deposit<br />
-                        = {formatUsd(quote.checkoutTotalCents)} due at checkout
+                      <div className="text-sm text-on-surface-variant mt-2 leading-relaxed">
+                        + {formatUsd(quote.taxCents)} tax
+                      </div>
+                      <div className="mt-4 pt-3 border-t border-white/10">
+                        <span className="block text-xs text-on-surface-variant leading-relaxed">Due at checkout</span>
+                        <span className="block mt-1 font-headline font-bold text-lg tabular-nums whitespace-nowrap">{formatUsd(quote.checkoutTotalCents)}</span>
                       </div>
                     </div>
                   );
                 })}
               </div>
 
-              {/* CTA strip */}
-              <div className="p-6 md:p-8 flex items-center justify-between gap-4 flex-wrap">
-                <p className="text-on-surface-variant text-xs uppercase tracking-widest font-headline font-bold">
-                  Refundable $200 deposit charged at checkout • Refunded after return inspection
-                </p>
+              <div className="p-5 md:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                <div className="flex items-start gap-3 max-w-lg">
+                  <Icon name="verified_user" className="text-primary text-xl shrink-0 mt-0.5" />
+                  <p className="text-sm text-on-surface-variant leading-relaxed">
+                    <strong className="block text-on-surface font-headline font-bold mb-1">${trailer.deposit} refundable deposit</strong>
+                    Included in every checkout total above. Charged at checkout;
+                    refunded after return inspection.
+                  </p>
+                </div>
                 {trailer.status === "available" || trailer.status === "rented" ? (
                   <Link
                     href={`/book?trailer=${trailer.slug}`}
-                    className="inline-flex items-center gap-2 bg-primary-action text-white px-6 py-3 min-h-[44px] font-headline font-bold uppercase tracking-widest text-sm hover:brightness-110 transition-all"
+                    aria-label={`Book the ${trailer.name}`}
+                    className="w-full sm:w-auto shrink-0 inline-flex justify-center items-center gap-2 bg-primary-action text-white px-6 py-4 min-h-[48px] font-headline font-bold uppercase tracking-wider text-sm hover:brightness-110 transition-all"
                   >
                     Book This Trailer
                     <Icon name="arrow_forward" className="text-sm" />
                   </Link>
                 ) : (
-                  // Mirrors TrailerCard + the detail page: coming-soon units
-                  // render an inert, visibly-disabled control so nobody
-                  // starts booking a trailer that is not in the yard.
                   <div
                     aria-disabled="true"
-                    className="inline-flex items-center gap-2 bg-white/[0.02] text-on-surface-variant/50 px-6 py-3 min-h-[44px] font-headline font-bold uppercase tracking-widest text-sm border border-white/5 cursor-not-allowed select-none"
+                    className="w-full sm:w-auto shrink-0 inline-flex justify-center items-center gap-2 bg-white/[0.02] text-on-surface-variant/50 px-6 py-4 min-h-[48px] font-headline font-bold uppercase tracking-wider text-sm border border-white/5 cursor-not-allowed select-none"
                   >
                     Available Soon
                     <Icon name="schedule" className="text-sm" />
@@ -163,7 +160,6 @@ export default function RatesPage() {
             </article>
           ))}
         </section>
-
         {/* What's included strip */}
         <section
           aria-labelledby="included-heading"

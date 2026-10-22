@@ -477,6 +477,16 @@ These judgment-call audit findings still need YES/NO/TWEAK before Phase 3 closes
 This keeps Sprint 1 shippable as a lead-capture site with a booking form that just stores leads to Firestore — already beats every local competitor.
 # Recovery release — 2026-10-22
 
+## Approved UX polish - 2026-10-22
+
+Scope and publication approved by Alex; this task is the sole publisher.
+
+- [x] Refine Rates with matching existing photos, readable mobile pricing/deposit hierarchy, and responsive CTAs; preserve every amount and availability restriction.
+- [x] Validate trailer links against bookable fleet; initialize Schedule once while preserving pickup-request priority and normal Back/change behavior.
+- [x] Scroll Continue into view only after manual selection when needed, honoring reduced motion and keyboard focus.
+- [x] Add targeted regressions, run existing suite/type/lint/build, and inspect 360/390/desktop screenshots. Evidence: docs/verification/approved-ux-20261022.md.
+- [ ] Publish a nonforce exact-head update and verify the automatic production deployment and custom domain.
+
 Approved scope: complete the saved Preview payment flow with temporary paper signing. All pushes and deployments are held pending parent ownership resolution.
 
 - [x] Capture stable source hashes and preserve original checkout in an independent clone.

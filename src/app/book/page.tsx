@@ -11,15 +11,17 @@ import { listBookingsForEmail } from "@/lib/booking/repository";
 import { getProfile } from "@/lib/customers/repository";
 import { returningDetails } from "@/lib/customers/returning";
 import { agreementSigningMode } from "@/lib/env";
+import { bookingTrailerFromQuery } from "@/lib/booking/entry";
 export type { BookingFormData } from "@/components/booking/BookingWizard";
 
 export default async function BookPage({
   searchParams,
 }: {
-  searchParams: Promise<{ pickupRequest?: string }>;
+  searchParams: Promise<{ pickupRequest?: string; trailer?: string | string[] }>;
 }) {
   const session = await getSession();
-  const requestId = (await searchParams).pickupRequest;
+  const params = await searchParams;
+  const requestId = params.pickupRequest;
   if (requestId) {
     if (!session || session.bookingId)
       redirect(
@@ -59,7 +61,7 @@ export default async function BookPage({
     const details = returningDetails(session.email, profile, bookings);
     const resume = await getResumablePickupCheckout(requestId, session);
     return (
-      <BookingWizard agreementSigningMode={agreementSigningMode}
+      <BookingWizard key={`pickup-${request.id}`} agreementSigningMode={agreementSigningMode}
         resumeCheckoutKey={resume?.checkoutKey}
         returningCustomer={details.returningCustomer}
         savedDetails={{
@@ -80,14 +82,19 @@ export default async function BookPage({
       />
     );
   }
-  if (!session || session.bookingId) return <BookingWizard agreementSigningMode={agreementSigningMode} />;
+  const initialTrailer = bookingTrailerFromQuery(params.trailer);
+  const entryKey = `regular-${initialTrailer?.id ?? "selection"}`;
+  if (!session || session.bookingId) {
+    return <BookingWizard key={entryKey} agreementSigningMode={agreementSigningMode} initialTrailerSlug={initialTrailer?.slug} />;
+  }
   const [profile, bookings] = await Promise.all([
     getProfile(session.email),
     listBookingsForEmail(session.email),
   ]);
   const details = returningDetails(session.email, profile, bookings);
   return (
-    <BookingWizard agreementSigningMode={agreementSigningMode}
+    <BookingWizard key={entryKey} agreementSigningMode={agreementSigningMode}
+      initialTrailerSlug={initialTrailer?.slug}
       savedDetails={details.savedDetails}
       returningCustomer={details.returningCustomer}
     />

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useLayoutEffect, useRef } from "react";
 import { Icon } from "@/components/ui/Icon";
 // Sprint 3.3 — use bookableTrailers so "coming_soon" units don't appear
 // as selectable options. The /fleet page still shows them with a
@@ -15,7 +16,27 @@ interface Props {
 }
 
 export function StepTrailer({ formData, updateForm, onNext }: Props) {
+  const continueRef = useRef<HTMLButtonElement>(null);
+  const manualSelection = useRef(false);
+
+  useLayoutEffect(() => {
+    if (!manualSelection.current) return;
+    manualSelection.current = false;
+    const button = continueRef.current;
+    if (!button) return;
+    const rect = button.getBoundingClientRect();
+    // Leave room for the fixed navigation and a small viewport-edge gutter.
+    if (rect.top >= 88 && rect.bottom <= window.innerHeight - 16) return;
+    button.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+      block: "nearest",
+    });
+  }, [formData.trailerId]);
+
   const selectTrailer = (id: string, slug: string) => {
+    manualSelection.current = id !== formData.trailerId;
     updateForm({ trailerId: id, trailerSlug: slug });
   };
 
@@ -29,14 +50,30 @@ export function StepTrailer({ formData, updateForm, onNext }: Props) {
       </p>
 
       <div
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"
+        className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10"
         role="radiogroup"
         aria-label="Select a trailer"
       >
         {bookableTrailers.map((trailer) => (
           <button
+            type="button"
             key={trailer.id}
             onClick={() => selectTrailer(trailer.id, trailer.slug)}
+            tabIndex={formData.trailerId ? (formData.trailerId === trailer.id ? 0 : -1) : (trailer === bookableTrailers[0] ? 0 : -1)}
+            onKeyDown={(event) => {
+              const index = bookableTrailers.indexOf(trailer);
+              const offset = ["ArrowRight", "ArrowDown"].includes(event.key) ? 1
+                : ["ArrowLeft", "ArrowUp"].includes(event.key) ? -1 : 0;
+              if (!offset && event.key !== "Home" && event.key !== "End") return;
+              event.preventDefault();
+              const nextIndex = event.key === "Home" ? 0
+                : event.key === "End" ? bookableTrailers.length - 1
+                : (index + offset + bookableTrailers.length) % bookableTrailers.length;
+              const nextTrailer = bookableTrailers[nextIndex];
+              const radios = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+              radios?.[nextIndex]?.focus({ preventScroll: true });
+              selectTrailer(nextTrailer.id, nextTrailer.slug);
+            }}
             role="radio"
             aria-checked={formData.trailerId === trailer.id}
             aria-label={`${trailer.name} — $${trailer.pricing.fullDay} per day, ${trailer.specs.gvwr.toLocaleString()} LBS GVWR`}
@@ -80,9 +117,11 @@ export function StepTrailer({ formData, updateForm, onNext }: Props) {
       </div>
 
       <button
+        ref={continueRef}
+        type="button"
         onClick={onNext}
         disabled={!formData.trailerId}
-        className="w-full min-h-[44px] bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 transition-all active:scale-[0.98]"
+        className="w-full scroll-mt-24 scroll-mb-4 min-h-[44px] bg-primary-action text-white py-4 font-headline font-bold uppercase tracking-widest disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 transition-all active:scale-[0.98]"
       >
         Continue to Schedule
       </button>

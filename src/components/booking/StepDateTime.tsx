@@ -7,6 +7,7 @@ import { PickupTimePicker } from "@/components/booking/PickupTimePicker";
 import type { BookingFormData } from "@/app/book/page";
 import type { RentalDuration } from "@/types/models";
 import { ALL_DURATIONS, DURATION_LABELS } from "@/lib/booking/pricing";
+import { bookableTrailers } from "@/lib/data/trailers";
 import {
   formatBusinessDate,
   PICKUP_HOURS_DESCRIPTION,
@@ -31,6 +32,7 @@ const durationDescriptions: Record<RentalDuration, string> = {
 };
 
 export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
+  const selectedTrailer = bookableTrailers.find((trailer) => trailer.id === formData.trailerId);
   const [requestOpen, setRequestOpen] = useState(false);
   const [requestDetails, setRequestDetails] = useState<BookingFormData | null>(
     null,
@@ -190,9 +192,17 @@ export function StepDateTime({ formData, updateForm, onNext, onBack }: Props) {
       <h2 className="text-3xl font-headline font-bold tracking-tighter uppercase mb-2">
         Pick Your Schedule
       </h2>
-      <p className="text-on-surface-variant mb-10">
+      <p className="text-on-surface-variant mb-6">
         Choose your pickup date, time, and rental duration.
       </p>
+      {selectedTrailer && (
+        <div className="mb-8 px-4 py-3 border border-white/10 bg-surface-container-low flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+          <p className="font-headline font-bold text-sm">{selectedTrailer.name}</p>
+          <button type="button" onClick={onBack} className="min-h-11 text-sm text-primary underline underline-offset-4">
+            Change trailer
+          </button>
+        </div>
+      )}
 
       <div className="space-y-8">
         {/* Date */}

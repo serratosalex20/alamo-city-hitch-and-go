@@ -11,6 +11,7 @@ import { StepReview } from "@/components/booking/StepReview";
 import { StepPayment } from "@/components/booking/StepPayment";
 import { Icon } from "@/components/ui/Icon";
 import type { RentalDuration, ReferralSource } from "@/types/models";
+import { bookingTrailerFromQuery } from "@/lib/booking/entry";
 
 export interface BookingFormData {
   pickupRequestId?: string;
@@ -73,19 +74,31 @@ export function BookingWizard({
   savedDetails,
   returningCustomer = false,
   resumeCheckoutKey,
+  initialTrailerSlug,
 }: {
   savedDetails?: Partial<BookingFormData>;
   returningCustomer?: boolean;
   resumeCheckoutKey?: string;
   agreementSigningMode?: "in_person" | "docusign";
+  initialTrailerSlug?: string;
 }) {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(
-    resumeCheckoutKey ? 4 : savedDetails?.pickupRequestId ? 2 : 0,
+  // Initialize once: Back and later manual choices must not reapply the URL.
+  const [initialTrailer] = useState(() =>
+    savedDetails?.pickupRequestId
+      ? undefined
+      : bookingTrailerFromQuery(initialTrailerSlug),
+  );
+  const [currentStep, setCurrentStep] = useState(() =>
+    resumeCheckoutKey ? 4 : savedDetails?.pickupRequestId ? 2 : initialTrailer ? 1 : 0,
   );
   const [formData, setFormData] = useState<BookingFormData>(() => ({
     ...initialFormData,
     ...savedDetails,
+    ...(initialTrailer && {
+      trailerId: initialTrailer.id,
+      trailerSlug: initialTrailer.slug,
+    }),
   }));
   const [checkoutKey, setCheckoutKey] = useState(
     () => resumeCheckoutKey ?? crypto.randomUUID(),
@@ -127,7 +140,7 @@ export function BookingWizard({
             aria-label="Booking progress"
             className="flex items-center justify-center gap-2 mb-16"
           >
-            <ol className="flex items-center gap-2 list-none p-0 m-0">
+            <ol className="flex items-center gap-1 sm:gap-2 list-none p-0 m-0">
               {steps.map((step, i) => (
                 <li key={step.label} className="flex items-center">
                   <button
@@ -137,7 +150,7 @@ export function BookingWizard({
                     disabled={i > currentStep || currentStep === 4}
                     aria-current={i === currentStep ? "step" : undefined}
                     aria-label={`Step ${i + 1}: ${step.label}${i === currentStep ? " (current)" : i < currentStep ? " (completed)" : ""}`}
-                    className={`flex items-center gap-2 px-4 py-3 min-h-[44px] min-w-[44px] transition-all ${
+                    className={`flex items-center justify-center gap-2 px-2 sm:px-4 py-3 min-h-[44px] min-w-[44px] transition-all ${
                       i === currentStep
                         ? "bg-primary-action text-white"
                         : i < currentStep
@@ -153,7 +166,7 @@ export function BookingWizard({
                   {i < steps.length - 1 && (
                     <div
                       aria-hidden="true"
-                      className={`w-8 h-[2px] mx-1 ${
+                      className={`w-2 sm:w-8 h-[2px] mx-1 ${
                         i < currentStep
                           ? "bg-primary"
                           : "bg-surface-container-highest"
