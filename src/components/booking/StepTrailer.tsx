@@ -19,6 +19,7 @@ interface Props {
 export function StepTrailer({ formData, updateForm, onNext }: Props) {
   const continueRef = useRef<HTMLButtonElement>(null);
   const [manualSelection, setManualSelection] = useState(0);
+  const [failedPhotos, setFailedPhotos] = useState<Record<string, boolean>>({});
 
   useLayoutEffect(() => {
     if (manualSelection) revealBookingTarget(continueRef.current);
@@ -72,14 +73,23 @@ export function StepTrailer({ formData, updateForm, onNext }: Props) {
                 : "border-white/5 hover:border-white/20"
             }`}
           >
-            <div className="aspect-[4/3] overflow-hidden bg-surface-container relative">
-              <Image
-                src={trailer.imageUrl}
+            <div className="relative w-full shrink-0 overflow-hidden bg-surface-container">
+              {/* Reserve 4:3 space even without CSS aspect-ratio or a loaded image. */}
+              <span aria-hidden="true" className="block" style={{ paddingTop: "75%" }} />
+              {failedPhotos[trailer.id] ? (
+                <span className="absolute inset-0 flex items-center justify-center text-sm text-on-surface-variant">
+                  Photo unavailable
+                </span>
+              ) : (
+                <Image
+                  src={trailer.imageUrl}
                 alt={`${trailer.name} — available for rental`}
-                fill
-                sizes="(max-width: 768px) 100vw, 33vw"
-                className="object-cover"
-              />
+                  fill
+                  sizes="(max-width: 767px) calc(100vw - 34px), (max-width: 895px) calc(50vw - 46px), 402px"
+                  onError={() => setFailedPhotos((previous) => ({ ...previous, [trailer.id]: true }))}
+                  className="object-cover"
+                />
+              )}
             </div>
             <div className="p-5">
               <div className="flex justify-between items-start mb-2">

@@ -22,7 +22,7 @@ registerHooks({
     if (file === "mobile-fixture:payment") source = "export function StepPayment() { throw new Error('Payment must not mount in scheduling tests'); }";
     if (file.endsWith(".module.css")) source = "export default {};";
     if (file === "mobile-fixture:next/navigation") source = "export const useRouter = () => ({push() {}}); export const usePathname = () => '/book';";
-    if (file === "mobile-fixture:next/image") source = "export default function Image({src, alt}) { return React.createElement('img', {src, alt}); }";
+    if (file === "mobile-fixture:next/image") source = "export default function Image({src, alt, onError}) { return React.createElement('img', {src, alt, onError}); }";
     if (file === "mobile-fixture:next/link") source = "export default function Link({children, ...props}) { return React.createElement('a', props, children); }";
     return source === undefined ? next(url, context) : { format: "module", source, shortCircuit: true };
   },
@@ -354,3 +354,18 @@ for (const kind of ["date", "time"] as const) {
     } finally { await ui.close(); }
   });
 }
+
+
+test("a failed trailer photo retains its labeled card and reports the missing photo", async () => {
+  const ui = await mount();
+  const { StepTrailer } = await import("../src/components/booking/StepTrailer");
+  try {
+    await ui.render(React.createElement(StepTrailer, { formData: { trailerId: "" } as BookingFormData, updateForm() {}, onNext() {} }));
+    const card = ui.host.querySelector('[role="radio"]')!;
+    const label = card.getAttribute("aria-label");
+    await React.act(async () => card.querySelector("img")!.dispatchEvent(new ui.window.Event("error")));
+    assert.match(card.textContent, /Photo unavailable/);
+    assert.equal(card.getAttribute("aria-label"), label);
+    assert.equal(ui.host.querySelectorAll('[role="radio"]').length, 2);
+  } finally { await ui.close(); }
+});
