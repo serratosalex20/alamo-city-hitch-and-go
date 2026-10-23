@@ -291,3 +291,66 @@ test("an older calendar response cannot clear a time accepted for the latest dur
     assert.equal(ui.data.duration, "oneWeek");
   } finally { await ui.close(); }
 });
+
+for (const kind of ["date", "time"] as const) {
+  test(`${kind} picker survives touch blur until completed click`, async () => {
+    const ui = await mount();
+    let chosen = "";
+    const { PickupDatePicker } = await import("../src/components/booking/PickupDatePicker");
+    const { PickupTimePicker } = await import("../src/components/booking/PickupTimePicker");
+    try {
+      await ui.render(kind === "date"
+        ? React.createElement(PickupDatePicker, { value: "", month: "2030-10", today: "2030-10-01", onMonthChange() {}, onChange(value) { chosen = value; } })
+        : React.createElement(PickupTimePicker, { value: "", options: [slot("08:00")], onChange(value) { chosen = value; } }));
+      const trigger = ui.host.querySelector(`#booking-${kind}`)!;
+      await ui.click(trigger);
+      const target = ui.host.querySelector(kind === "date" ? '[data-picker-date="2030-10-10"]' : '[role="option"]')!;
+      await React.act(async () => {
+        target.dispatchEvent(new ui.window.PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
+        target.dispatchEvent(new ui.window.PointerEvent("pointerup", { bubbles: true, pointerType: "touch" }));
+        const focused = kind === "date" ? ui.host.querySelector('[aria-label="Close calendar"]')! : trigger;
+        focused.dispatchEvent(new ui.window.FocusEvent("focusout", { bubbles: true, relatedTarget: null }));
+      });
+      assert.equal(trigger.getAttribute("aria-expanded"), "true", "blur during touch must not remove click target");
+      assert.equal(chosen, "", "pointerdown must not select");
+      await React.act(async () => target.dispatchEvent(new ui.window.PointerEvent("pointerup", { bubbles: true, pointerType: "touch" })));
+      await ui.click(target);
+      assert.equal(chosen, kind === "date" ? "2030-10-10" : "08:00");
+      assert.equal(trigger.getAttribute("aria-expanded"), "false");
+      assert.equal(ui.window.document.activeElement, trigger);
+    } finally { await ui.close(); }
+  });
+}
+
+for (const kind of ["date", "time"] as const) {
+  test(`${kind} picker cancellation never selects; outside pointer and keyboard blur dismiss`, async () => {
+    const ui = await mount();
+    const { PickupDatePicker } = await import("../src/components/booking/PickupDatePicker");
+    const { PickupTimePicker } = await import("../src/components/booking/PickupTimePicker");
+    let changes = 0;
+    try {
+      await ui.render(kind === "date"
+        ? React.createElement(PickupDatePicker, { value: "", month: "2030-10", today: "2030-10-01", onMonthChange() {}, onChange() { changes++; } })
+        : React.createElement(PickupTimePicker, { value: "", options: [slot("08:00")], onChange() { changes++; } }));
+      const trigger = ui.host.querySelector(`#booking-${kind}`)!;
+      await ui.click(trigger);
+      const target = ui.host.querySelector(kind === "date" ? '[data-picker-date="2030-10-10"]' : '[role="option"]')!;
+      await React.act(async () => {
+        target.dispatchEvent(new ui.window.PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
+        target.dispatchEvent(new ui.window.Event("scroll", { bubbles: true }));
+        target.dispatchEvent(new ui.window.PointerEvent("pointercancel", { bubbles: true, pointerType: "touch" }));
+      });
+      assert.equal(changes, 0);
+      assert.equal(trigger.getAttribute("aria-expanded"), "true");
+      await React.act(async () => ui.window.document.body.dispatchEvent(new ui.window.PointerEvent("pointerdown", { bubbles: true })));
+      assert.equal(trigger.getAttribute("aria-expanded"), "false");
+      await ui.click(trigger);
+      await React.act(async () => {
+        trigger.dispatchEvent(new ui.window.KeyboardEvent("keydown", { key: "Shift", bubbles: true }));
+        trigger.dispatchEvent(new ui.window.FocusEvent("focusout", { bubbles: true, relatedTarget: null }));
+      });
+      assert.equal(trigger.getAttribute("aria-expanded"), "false");
+      assert.equal(changes, 0);
+    } finally { await ui.close(); }
+  });
+}

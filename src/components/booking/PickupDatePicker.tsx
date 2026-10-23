@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { revealBookingTarget } from "@/lib/booking/viewport";
 import {
   CalendarDays,
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { pickupMonthDates, type PickupDay } from "@/lib/booking/schedule";
 import styles from "./BookingPickers.module.css";
+import { usePickerDismissal } from "./usePickerDismissal";
 
 interface Props {
   id?: string;
@@ -64,14 +65,7 @@ export function PickupDatePicker({
     if (open) revealBookingTarget(panel.current);
   }, [open]);
 
-  useEffect(() => {
-    if (!open) return;
-    const closeOutside = (event: PointerEvent) => {
-      if (!root.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener("pointerdown", closeOutside);
-    return () => document.removeEventListener("pointerdown", closeOutside);
-  }, [open]);
+  const handleBlur = usePickerDismissal(root, open, setOpen);
 
   function close() {
     setOpen(false);
@@ -89,10 +83,7 @@ export function PickupDatePicker({
     <div
       ref={root}
       className="relative"
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node))
-          setOpen(false);
-      }}
+      onBlur={handleBlur}
       onKeyDown={(event) => {
         if (event.key === "Escape" && open) {
           event.preventDefault();

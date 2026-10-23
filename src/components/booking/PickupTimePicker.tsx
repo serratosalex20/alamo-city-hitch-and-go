@@ -5,6 +5,7 @@ import { revealBookingTarget } from "@/lib/booking/viewport";
 import { Check, ChevronDown, Clock3 } from "lucide-react";
 import type { PickupTimeOption } from "@/lib/booking/schedule";
 import styles from "./BookingPickers.module.css";
+import { usePickerDismissal } from "./usePickerDismissal";
 
 interface Props {
   id?: string;
@@ -38,14 +39,7 @@ export function PickupTimePicker({
     if (expanded) revealBookingTarget(panel.current);
   }, [expanded]);
 
-  useEffect(() => {
-    if (!expanded) return;
-    const closeOutside = (event: PointerEvent) => {
-      if (!root.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener("pointerdown", closeOutside);
-    return () => document.removeEventListener("pointerdown", closeOutside);
-  }, [expanded]);
+  const handleBlur = usePickerDismissal(root, expanded, setOpen);
 
   useEffect(() => {
     if (!expanded) return;
@@ -161,10 +155,7 @@ export function PickupTimePicker({
     <div
       ref={root}
       className="relative"
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node))
-          setOpen(false);
-      }}
+      onBlur={handleBlur}
     >
       <button
         ref={trigger}
